@@ -20,14 +20,13 @@ lock on it.
 |---|---|
 | `profiles` | Public identity mirrored from `auth.users` |
 | `friendships` | One row per directed request; accepted = friends |
-| `blocks` | Hard mute, checked before every read |
+| `user_blocks` | Hard mute, checked before every read |
 | `moments` | A single captured photo (original + pre-blurred rendition) |
 | `trades` | **The core.** One initiating moment + one response, with lock state |
 | `messages` | 1:1 chat, optionally carrying a moment |
 | `device_tokens` | Push targets, needed to refresh the widget |
 | `referral_codes` / `referral_redemptions` | Share-your-code + partner codes |
 | `invites` | Deeplink for "X sent you a moment" before signup |
-| `subscriptions` | Glimpse Plus entitlement mirrored from the stores |
 | `reports` | Safety queue |
 
 ---
@@ -135,9 +134,11 @@ policies so a block takes effect immediately in both directions.
 
 ## 6. Not modelled yet (deliberately)
 
-- **Payments.** `subscriptions` is a mirror table only. Nothing validates a
-  receipt; that belongs in an Edge Function talking to App Store / Play, wired
-  when billing is real.
+- **Payments.** There is deliberately no `subscriptions` table: RevenueCat is
+  the source of truth for entitlement. The client asks its SDK whether Plus is
+  active; the database never mirrors it. If the server ever needs to gate
+  something on Plus, add RevenueCat's webhook writing a single `is_plus` flag
+  rather than reimplementing their state machine.
 - **Google/Apple auth.** Supabase GoTrue handles the identity rows itself; the
   app currently only uses email OTP. Turning the provider on is console config
   plus a button that already exists in the UI.

@@ -1,7 +1,7 @@
 -- Row level security. Every table is locked by default; policies are additive.
 
 alter table public.profiles             enable row level security;
-alter table public.blocks               enable row level security;
+alter table public.user_blocks          enable row level security;
 alter table public.friendships          enable row level security;
 alter table public.moments              enable row level security;
 alter table public.trades               enable row level security;
@@ -10,7 +10,6 @@ alter table public.device_tokens        enable row level security;
 alter table public.referral_codes       enable row level security;
 alter table public.referral_redemptions enable row level security;
 alter table public.invites              enable row level security;
-alter table public.subscriptions        enable row level security;
 alter table public.reports              enable row level security;
 alter table public.app_config           enable row level security;
 
@@ -36,9 +35,9 @@ create policy profiles_update_own on public.profiles
 -- INSERT is handled by the on_auth_user_created trigger, not by clients.
 
 -- ---------------------------------------------------------------------------
--- blocks
+-- user_blocks
 -- ---------------------------------------------------------------------------
-create policy blocks_own on public.blocks
+create policy user_blocks_own on public.user_blocks
   for all to authenticated
   using (blocker_id = auth.uid()) with check (blocker_id = auth.uid());
 
@@ -133,15 +132,11 @@ create policy messages_mark_read on public.messages
   using (recipient_id = auth.uid()) with check (recipient_id = auth.uid());
 
 -- ---------------------------------------------------------------------------
--- device_tokens / subscriptions / reports / redemptions: owner-scoped
+-- device_tokens / reports / redemptions: owner-scoped
 -- ---------------------------------------------------------------------------
 create policy device_tokens_own on public.device_tokens
   for all to authenticated
   using (user_id = auth.uid()) with check (user_id = auth.uid());
-
-create policy subscriptions_read_own on public.subscriptions
-  for select to authenticated using (user_id = auth.uid());
--- Writes come from the store webhook via the service role, never the client.
 
 create policy reports_insert on public.reports
   for insert to authenticated with check (reporter_id = auth.uid());

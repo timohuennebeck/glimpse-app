@@ -85,10 +85,18 @@ docs/database.md          schema design and rationale
 | Area | State |
 |---|---|
 | Google / Apple sign-in | Designed and rendered; no provider wired. Supabase console config + `signInWithOAuth`. |
-| Payments | The paywall is real UI; nothing charges. `subscriptions` is a mirror table awaiting a store webhook. |
+| Payments | The paywall is real UI; nothing charges. Entitlement will come from **RevenueCat**, so there is no `subscriptions` table by design. |
 | The widget itself | Both native UIs are written; the target, config plugin and native module need a Mac + Xcode. See `widgets/README.md`. |
 | Blurred renditions | `visible_moment_url()` falls back to the original until the Edge Function that generates `blurred/` is deployed. **Do not ship without it** — see `docs/database.md` §3. |
 | Contacts import | The permission-granted and permission-denied states both render; no contacts are read. |
+
+## Known issues
+
+- **`fetchInbox` is N+1.** It signs one URL per moment, so a feed of 20 moments
+  makes 20 round trips. Needs a batch RPC returning all signed URLs in one call.
+- **The blur Edge Function is not written.** Until it is, `visible_moment_url()`
+  falls back to the original and a locked photo is not actually protected. This
+  is the one genuine ship-blocker.
 
 ## Open product questions
 

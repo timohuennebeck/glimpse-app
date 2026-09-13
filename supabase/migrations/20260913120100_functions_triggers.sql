@@ -64,7 +64,7 @@ security definer
 set search_path = public
 as $$
   select exists (
-    select 1 from public.blocks
+    select 1 from public.user_blocks
     where (blocker_id = a and blocked_id = b)
        or (blocker_id = b and blocked_id = a)
   );

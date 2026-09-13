@@ -43,14 +43,14 @@ comment on column public.profiles.avatar_path is
   'Object key inside the public `avatars` bucket, not a URL.';
 
 -- ---------------------------------------------------------------------------
--- blocks (checked by the friend/message policies below)
+-- user_blocks (checked by the friend/message policies below)
 -- ---------------------------------------------------------------------------
-create table public.blocks (
+create table public.user_blocks (
   blocker_id uuid not null references public.profiles(id) on delete cascade,
   blocked_id uuid not null references public.profiles(id) on delete cascade,
   created_at timestamptz not null default now(),
   primary key (blocker_id, blocked_id),
-  constraint blocks_not_self check (blocker_id <> blocked_id)
+  constraint user_blocks_not_self check (blocker_id <> blocked_id)
 );
 
 -- ---------------------------------------------------------------------------
@@ -193,19 +193,6 @@ create table public.invites (
   claimed_at  timestamptz,
   expires_at  timestamptz not null default (now() + interval '14 days'),
   created_at  timestamptz not null default now()
-);
-
--- ---------------------------------------------------------------------------
--- subscriptions: mirror of the store entitlement. Nothing here validates a
--- receipt; that lives in an Edge Function once billing is real.
--- ---------------------------------------------------------------------------
-create table public.subscriptions (
-  user_id            uuid primary key references public.profiles(id) on delete cascade,
-  product_id         text not null,
-  store              text not null check (store in ('app_store', 'play_store')),
-  status             text not null check (status in ('trialing', 'active', 'grace', 'expired')),
-  current_period_end timestamptz,
-  updated_at         timestamptz not null default now()
 );
 
 -- ---------------------------------------------------------------------------

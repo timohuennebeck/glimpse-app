@@ -13,9 +13,9 @@ type Plan = 'monthly' | 'yearly';
 /**
  * Screen `10 Glimpse Plus · skippable`.
  *
- * Nothing here charges anything — there is no billing SDK wired. The plan
- * selection and trial toggle are real UI over a `subscriptions` table that is
- * currently only ever written by a store webhook (docs/database.md §6).
+ * Nothing here charges anything — there is no billing SDK wired yet.
+ * Entitlement will come from RevenueCat, which owns the subscription state
+ * machine, so the database deliberately has no `subscriptions` table.
  *
  * Worth flagging: the positioning note's open question 03 argues this screen
  * sits too early, because the growth loop needs a first *trade* before anyone is
