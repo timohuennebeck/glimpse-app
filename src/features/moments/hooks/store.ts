@@ -1,5 +1,4 @@
 import { useSyncExternalStore, useCallback } from 'react';
-
 /**
  * A ~30-line external store, so the composer draft can be shared across screens
  * without pulling in a state library for one use case.

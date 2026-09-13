@@ -1,5 +1,4 @@
-import type { InboxRow, Message, PairRow, Profile, ThreadRow } from './database.types';
-
+import type { InboxRow, Message, PairRow, Profile, ThreadRow } from '@/shared/lib/database.interfaces';
 /**
  * Sample data so every screen renders before a Supabase project exists.
  * People and photos match the ones used in the design mock.

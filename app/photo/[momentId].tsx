@@ -5,12 +5,14 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Avatar, GlassButton, CloseIcon, MoreIcon, Text } from '@/shared/ui';
-import { alpha, colors } from '@/shared/theme';
+import { Avatar } from '@/shared/ui/avatar';
+import { GlassButton } from '@/shared/ui/glass-button';
+import { CloseIcon, MoreIcon } from '@/shared/ui/icons';
+import { Text } from '@/shared/ui/text';
+import { alpha, colors } from '@/shared/theme/colors';
 import { pairDate } from '@/shared/lib/format';
-import { useInbox } from '@/features/moments';
+import { useInbox } from '@/features/moments/hooks/use-inbox';
 import { PHOTOS } from '@/shared/lib/fixtures';
-
 /** Screen `07c Foto Vollbild` — an unlocked moment, full bleed. */
 export default function PhotoScreen() {
   const { momentId } = useLocalSearchParams<{ momentId: string }>();

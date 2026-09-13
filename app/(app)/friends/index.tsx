@@ -1,26 +1,23 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
-import {
-  Button,
-  ClockIcon,
-  GlassButton,
-  PlusIcon,
-  Screen,
-  SectionLabel,
-  Text,
-} from '@/shared/ui';
-import { colors, spacing, avatarSize, radius } from '@/shared/theme';
-import { t } from '@/shared/i18n';
+import { Button } from '@/shared/ui/button';
+import { ClockIcon, PlusIcon } from '@/shared/ui/icons';
+import { GlassButton } from '@/shared/ui/glass-button';
+import { Screen } from '@/shared/ui/screen';
+import { SectionLabel } from '@/shared/ui/section-label';
+import { Text } from '@/shared/ui/text';
+import { colors } from '@/shared/theme/colors';
+import { spacing, avatarSize, radius } from '@/shared/theme/page-structure';
+import { t } from '@/shared/i18n/i18n';
 import { relativeTime } from '@/shared/lib/format';
-import { PersonRow } from '@/features/friends/components/PersonRow';
-import { Pill } from '@/features/friends/components/Pill';
-import { StoryRail } from '@/features/feed/components/StoryRail';
+import { PersonRow } from '@/features/friends/components/person-row';
+import { Pill } from '@/features/friends/components/pill';
+import { StoryRail } from '@/features/feed/components/story-rail';
 import { AVATARS, demoFriendRequests, demoSentRequests, DEMO_USER_ID, demoThreads } from '@/shared/lib/fixtures';
-import { ChatsList } from '@/features/chat/components/ChatsList';
+import { ChatsList } from '@/features/chat/components/chats-list';
 import { TAB_BAR_CLEARANCE } from '@/features/navigation/clearance';
-import { CaptureButton } from '@/features/navigation/CaptureButton';
-
+import { CaptureButton } from '@/features/navigation/capture-button';
 /**
  * Screen `08 Freunde` — the story rail, incoming requests, and outgoing requests
  * still waiting. The three sections map 1:1 onto `friendships` rows read from

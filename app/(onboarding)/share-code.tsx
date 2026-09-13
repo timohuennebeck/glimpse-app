@@ -3,11 +3,16 @@ import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
-import { Button, CloseIcon, CopyIcon, GlassButton, MoreIcon, Screen, Text } from '@/shared/ui';
-import { colors, fontFamily, radius, spacing } from '@/shared/theme';
-import { t } from '@/shared/i18n';
+import { Button } from '@/shared/ui/button';
+import { CloseIcon, CopyIcon, MoreIcon } from '@/shared/ui/icons';
+import { GlassButton } from '@/shared/ui/glass-button';
+import { Screen } from '@/shared/ui/screen';
+import { Text } from '@/shared/ui/text';
+import { colors } from '@/shared/theme/colors';
+import { fontFamily } from '@/shared/theme/fonts';
+import { radius, spacing } from '@/shared/theme/page-structure';
+import { t } from '@/shared/i18n/i18n';
 import { ART } from '@/shared/lib/fixtures';
-
 /**
  * Screen `10b Share your code · after purchase`.
  *

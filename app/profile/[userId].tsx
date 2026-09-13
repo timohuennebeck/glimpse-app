@@ -2,23 +2,20 @@ import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
-import {
-  Button,
-  CameraIcon,
-  CloseIcon,
-  FilterIcon,
-  GlassButton,
-  MoreIcon,
-  Screen,
-  Text,
-} from '@/shared/ui';
-import { colors, spacing } from '@/shared/theme';
-import { t } from '@/shared/i18n';
+import { Button } from '@/shared/ui/button';
+import { CameraIcon, CloseIcon, FilterIcon, MoreIcon } from '@/shared/ui/icons';
+import { GlassButton } from '@/shared/ui/glass-button';
+import { Screen } from '@/shared/ui/screen';
+import { Text } from '@/shared/ui/text';
+import { colors } from '@/shared/theme/colors';
+import { spacing } from '@/shared/theme/page-structure';
+import { t } from '@/shared/i18n/i18n';
 import { memberSince } from '@/shared/lib/format';
-import { PairGrid } from '@/features/profile/components/PairGrid';
-import { fetchPairs, useComposer, type MomentPair } from '@/features/moments';
+import { PairGrid } from '@/features/profile/components/pair-grid';
+import { fetchPairs } from '@/features/moments/data/moments-api';
+import { useComposer } from '@/features/moments/hooks/use-composer';
+import { type MomentPair } from '@/features/moments/interfaces';
 import { demoProfiles } from '@/shared/lib/fixtures';
-
 /**
  * Screens `07 Profil` and `07b Profil · 2 Paare pro Reihe`.
  *

@@ -1,10 +1,15 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { router } from 'expo-router';
-import { Button, CloseIcon, GlassButton, Screen, Text } from '@/shared/ui';
-import { colors, fontFamily, radius, spacing } from '@/shared/theme';
-import { t } from '@/shared/i18n';
-
+import { Button } from '@/shared/ui/button';
+import { CloseIcon } from '@/shared/ui/icons';
+import { GlassButton } from '@/shared/ui/glass-button';
+import { Screen } from '@/shared/ui/screen';
+import { Text } from '@/shared/ui/text';
+import { colors } from '@/shared/theme/colors';
+import { fontFamily } from '@/shared/theme/fonts';
+import { radius, spacing } from '@/shared/theme/page-structure';
+import { t } from '@/shared/i18n/i18n';
 const LENGTH = 6;
 
 /**

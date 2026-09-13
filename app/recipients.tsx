@@ -1,16 +1,22 @@
 import { useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
-import { Button, GlassButton, CloseIcon, Screen, SectionLabel, Text } from '@/shared/ui';
-import { colors, spacing } from '@/shared/theme';
-import { t } from '@/shared/i18n';
-import { useComposer, sendMoment } from '@/features/moments';
-import { PersonRow } from '@/features/friends/components/PersonRow';
-import { Checkbox } from '@/features/friends/components/Checkbox';
-import { EmptyState } from '@/features/feed/components/EmptyState';
+import { Button } from '@/shared/ui/button';
+import { GlassButton } from '@/shared/ui/glass-button';
+import { CloseIcon } from '@/shared/ui/icons';
+import { Screen } from '@/shared/ui/screen';
+import { SectionLabel } from '@/shared/ui/section-label';
+import { Text } from '@/shared/ui/text';
+import { colors } from '@/shared/theme/colors';
+import { spacing } from '@/shared/theme/page-structure';
+import { t } from '@/shared/i18n/i18n';
+import { useComposer } from '@/features/moments/hooks/use-composer';
+import { createMoment, sendMoment } from '@/features/moments/data/moments-api';
+import { PersonRow } from '@/features/friends/components/person-row';
+import { Checkbox } from '@/features/friends/components/checkbox';
+import { EmptyState } from '@/features/feed/components/empty-state';
 import { isSupabaseConfigured } from '@/shared/lib/supabase';
 import { demoProfiles, DEMO_USER_ID } from '@/shared/lib/fixtures';
-
 /**
  * Screen `03c Senden · Empfänger wählen`.
  *
@@ -43,12 +49,12 @@ export default function RecipientsScreen() {
     setError(null);
     try {
       if (isSupabaseConfigured) {
-        await sendMoment({
+        const momentId = await createMoment({
           localUri: composer.uri,
           caption: composer.caption || null,
-          recipientIds: selected,
           facing: composer.facing,
         });
+        await sendMoment(momentId, selected);
       }
       composer.reset();
       router.dismissAll();

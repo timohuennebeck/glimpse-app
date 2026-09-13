@@ -1,25 +1,19 @@
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
-import {
-  Button,
-  CheckIcon,
-  CopyIcon,
-  Divider,
-  LinkIcon,
-  MoreIcon,
-  ProgressHeader,
-  Screen,
-  SearchIcon,
-  Text,
-} from '@/shared/ui';
-import { colors, controlHeight, radius, spacing } from '@/shared/theme';
-import { t } from '@/shared/i18n';
-import { PersonRow } from '@/features/friends/components/PersonRow';
-import { Pill } from '@/features/friends/components/Pill';
-import { ContactsInvite } from '@/features/onboarding/components/ContactsInvite';
+import { Button } from '@/shared/ui/button';
+import { CheckIcon, CopyIcon, LinkIcon, MoreIcon, SearchIcon } from '@/shared/ui/icons';
+import { Divider } from '@/shared/ui/divider';
+import { ProgressHeader } from '@/shared/ui/progress-header';
+import { Screen } from '@/shared/ui/screen';
+import { Text } from '@/shared/ui/text';
+import { colors } from '@/shared/theme/colors';
+import { controlHeight, radius, spacing } from '@/shared/theme/page-structure';
+import { t } from '@/shared/i18n/i18n';
+import { PersonRow } from '@/features/friends/components/person-row';
+import { Pill } from '@/features/friends/components/pill';
+import { ContactsInvite } from '@/features/onboarding/components/contacts-invite';
 import { demoProfiles, DEMO_USER_ID } from '@/shared/lib/fixtures';
-
 /**
  * Screens `05 Friends · 5 of 7` and `05a · no contacts access`.
  *

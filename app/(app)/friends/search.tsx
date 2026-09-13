@@ -1,25 +1,19 @@
 import { useState } from 'react';
 import { StyleSheet, TextInput, View, Pressable } from 'react-native';
 import { router } from 'expo-router';
-import {
-  CloseIcon,
-  CopyIcon,
-  Divider,
-  GlassButton,
-  LinkIcon,
-  MoreIcon,
-  QrIcon,
-  Screen,
-  SectionLabel,
-  SearchIcon,
-  Text,
-} from '@/shared/ui';
-import { colors, controlHeight, fontFamily, radius, spacing } from '@/shared/theme';
-import { t } from '@/shared/i18n';
-import { PersonRow } from '@/features/friends/components/PersonRow';
-import { Pill } from '@/features/friends/components/Pill';
+import { CloseIcon, CopyIcon, LinkIcon, MoreIcon, QrIcon, SearchIcon } from '@/shared/ui/icons';
+import { Divider } from '@/shared/ui/divider';
+import { GlassButton } from '@/shared/ui/glass-button';
+import { Screen } from '@/shared/ui/screen';
+import { SectionLabel } from '@/shared/ui/section-label';
+import { Text } from '@/shared/ui/text';
+import { colors } from '@/shared/theme/colors';
+import { controlHeight, radius, spacing } from '@/shared/theme/page-structure';
+import { fontFamily } from '@/shared/theme/fonts';
+import { t } from '@/shared/i18n/i18n';
+import { PersonRow } from '@/features/friends/components/person-row';
+import { Pill } from '@/features/friends/components/pill';
 import { demoProfiles, DEMO_USER_ID } from '@/shared/lib/fixtures';
-
 type RequestState = 'add' | 'sent' | 'friends';
 
 /** Screen `D Freund suchen` — search by @username, or share your link. */

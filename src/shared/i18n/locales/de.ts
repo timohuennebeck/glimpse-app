@@ -188,13 +188,6 @@ export const de = {
         cta: 'Ersten Moment senden',
         skip: 'Erst mal umsehen',
       },
-      variantB: {
-        title: 'So sieht ein\nTausch aus.',
-        subtitle: 'Drei Sekunden, dann verstehst du es.',
-        caption: '„Verschwommen, Kamera, entsperrt — mehr ist es nicht.”',
-        cta: 'Verstanden, los',
-        skip: 'Überspringen',
-      },
     },
   },
 

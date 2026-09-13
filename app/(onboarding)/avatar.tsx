@@ -3,11 +3,12 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import Svg, { Circle, Defs, Pattern, Rect } from 'react-native-svg';
-import { PlusIcon, Text } from '@/shared/ui';
-import { colors, radius } from '@/shared/theme';
-import { t } from '@/shared/i18n';
-import { OnboardingScreen } from '@/features/onboarding/components/OnboardingScreen';
-
+import { PlusIcon } from '@/shared/ui/icons';
+import { Text } from '@/shared/ui/text';
+import { colors } from '@/shared/theme/colors';
+import { radius } from '@/shared/theme/page-structure';
+import { t } from '@/shared/i18n/i18n';
+import { OnboardingScreen } from '@/features/onboarding/components/onboarding-screen';
 /**
  * Screen `03 Avatar · 3 of 7`.
  *

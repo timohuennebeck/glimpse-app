@@ -5,7 +5,7 @@
 -- ---------------------------------------------------------------------------
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values
-  -- Private. Access is only ever granted through public.visible_moment_url().
+  -- Private. Reads are governed by moments_read_allowed_rendition below.
   ('moments', 'moments', false, 12 * 1024 * 1024, array['image/jpeg', 'image/heic', 'image/webp']),
   -- Avatars are small and shown in friend search, so public read is fine.
   ('avatars', 'avatars', true, 4 * 1024 * 1024, array['image/jpeg', 'image/png', 'image/webp'])
@@ -26,8 +26,20 @@ create policy moments_delete_own on storage.objects
     and (storage.foldername(name))[1] = auth.uid()::text
   );
 
--- Deliberately NO select policy on the `moments` bucket: reads are signed by
--- public.visible_moment_url() and nothing else.
+-- Reading is what makes the lock real. The Storage API consults this policy
+-- before creating a signed URL, so a client can only ever sign a path these
+-- predicates allow — the original once the trade is open, the blurred copy
+-- before that, nothing at all otherwise.
+create policy moments_read_allowed_rendition on storage.objects
+  for select to authenticated
+  using (
+    bucket_id = 'moments'
+    and exists (
+      select 1 from public.moments m
+      where (m.original_path = storage.objects.name and public.can_see_original(m.id))
+         or (m.blurred_path  = storage.objects.name and public.can_see_moment(m.id))
+    )
+  );
 
 create policy avatars_write_own on storage.objects
   for all to authenticated

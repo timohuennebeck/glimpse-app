@@ -1,1 +1,0 @@
-- Glimpse app: never use font-weight above 600 (semibold). No 700/800/900/bold.

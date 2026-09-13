@@ -3,8 +3,6 @@
 > Locket is a window into someone's day. Glimpse is a window that only opens both ways.
 
 An Expo (iOS + Android) app implementing the designs handed off from Claude Design.
-The original bundle is preserved in `project/`; the handoff instructions are in
-`docs/design-handoff.md`.
 
 ## The mechanic
 
@@ -82,8 +80,7 @@ docs/database.md          schema design and rationale
 
 ## Conventions
 
-- **Never a font weight above 600.** Project rule from `project/CLAUDE.md`;
-  enforced centrally in `src/shared/ui/Text.tsx`.
+- **Never a font weight above 600.** Enforced centrally in `src/shared/ui/Text.tsx`.
 - **All copy goes through i18n.** English is the active locale; German is kept
   complete in `de.ts`, since the go-to-market plan is German-speaking circles
   first. Both files are typed as the full `Translations`, so a missing key is a
@@ -100,16 +97,15 @@ docs/database.md          schema design and rationale
 | Google / Apple sign-in | Designed and rendered; no provider wired. Supabase console config + `signInWithOAuth`. |
 | Payments | The paywall is real UI; nothing charges. Entitlement will come from **RevenueCat**, so there is no `subscriptions` table by design. |
 | The widget itself | Both native UIs are written; the target, config plugin and native module need a Mac + Xcode. See `widgets/README.md`. |
-| Blurred renditions | `visible_moment_url()` falls back to the original until the Edge Function that generates `blurred/` is deployed. **Do not ship without it** — see `docs/database.md` §3. |
+| Blurred renditions | Until the Edge Function that generates `blurred/` is deployed, a locked moment is **withheld** (renders as a neutral frosted tile) rather than shown. Nothing leaks, but the feed is empty of locked photos — see `docs/database.md` §3. |
 | Contacts import | The permission-granted and permission-denied states both render; no contacts are read. |
 
 ## Known issues
 
-- **`fetchInbox` is N+1.** It signs one URL per moment, so a feed of 20 moments
-  makes 20 round trips. Needs a batch RPC returning all signed URLs in one call.
-- **The blur Edge Function is not written.** Until it is, `visible_moment_url()`
-  falls back to the original and a locked photo is not actually protected. This
-  is the one genuine ship-blocker.
+- **The blur Edge Function is not written.** Until it is, `visible_moment_paths()`
+  returns `NULL` for every locked moment, so locked photos are withheld rather
+  than leaked. Safe, but the frosted card has nothing to show — still the one
+  genuine ship-blocker.
 
 ## Open product questions
 

@@ -1,21 +1,16 @@
 import { StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
-import {
-  Avatar,
-  Button,
-  CloseIcon,
-  GlassButton,
-  LaurelIcon,
-  Screen,
-  StarIcon,
-  Text,
-  VerifiedIcon,
-} from '@/shared/ui';
-import { colors, radius, spacing } from '@/shared/theme';
-import { t, tList } from '@/shared/i18n';
+import { Avatar } from '@/shared/ui/avatar';
+import { Button } from '@/shared/ui/button';
+import { CloseIcon, LaurelIcon, StarIcon, VerifiedIcon } from '@/shared/ui/icons';
+import { GlassButton } from '@/shared/ui/glass-button';
+import { Screen } from '@/shared/ui/screen';
+import { Text } from '@/shared/ui/text';
+import { colors } from '@/shared/theme/colors';
+import { radius, spacing } from '@/shared/theme/page-structure';
+import { t, tList } from '@/shared/i18n/i18n';
 import { AVATARS } from '@/shared/lib/fixtures';
-
-type Review = { name: string; since: string; score: string; quote: string };
+interface Review { name: string; since: string; score: string; quote: string }
 
 /** Screen `08 Reviews` — social proof between onboarding and the paywall. */
 export default function ReviewsScreen() {

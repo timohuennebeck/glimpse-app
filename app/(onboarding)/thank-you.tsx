@@ -2,18 +2,21 @@ import { StyleSheet, View } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import { Button, CloseIcon, GlassButton, Screen, Text } from '@/shared/ui';
-import { colors, radius, spacing } from '@/shared/theme';
-import { t } from '@/shared/i18n';
+import { Button } from '@/shared/ui/button';
+import { CloseIcon } from '@/shared/ui/icons';
+import { GlassButton } from '@/shared/ui/glass-button';
+import { Screen } from '@/shared/ui/screen';
+import { Text } from '@/shared/ui/text';
+import { colors } from '@/shared/theme/colors';
+import { radius, spacing } from '@/shared/theme/page-structure';
+import { t } from '@/shared/i18n/i18n';
 import { ART } from '@/shared/lib/fixtures';
-
 /**
  * Screen `11a Welcome · variant A (mascot)`.
  *
  * The mock also contains a variant B built around a video still. It is not
  * shipped: without an experiment framework an in-app switcher is just a control
- * users can trip over. The copy for it is still in the locale file under
- * `onboarding.thankYou.variantB`, so reinstating it is a routing change.
+ * users can trip over.
  */
 export default function ThankYouScreen() {
   const copy = 'onboarding.thankYou.variantA';

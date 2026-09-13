@@ -3,12 +3,13 @@ import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useCameraPermissions } from 'expo-camera';
-import { CameraIcon, Text } from '@/shared/ui';
-import { colors, radius } from '@/shared/theme';
-import { t } from '@/shared/i18n';
-import { OnboardingScreen } from '@/features/onboarding/components/OnboardingScreen';
+import { CameraIcon } from '@/shared/ui/icons';
+import { Text } from '@/shared/ui/text';
+import { colors } from '@/shared/theme/colors';
+import { radius } from '@/shared/theme/page-structure';
+import { t } from '@/shared/i18n/i18n';
+import { OnboardingScreen } from '@/features/onboarding/components/onboarding-screen';
 import { ART } from '@/shared/lib/fixtures';
-
 /** Screen `02 Camera · 2 of 7` — the camera permission ask. */
 export default function CameraIntroScreen() {
   const [, requestPermission] = useCameraPermissions();

@@ -1,18 +1,13 @@
 import { useEffect } from 'react';
 import { Stack } from 'expo-router';
-import {
-  useFonts,
-  TikTokSans_400Regular,
-  TikTokSans_500Medium,
-  TikTokSans_600SemiBold,
-} from '@expo-google-fonts/tiktok-sans';
+import { useFonts, TikTokSans_400Regular, TikTokSans_500Medium, TikTokSans_600SemiBold } from '@expo-google-fonts/tiktok-sans';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as SplashScreen from 'expo-splash-screen';
 import { StyleSheet } from 'react-native';
-import { colors } from '@/shared/theme';
+import { colors } from '@/shared/theme/colors';
 // Side-effect import: configures the locale before any screen renders.
-import '@/shared/i18n';
+import '@/shared/i18n/i18n';
 
 void SplashScreen.preventAutoHideAsync();
 

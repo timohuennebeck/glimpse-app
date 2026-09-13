@@ -1,27 +1,6 @@
 import Svg, { Circle, Ellipse, Path, Rect, G } from 'react-native-svg';
-import {
-  X,
-  Plus,
-  Check,
-  Search,
-  MoreHorizontal,
-  SlidersHorizontal,
-  SwitchCamera,
-  Zap,
-  RotateCcw,
-  Pencil,
-  Star,
-  Clock,
-  Link2,
-  QrCode,
-  Copy,
-  Mail,
-  Eye,
-  ArrowUp,
-  Paperclip,
-} from 'lucide-react-native';
-import { colors } from '@/shared/theme';
-
+import { X, Plus, Check, Search, MoreHorizontal, SlidersHorizontal, SwitchCamera, Zap, RotateCcw, Pencil, Star, Clock, Link2, QrCode, Copy, Mail, Eye, ArrowUp, Paperclip } from 'lucide-react-native';
+import { colors } from '@/shared/theme/colors';
 /**
  * Icon set.
  *
@@ -31,9 +10,9 @@ import { colors } from '@/shared/theme';
  *
  * The brand-specific marks stay hand-drawn below, because no library has them:
  * the camera with its punched-out lens, the two-bar lock puck, and the verified
- * rosette are all transcribed from `project/Glimpse App Screens.dc.html`.
+ * rosette are all transcribed from the original Claude Design mock.
  */
-export type IconProps = { size?: number; color?: string };
+export interface IconProps { size?: number; color?: string }
 
 export function CameraIcon({ size = 21, color = colors.white, lensColor = colors.ink }: IconProps & { lensColor?: string }) {
   return (

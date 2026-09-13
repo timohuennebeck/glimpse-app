@@ -1,18 +1,15 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { router } from 'expo-router';
-import {
-  Button,
-  CheckIcon,
-  EnvelopeFieldIcon,
-  EyeIcon,
-  ProgressHeader,
-  Screen,
-  Text,
-} from '@/shared/ui';
-import { colors, fontFamily, radius, spacing } from '@/shared/theme';
-import { t } from '@/shared/i18n';
-
+import { Button } from '@/shared/ui/button';
+import { CheckIcon, EnvelopeFieldIcon, EyeIcon } from '@/shared/ui/icons';
+import { ProgressHeader } from '@/shared/ui/progress-header';
+import { Screen } from '@/shared/ui/screen';
+import { Text } from '@/shared/ui/text';
+import { colors } from '@/shared/theme/colors';
+import { fontFamily } from '@/shared/theme/fonts';
+import { radius, spacing } from '@/shared/theme/page-structure';
+import { t } from '@/shared/i18n/i18n';
 /** Screen `04a Your details · 4 of 7` — email + password, with a strength meter. */
 export default function DetailsScreen() {
   const [email, setEmail] = useState('');

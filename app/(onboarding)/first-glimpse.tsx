@@ -7,11 +7,13 @@ import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Button, GlassButton, Text, CloseIcon, FlipCameraIcon } from '@/shared/ui';
-import { alpha, colors } from '@/shared/theme';
-import { t } from '@/shared/i18n';
-import { useComposer } from '@/features/moments';
-
+import { Button } from '@/shared/ui/button';
+import { GlassButton } from '@/shared/ui/glass-button';
+import { Text } from '@/shared/ui/text';
+import { CloseIcon, FlipCameraIcon } from '@/shared/ui/icons';
+import { alpha, colors } from '@/shared/theme/colors';
+import { t } from '@/shared/i18n/i18n';
+import { useComposer } from '@/features/moments/hooks/use-composer';
 /**
  * Screen `02b First glimpse` — step 2.5 of onboarding.
  *

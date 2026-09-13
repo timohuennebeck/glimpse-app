@@ -6,21 +6,19 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
-import {
-  Avatar,
-  GlassButton,
-  CloseIcon,
-  MoreIcon,
-  LockedIcon,
-  CameraIcon,
-  Text,
-} from '@/shared/ui';
-import { alpha, colors, fontFamily, radius } from '@/shared/theme';
-import { BLUR } from '@/shared/ui/LockedImage';
-import { t } from '@/shared/i18n';
+import { Avatar } from '@/shared/ui/avatar';
+import { GlassButton } from '@/shared/ui/glass-button';
+import { CloseIcon, MoreIcon, LockedIcon, CameraIcon } from '@/shared/ui/icons';
+import { Text } from '@/shared/ui/text';
+import { alpha, colors } from '@/shared/theme/colors';
+import { fontFamily } from '@/shared/theme/fonts';
+import { radius } from '@/shared/theme/page-structure';
+import { BLUR } from '@/shared/ui/locked-image';
+import { t } from '@/shared/i18n/i18n';
 import { relativeTime, timeUntilUnlock } from '@/shared/lib/format';
-import { useInbox, useComposer, markTradeSeen } from '@/features/moments';
-
+import { useInbox } from '@/features/moments/hooks/use-inbox';
+import { useComposer } from '@/features/moments/hooks/use-composer';
+import { markTradeSeen } from '@/features/moments/data/moments-api';
 /**
  * Screens `04 Moment geöffnet` and `04b Moment verschwommen`.
  *

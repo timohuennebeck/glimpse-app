@@ -73,7 +73,7 @@ create policy friendships_delete on public.friendships
 -- moments
 -- You can see a moment row if you took it, or if a trade links it to you.
 -- Whether you see the ORIGINAL or the blurred rendition is decided separately,
--- by public.visible_moment_url().
+-- by the RLS policy on storage.objects (see 20260913120300_storage_and_views).
 -- ---------------------------------------------------------------------------
 create policy moments_read on public.moments
   for select to authenticated

@@ -1,8 +1,7 @@
 import { NativeTabs } from 'expo-router/unstable-native-tabs';
-import { t } from '@/shared/i18n';
-import { useInbox } from '@/features/moments';
+import { t } from '@/shared/i18n/i18n';
+import { useInbox } from '@/features/moments/hooks/use-inbox';
 import { demoThreads } from '@/shared/lib/fixtures';
-
 // These are attached to Trigger rather than exported at the top level.
 const { Icon, Label, Badge } = NativeTabs.Trigger;
 
@@ -26,7 +25,7 @@ export default function AppLayout() {
   const feedBadge = pending.length > 0 ? String(pending.length) : undefined;
 
   return (
-    <NativeTabs>
+    <NativeTabs minimizeBehavior="onScrollDown">
       <NativeTabs.Trigger name="feed">
         <Icon sf="square.stack" drawable="ic_menu_gallery" />
         <Label>{t('nav.feed')}</Label>

@@ -2,12 +2,12 @@ import { StyleSheet, View } from 'react-native';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import * as Notifications from 'expo-notifications';
-import { Text } from '@/shared/ui';
-import { colors, radius, shadow } from '@/shared/theme';
-import { t } from '@/shared/i18n';
-import { OnboardingScreen } from '@/features/onboarding/components/OnboardingScreen';
+import { Text } from '@/shared/ui/text';
+import { colors } from '@/shared/theme/colors';
+import { radius, shadow } from '@/shared/theme/page-structure';
+import { t } from '@/shared/i18n/i18n';
+import { OnboardingScreen } from '@/features/onboarding/components/onboarding-screen';
 import { ART } from '@/shared/lib/fixtures';
-
 /**
  * Screen `06 Notifications · 6 of 7`.
  *

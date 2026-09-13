@@ -2,22 +2,17 @@ import { useMemo } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
-import {
-  Avatar,
-  CloseIcon,
-  GlassButton,
-  MoreIcon,
-  PaperclipIcon,
-  PlusIcon,
-  Screen,
-  SendIcon,
-  Text,
-} from '@/shared/ui';
-import { colors, fontFamily, radius, shadow, spacing } from '@/shared/theme';
-import { t } from '@/shared/i18n';
+import { Avatar } from '@/shared/ui/avatar';
+import { CloseIcon, MoreIcon, PaperclipIcon, PlusIcon, SendIcon } from '@/shared/ui/icons';
+import { GlassButton } from '@/shared/ui/glass-button';
+import { Screen } from '@/shared/ui/screen';
+import { Text } from '@/shared/ui/text';
+import { colors } from '@/shared/theme/colors';
+import { fontFamily } from '@/shared/theme/fonts';
+import { radius, shadow, spacing } from '@/shared/theme/page-structure';
+import { t } from '@/shared/i18n/i18n';
 import { threadTime } from '@/shared/lib/format';
 import { demoMessages, demoProfiles, DEMO_USER_ID } from '@/shared/lib/fixtures';
-
 /**
  * Screen `09 Chat`.
  *

@@ -1,5 +1,5 @@
 /**
- * Colour tokens lifted verbatim from `project/Glimpse App Screens.dc.html`.
+ * Colour tokens lifted verbatim from the original Claude Design mock.
  * Names describe role, not hue, so a future dark mode can remap them in one place.
  */
 export const colors = {

@@ -205,63 +205,79 @@ as $$
 $$;
 
 -- ---------------------------------------------------------------------------
--- The only sanctioned way to get at a moment's pixels.
+-- Who may see which rendition of a moment.
 --
--- Returns a signed URL for the ORIGINAL when the caller is the author or the
--- trade is open; otherwise for the pre-blurred rendition. A tampered client
--- cannot promote itself, because the server never signs the original early.
+-- Postgres cannot mint storage signed URLs — that is the Storage API's job —
+-- so the server's role is to decide, and the client's role is to sign. The
+-- decision lives in two predicates that are used twice: by the RLS policy on
+-- storage.objects (so the Storage API refuses to sign anything the caller may
+-- not see) and by visible_moment_paths() (so the client knows which path to
+-- ask for). One rule, enforced at the object layer, no trust in the client.
 -- ---------------------------------------------------------------------------
-create or replace function public.visible_moment_url(
-  p_moment_id uuid,
-  p_expires_in int default 3600
-)
-returns text
-language plpgsql
+
+-- May the caller see this moment at all (i.e. its blurred rendition)?
+create or replace function public.can_see_moment(p_moment_id uuid)
+returns boolean
+language sql
+stable
 security definer
-set search_path = public, storage, extensions
+set search_path = public
 as $$
-declare
-  v_moment public.moments;
-  v_uid uuid := auth.uid();
-  v_open boolean;
-  v_path text;
-begin
-  select * into v_moment from public.moments where id = p_moment_id;
-  if v_moment.id is null then
-    return null;
-  end if;
+  select exists (
+    select 1 from public.moments m
+    where m.id = p_moment_id
+      and (
+        m.author_id = auth.uid()
+        or exists (
+          select 1 from public.trades t
+          where (t.initiator_moment_id = m.id and t.responder_id = auth.uid())
+             or (t.responder_moment_id = m.id and t.initiator_id = auth.uid())
+        )
+      )
+  );
+$$;
 
-  if v_moment.author_id = v_uid then
-    v_open := true;
-  else
-    -- Open if ANY trade linking this moment to me is open.
-    select bool_or(public.trade_is_open(t)) into v_open
-      from public.trades t
-     where (t.initiator_moment_id = p_moment_id and t.responder_id = v_uid)
-        or (t.responder_moment_id = p_moment_id and t.initiator_id = v_uid);
+-- May the caller see the ORIGINAL? Only the author, or a party to an open trade.
+create or replace function public.can_see_original(p_moment_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.moments m
+    where m.id = p_moment_id
+      and (
+        m.author_id = auth.uid()
+        or exists (
+          select 1 from public.trades t
+          where public.trade_is_open(t)
+            and ((t.initiator_moment_id = m.id and t.responder_id = auth.uid())
+              or (t.responder_moment_id = m.id and t.initiator_id = auth.uid()))
+        )
+      )
+  );
+$$;
 
-    if v_open is null then
-      -- No relationship to this moment at all.
-      return null;
-    end if;
-  end if;
-
-  v_path := case
-              when v_open then v_moment.original_path
-              else coalesce(v_moment.blurred_path, v_moment.original_path)
-            end;
-
-  -- NOTE: requires the `storage` schema's signing helper. On hosted Supabase
-  -- this is `storage.create_signed_url`; if unavailable, call the Storage REST
-  -- API from an Edge Function with the service role key instead.
-  return storage.create_signed_url('moments', v_path, p_expires_in);
-exception
-  when undefined_function then
-    -- Surface the path so the caller can sign it server-side rather than
-    -- silently handing back nothing.
-    raise notice 'storage.create_signed_url unavailable; returning raw path';
-    return v_path;
-end;
+-- The path the caller is allowed to sign for each moment, in one round trip.
+-- NULL means "nothing yet": a locked moment whose blurred rendition has not
+-- been generated is withheld entirely rather than leaking the original.
+create or replace function public.visible_moment_paths(p_moment_ids uuid[])
+returns table (moment_id uuid, path text)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select m.id,
+         case
+           when public.can_see_original(m.id) then m.original_path
+           when public.can_see_moment(m.id)   then m.blurred_path
+           else null
+         end
+  from public.moments m
+  where m.id = any (p_moment_ids);
 $$;
 
 -- ---------------------------------------------------------------------------

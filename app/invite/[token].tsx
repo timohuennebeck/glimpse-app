@@ -1,20 +1,17 @@
 import { StyleSheet, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import {
-  Avatar,
-  Button,
-  CameraIcon,
-  CloseIcon,
-  GlassButton,
-  LockedImage,
-  Screen,
-  Text,
-} from '@/shared/ui';
-import { colors, radius, spacing } from '@/shared/theme';
-import { t } from '@/shared/i18n';
+import { Avatar } from '@/shared/ui/avatar';
+import { Button } from '@/shared/ui/button';
+import { CameraIcon, CloseIcon } from '@/shared/ui/icons';
+import { GlassButton } from '@/shared/ui/glass-button';
+import { LockedImage } from '@/shared/ui/locked-image';
+import { Screen } from '@/shared/ui/screen';
+import { Text } from '@/shared/ui/text';
+import { colors } from '@/shared/theme/colors';
+import { radius, spacing } from '@/shared/theme/page-structure';
+import { t } from '@/shared/i18n/i18n';
 import { relativeTime } from '@/shared/lib/format';
 import { AVATARS, PHOTOS } from '@/shared/lib/fixtures';
-
 /**
  * Screen `E Einladung annehmen · Deeplink`.
  *

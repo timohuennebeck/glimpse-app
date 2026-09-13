@@ -1,5 +1,4 @@
-import type { Translations } from './de';
-
+import type { Translations } from '@/shared/i18n/locales/de';
 /**
  * English is the active locale. German is kept complete in `de.ts` — the launch
  * plan is still German-speaking circles first, so switching back is one line in
@@ -192,13 +191,6 @@ export const en: Translations = {
         footnote: 'Take a photo — your friends only see it once they send one back.',
         cta: 'Send first moment',
         skip: 'Look around first',
-      },
-      variantB: {
-        title: 'This is what\na trade looks like.',
-        subtitle: 'Three seconds and you will get it.',
-        caption: '“Frosted, camera, unlocked — that is all it is.”',
-        cta: 'Got it, let’s go',
-        skip: 'Skip',
       },
     },
   },

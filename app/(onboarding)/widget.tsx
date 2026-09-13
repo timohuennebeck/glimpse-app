@@ -1,8 +1,7 @@
 import { router } from 'expo-router';
-import { t } from '@/shared/i18n';
-import { OnboardingScreen } from '@/features/onboarding/components/OnboardingScreen';
-import { HomescreenPreview } from '@/features/widget/components/HomescreenPreview';
-
+import { t } from '@/shared/i18n/i18n';
+import { OnboardingScreen } from '@/features/onboarding/components/onboarding-screen';
+import { HomescreenPreview } from '@/features/widget/components/homescreen-preview';
 /**
  * Screen `07 Widget · 7 of 7`.
  *

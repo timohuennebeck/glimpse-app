@@ -2,19 +2,24 @@ import { useMemo } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
-import { Screen, SectionLabel, Text, GlassButton, FilterIcon } from '@/shared/ui';
-import { colors, radius, spacing } from '@/shared/theme';
-import { t } from '@/shared/i18n';
+import { Screen } from '@/shared/ui/screen';
+import { SectionLabel } from '@/shared/ui/section-label';
+import { Text } from '@/shared/ui/text';
+import { GlassButton } from '@/shared/ui/glass-button';
+import { FilterIcon } from '@/shared/ui/icons';
+import { colors } from '@/shared/theme/colors';
+import { radius, spacing } from '@/shared/theme/page-structure';
+import { t } from '@/shared/i18n/i18n';
 import { memberSince } from '@/shared/lib/format';
-import { useInbox, useComposer } from '@/features/moments';
-import { FeedHeader } from '@/features/feed/components/FeedHeader';
-import { StoryRail, StoryItem } from '@/features/feed/components/StoryRail';
-import { LockedMomentCard } from '@/features/feed/components/LockedMomentCard';
-import { EmptyState } from '@/features/feed/components/EmptyState';
+import { useInbox } from '@/features/moments/hooks/use-inbox';
+import { useComposer } from '@/features/moments/hooks/use-composer';
+import { FeedHeader } from '@/features/feed/components/feed-header';
+import { StoryRail, StoryItem } from '@/features/feed/components/story-rail';
+import { LockedMomentCard } from '@/features/feed/components/locked-moment-card';
+import { EmptyState } from '@/features/feed/components/empty-state';
 import { AVATARS, demoProfiles, DEMO_USER_ID } from '@/shared/lib/fixtures';
 import { TAB_BAR_CLEARANCE } from '@/features/navigation/clearance';
-import { CaptureButton } from '@/features/navigation/CaptureButton';
-
+import { CaptureButton } from '@/features/navigation/capture-button';
 /**
  * Screens `01 Feed` and `01c Feed · leer`.
  *

@@ -6,12 +6,17 @@ import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
-import { Button, GlassButton, CloseIcon, RetakeIcon, PencilIcon, Text } from '@/shared/ui';
-import { alpha, colors, fontFamily } from '@/shared/theme';
-import { t } from '@/shared/i18n';
-import { useComposer } from '@/features/moments';
+import { Button } from '@/shared/ui/button';
+import { GlassButton } from '@/shared/ui/glass-button';
+import { CloseIcon, RetakeIcon, PencilIcon } from '@/shared/ui/icons';
+import { Text } from '@/shared/ui/text';
+import { alpha, colors } from '@/shared/theme/colors';
+import { fontFamily } from '@/shared/theme/fonts';
+import { t } from '@/shared/i18n/i18n';
+import { useComposer } from '@/features/moments/hooks/use-composer';
+import { createMoment, respondToTrade } from '@/features/moments/data/moments-api';
+import { isSupabaseConfigured } from '@/shared/lib/supabase';
 import { PHOTOS } from '@/shared/lib/fixtures';
-
 /**
  * Screen `03b Senden · Bestätigen` — review the shot and add a caption before
  * choosing who sees it.
@@ -20,10 +25,39 @@ export default function ComposeScreen() {
   const composer = useComposer();
   const insets = useSafeAreaInsets();
   const [caption, setCaption] = useState(composer.caption);
+  const [busy, setBusy] = useState(false);
 
-  function next() {
+  /**
+   * Two exits. Answering a frosted moment is the unlock itself — the recipient
+   * is already known, so it skips recipient selection and calls
+   * `respond_to_trade`. Only a fresh moment goes on to choose who sees it.
+   */
+  async function next() {
     composer.set({ caption });
-    router.push('/recipients');
+    const tradeId = composer.replyToTradeId;
+
+    if (!tradeId) {
+      router.push('/recipients');
+      return;
+    }
+
+    setBusy(true);
+    try {
+      if (isSupabaseConfigured && composer.uri) {
+        const momentId = await createMoment({
+          localUri: composer.uri,
+          caption: caption || null,
+          facing: composer.facing,
+        });
+        await respondToTrade(tradeId, momentId);
+      }
+      composer.reset();
+      // Land on the now-open pair rather than back on the feed.
+      router.dismissAll();
+      router.replace(`/moment/${tradeId}`);
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
@@ -71,7 +105,13 @@ export default function ComposeScreen() {
                 multiline
               />
             </View>
-            <Button label={t('compose.continue')} variant="purple" size="xl" onPress={next} />
+            <Button
+              label={composer.replyToTradeId ? t('moment.lockedCta') : t('compose.continue')}
+              variant="purple"
+              size="xl"
+              onPress={next}
+              loading={busy}
+            />
           </View>
         </BlurView>
       </KeyboardAvoidingView>

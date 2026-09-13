@@ -1,10 +1,14 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { router } from 'expo-router';
-import { ProgressHeader, Screen, Button, Text } from '@/shared/ui';
-import { colors, fontFamily, radius, spacing } from '@/shared/theme';
-import { t, tList } from '@/shared/i18n';
-
+import { ProgressHeader } from '@/shared/ui/progress-header';
+import { Screen } from '@/shared/ui/screen';
+import { Button } from '@/shared/ui/button';
+import { Text } from '@/shared/ui/text';
+import { colors } from '@/shared/theme/colors';
+import { fontFamily } from '@/shared/theme/fonts';
+import { radius, spacing } from '@/shared/theme/page-structure';
+import { t, tList } from '@/shared/i18n/i18n';
 /**
  * Screen `01 Name · 1 of 7`.
  *

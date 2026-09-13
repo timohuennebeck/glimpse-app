@@ -1,7 +1,6 @@
 import { formatDistanceToNowStrict, isToday, isYesterday, format } from 'date-fns';
 import { de, enUS } from 'date-fns/locale';
-import { getLocale } from '@/shared/i18n';
-
+import { getLocale } from '@/shared/i18n/i18n';
 function dfnsLocale() {
   return getLocale().startsWith('de') ? de : enUS;
 }

@@ -2,11 +2,14 @@ import { StyleSheet, View } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import { Button, Screen, StarIcon, Text } from '@/shared/ui';
-import { colors, spacing } from '@/shared/theme';
-import { t } from '@/shared/i18n';
+import { Button } from '@/shared/ui/button';
+import { Screen } from '@/shared/ui/screen';
+import { StarIcon } from '@/shared/ui/icons';
+import { Text } from '@/shared/ui/text';
+import { colors } from '@/shared/theme/colors';
+import { spacing } from '@/shared/theme/page-structure';
+import { t } from '@/shared/i18n/i18n';
 import { ART } from '@/shared/lib/fixtures';
-
 /**
  * Screen `00 Welcome`.
  *

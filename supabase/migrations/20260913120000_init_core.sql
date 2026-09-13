@@ -81,8 +81,8 @@ create index friendships_addressee_idx on public.friendships (addressee_id, stat
 create table public.moments (
   id           uuid primary key default gen_random_uuid(),
   author_id    uuid not null references public.profiles(id) on delete cascade,
-  -- Object keys in the private `moments` bucket. Clients never build URLs;
-  -- they call public.visible_moment_url() which signs the right rendition.
+  -- Object keys in the private `moments` bucket. Which one a caller may sign
+  -- is decided by public.visible_moment_paths() and enforced by storage RLS.
   original_path text not null,
   blurred_path  text,
   caption      text check (char_length(caption) <= 280),

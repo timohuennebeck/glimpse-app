@@ -1,19 +1,15 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
-import { Button, CheckIcon, CloseIcon, GlassButton, Screen, Text } from '@/shared/ui';
-import { colors, radius, spacing } from '@/shared/theme';
-import { t } from '@/shared/i18n';
-import {
-  AppStoreChannelIcon,
-  FriendChannelIcon,
-  InstagramChannelIcon,
-  OtherChannelIcon,
-  SearchChannelIcon,
-  TiktokChannelIcon,
-  YoutubeChannelIcon,
-} from '@/features/onboarding/components/ChannelIcons';
-
+import { Button } from '@/shared/ui/button';
+import { CheckIcon, CloseIcon } from '@/shared/ui/icons';
+import { GlassButton } from '@/shared/ui/glass-button';
+import { Screen } from '@/shared/ui/screen';
+import { Text } from '@/shared/ui/text';
+import { colors } from '@/shared/theme/colors';
+import { radius, spacing } from '@/shared/theme/page-structure';
+import { t } from '@/shared/i18n/i18n';
+import { AppStoreChannelIcon, FriendChannelIcon, InstagramChannelIcon, OtherChannelIcon, SearchChannelIcon, TiktokChannelIcon, YoutubeChannelIcon } from '@/features/onboarding/components/channel-icons';
 /**
  * Screen `12 Where did you hear`.
  *
