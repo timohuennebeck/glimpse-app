@@ -191,7 +191,8 @@ const styles = StyleSheet.create({
   plans: { marginTop: 34, flexDirection: 'row', gap: 12 },
   plan: {
     flex: 1,
-    borderWidth: 1.6,
+    // Constant width so selecting a plan does not resize the card.
+    borderWidth: 2,
     borderColor: colors.border,
     borderRadius: radius.cardSm,
     backgroundColor: colors.white,
@@ -200,7 +201,7 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
     gap: 4,
   },
-  planSelected: { borderWidth: 2, borderColor: colors.purple, backgroundColor: colors.surfaceVioletTint },
+  planSelected: { borderColor: colors.purple, backgroundColor: colors.surfaceVioletTint },
   planBadge: {
     position: 'absolute',
     top: -13,

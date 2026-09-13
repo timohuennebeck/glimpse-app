@@ -31,29 +31,33 @@ export const radius = {
   sm: 8,
 } as const;
 
+/** Matches the SCALE applied to the type scale, so controls shrink with text. */
+const SCALE = 0.88;
+const px = (n: number) => Math.round(n * SCALE * 2) / 2;
+
 export const controlHeight = {
   /** Primary CTA heights seen across the mock. */
-  xl: 66,
-  lg: 62,
-  md: 58,
-  sm: 56,
-  xs: 52,
+  xl: px(66),
+  lg: px(62),
+  md: px(58),
+  sm: px(56),
+  xs: px(52),
   /** Search + filter fields. */
-  field: 54,
-  fieldSm: 48,
-  fieldXs: 44,
+  field: px(54),
+  fieldSm: px(48),
+  fieldXs: px(44),
 } as const;
 
 export const avatarSize = {
-  xl: 104,
-  lg: 76,
-  ring: 74,
-  md: 64,
-  row: 52,
-  rowSm: 46,
-  ringSm: 58,
-  chip: 40,
-  bubble: 30,
+  xl: Math.round(104 * 0.93),
+  lg: Math.round(76 * 0.93),
+  ring: Math.round(74 * 0.93),
+  md: Math.round(64 * 0.93),
+  row: Math.round(52 * 0.93),
+  rowSm: Math.round(46 * 0.93),
+  ringSm: Math.round(58 * 0.93),
+  chip: Math.round(40 * 0.93),
+  bubble: Math.round(30 * 0.93),
 } as const;
 
 /** Shadow presets, matched to the `box-shadow` values in the mock. */

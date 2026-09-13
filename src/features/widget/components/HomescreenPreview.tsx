@@ -18,15 +18,22 @@ type HomescreenPreviewProps = {
  * real widget is native code under `widgets/`.
  */
 export function HomescreenPreview({ size = 'small' }: HomescreenPreviewProps) {
-  const fillerIcons = [
-    { src: IOS_ICONS.weather, label: 'Wetter' },
-    { src: IOS_ICONS.clock, label: 'Uhr' },
-    { src: IOS_ICONS.calendar, label: 'Kalender' },
-    { src: IOS_ICONS.maps, label: 'Karten' },
-    { src: IOS_ICONS.mail, label: 'Mail' },
-    { src: IOS_ICONS.contacts, label: 'Kontakte' },
-    { src: IOS_ICONS.stock, label: 'Aktien' },
-  ].slice(0, size === 'small' ? 7 : 4);
+  // An iOS homescreen is a 4-column grid. Laying this out as one wrapping flex
+  // row put the 138px widget in the same flow as 58px icons, which is why the
+  // tiles collided with each other and with the dock. The grid is now explicit:
+  // the 2x2 widget occupies the left two columns of the first two rows.
+  const pairs = [
+    [IOS_ICONS.weather, 'Wetter'],
+    [IOS_ICONS.clock, 'Uhr'],
+    [IOS_ICONS.calendar, 'Kalender'],
+    [IOS_ICONS.maps, 'Karten'],
+  ] as const;
+  const lastRow = [
+    [IOS_ICONS.mail, 'Mail'],
+    [IOS_ICONS.contacts, 'Kontakte'],
+    [IOS_ICONS.stock, 'Aktien'],
+    [IOS_ICONS.photos, 'Fotos'],
+  ] as const;
 
   return (
     <LinearGradient
@@ -34,25 +41,39 @@ export function HomescreenPreview({ size = 'small' }: HomescreenPreviewProps) {
       locations={[0, 0.6, 1]}
       style={styles.phone}
     >
-      {/* Purple bloom behind the top-left of the grid. */}
       <View style={styles.bloom} pointerEvents="none">
         <LinearGradient
-          colors={['rgba(139,92,246,.38)', 'rgba(139,92,246,0)']}
+          colors={['rgba(139,92,246,.34)', 'rgba(139,92,246,.10)', 'rgba(139,92,246,0)']}
+          locations={[0, 0.55, 1]}
+          start={{ x: 0.15, y: 0 }}
+          end={{ x: 0.75, y: 1 }}
           style={StyleSheet.absoluteFill}
         />
       </View>
 
       <View style={styles.grid}>
-        {size === 'small' ? <SmallWidget /> : <LargeWidget />}
-
-        {fillerIcons.map((icon) => (
-          <View key={icon.label} style={styles.iconCell}>
-            <Image source={icon.src} style={styles.icon} contentFit="cover" />
-            <Text variant="captionXs" color="rgba(255,255,255,.92)" numberOfLines={1} style={styles.iconLabel}>
-              {icon.label}
-            </Text>
+        {size === 'small' ? (
+          <View style={styles.topRow}>
+            <SmallWidget />
+            {/* Two columns of two icons filling the rest of the first two rows. */}
+            <View style={styles.iconCol}>
+              <IconCell src={pairs[0][0]} label={pairs[0][1]} />
+              <IconCell src={pairs[2][0]} label={pairs[2][1]} />
+            </View>
+            <View style={styles.iconCol}>
+              <IconCell src={pairs[1][0]} label={pairs[1][1]} />
+              <IconCell src={pairs[3][0]} label={pairs[3][1]} />
+            </View>
           </View>
-        ))}
+        ) : (
+          <LargeWidget />
+        )}
+
+        <View style={styles.iconRow}>
+          {lastRow.map(([src, label]) => (
+            <IconCell key={label} src={src} label={label} />
+          ))}
+        </View>
       </View>
 
       <BlurView intensity={30} tint="dark" style={styles.dock}>
@@ -61,6 +82,17 @@ export function HomescreenPreview({ size = 'small' }: HomescreenPreviewProps) {
         ))}
       </BlurView>
     </LinearGradient>
+  );
+}
+
+function IconCell({ src, label }: { src: number; label: string }) {
+  return (
+    <View style={styles.iconCell}>
+      <Image source={src} style={styles.icon} contentFit="cover" />
+      <Text variant="captionXs" color="rgba(255,255,255,.92)" numberOfLines={1} style={styles.iconLabel}>
+        {label}
+      </Text>
+    </View>
   );
 }
 
@@ -144,17 +176,12 @@ function LargeWidget() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1, minWidth: 0 },
-  phone: { marginTop: 20, height: 386, borderRadius: radius.lg, overflow: 'hidden' },
-  bloom: { position: 'absolute', left: '-10%', top: 0, width: '80%', height: '45%' },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    paddingHorizontal: 20,
-    paddingTop: 18,
-    columnGap: 22,
-    rowGap: 14,
-    justifyContent: 'center',
-  },
+  phone: { marginTop: 20, height: 360, borderRadius: radius.lg, overflow: 'hidden' },
+  bloom: { position: 'absolute', left: 0, right: 0, top: 0, height: '55%' },
+  grid: { paddingHorizontal: 20, paddingTop: 18, gap: 14, alignItems: 'center' },
+  topRow: { flexDirection: 'row', gap: 22, alignItems: 'flex-start' },
+  iconCol: { gap: 14 },
+  iconRow: { flexDirection: 'row', gap: 22 },
   iconCell: { alignItems: 'center', gap: 5, width: 58 },
   icon: { width: 58, height: 58, borderRadius: 13 },
   iconLabel: { textShadowColor: 'rgba(0,0,0,.5)', textShadowRadius: 2 },

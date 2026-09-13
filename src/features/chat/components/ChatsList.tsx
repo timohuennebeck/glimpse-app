@@ -1,36 +1,24 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
-import {
-  Avatar,
-  CameraBadgeIcon,
-  GlassButton,
-  PlusIcon,
-  Screen,
-  SearchIcon,
-  SectionLabel,
-  Text,
-} from '@/shared/ui';
-import { colors, controlHeight, radius, spacing } from '@/shared/theme';
+import { Avatar, CameraBadgeIcon, SearchIcon, SectionLabel, Text } from '@/shared/ui';
+import { colors, controlHeight, radius } from '@/shared/theme';
 import { t } from '@/shared/i18n';
 import { threadTime } from '@/shared/lib/format';
 import { demoThreads, demoProfiles, DEMO_USER_ID } from '@/shared/lib/fixtures';
 
-/** Screen `08b Chats` — the thread list, backed by `public.v_threads`. */
-export default function ChatsScreen() {
+/**
+ * The conversation list, backed by `public.v_threads`.
+ *
+ * Lives in a component rather than a screen because it is shown inside the
+ * Friends tab — the positioning note says to keep messaging a small part of the
+ * app, not a destination of its own.
+ */
+export function ChatsList() {
   const unread = demoThreads.reduce((n, thread) => n + thread.unread_count, 0);
 
   return (
-    <Screen scroll bottomInset={spacing.contentBottom}>
-      <View style={styles.headerRow}>
-        <Text variant="screenTitle" color={colors.ink}>
-          {t('chat.title')}
-        </Text>
-        <GlassButton size={38} onPress={() => router.push('/(app)/friends/search')}>
-          <PlusIcon size={18} color={colors.purpleMuted} strokeWidth={2.4} />
-        </GlassButton>
-      </View>
-
+    <View>
       <View style={styles.search}>
         <SearchIcon size={16} color={colors.mutedCool} strokeWidth={1.8} />
         <Text variant="bodyXs" color={colors.placeholder}>
@@ -102,18 +90,12 @@ export default function ChatsScreen() {
           })}
         </View>
       </View>
-    </Screen>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    height: 40,
-  },
   search: {
     marginTop: 18,
     height: controlHeight.fieldXs,

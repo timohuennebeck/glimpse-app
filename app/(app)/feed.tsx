@@ -5,12 +5,14 @@ import { router } from 'expo-router';
 import { Screen, SectionLabel, Text, GlassButton, FilterIcon } from '@/shared/ui';
 import { colors, radius, spacing } from '@/shared/theme';
 import { t } from '@/shared/i18n';
+import { memberSince } from '@/shared/lib/format';
 import { useInbox, useComposer } from '@/features/moments';
 import { FeedHeader } from '@/features/feed/components/FeedHeader';
 import { StoryRail, StoryItem } from '@/features/feed/components/StoryRail';
 import { LockedMomentCard } from '@/features/feed/components/LockedMomentCard';
 import { EmptyState } from '@/features/feed/components/EmptyState';
 import { AVATARS, demoProfiles, DEMO_USER_ID } from '@/shared/lib/fixtures';
+import { TAB_BAR_CLEARANCE } from '@/features/navigation/clearance';
 
 /**
  * Screens `01 Feed` and `01c Feed · leer`.
@@ -45,12 +47,12 @@ export default function FeedScreen() {
   }
 
   return (
-    <Screen scroll bottomInset={spacing.contentBottom}>
+    <Screen scroll bottomInset={spacing.contentBottom + TAB_BAR_CLEARANCE}>
       <View style={styles.stack}>
         <FeedHeader
           avatar={AVATARS.self}
           name={demoProfiles[DEMO_USER_ID].display_name}
-          subtitle={demoProfiles[DEMO_USER_ID].tagline ?? ''}
+          subtitle={memberSince(demoProfiles[DEMO_USER_ID].created_at)}
           onPressAdd={() => router.push('/(app)/friends/search')}
           onPressAvatar={() => router.push('/(app)/friends')}
         />

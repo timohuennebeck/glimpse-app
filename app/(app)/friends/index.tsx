@@ -1,4 +1,5 @@
-import { StyleSheet, View } from 'react-native';
+import { useState } from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
 import {
   Button,
@@ -9,13 +10,15 @@ import {
   SectionLabel,
   Text,
 } from '@/shared/ui';
-import { colors, spacing, avatarSize } from '@/shared/theme';
+import { colors, spacing, avatarSize, radius } from '@/shared/theme';
 import { t } from '@/shared/i18n';
 import { relativeTime } from '@/shared/lib/format';
 import { PersonRow } from '@/features/friends/components/PersonRow';
 import { Pill } from '@/features/friends/components/Pill';
 import { StoryRail } from '@/features/feed/components/StoryRail';
-import { AVATARS, demoFriendRequests, demoSentRequests, DEMO_USER_ID, demoProfiles } from '@/shared/lib/fixtures';
+import { AVATARS, demoFriendRequests, demoSentRequests, DEMO_USER_ID } from '@/shared/lib/fixtures';
+import { ChatsList } from '@/features/chat/components/ChatsList';
+import { TAB_BAR_CLEARANCE } from '@/features/navigation/clearance';
 
 /**
  * Screen `08 Freunde` — the story rail, incoming requests, and outgoing requests
@@ -23,8 +26,10 @@ import { AVATARS, demoFriendRequests, demoSentRequests, DEMO_USER_ID, demoProfil
  * three angles (see docs/database.md §4).
  */
 export default function FriendsScreen() {
+  const [tab, setTab] = useState<'friends' | 'chats'>('friends');
+
   return (
-    <Screen scroll bottomInset={spacing.contentBottom}>
+    <Screen scroll bottomInset={spacing.contentBottom + TAB_BAR_CLEARANCE}>
       <View style={styles.headerRow}>
         <Text variant="screenTitle" color={colors.ink}>
           {t('friends.title')}
@@ -34,6 +39,28 @@ export default function FriendsScreen() {
         </GlassButton>
       </View>
 
+      <View style={styles.segment}>
+        {(['friends', 'chats'] as const).map((key) => (
+          <Pressable
+            key={key}
+            onPress={() => setTab(key)}
+            style={[styles.segmentItem, tab === key && styles.segmentItemActive]}
+          >
+            <Text
+              variant="bodyXs"
+              color={tab === key ? colors.purpleDeep : colors.mutedLilac}
+              style={styles.segmentLabel}
+            >
+              {t(key === 'friends' ? 'friends.tabFriends' : 'friends.tabChats')}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
+
+      {tab === 'chats' ? (
+        <ChatsList />
+      ) : (
+      <>
       <View style={styles.section}>
         <SectionLabel trailing={t('feed.storiesTrailing', { count: 2 })}>
           {t('friends.storiesLabel')}
@@ -88,6 +115,8 @@ export default function FriendsScreen() {
       <View style={styles.footer}>
         <Button label={t('friends.addCta')} onPress={() => router.push('/(app)/friends/search')} />
       </View>
+      </>
+      )}
     </Screen>
   );
 }
@@ -99,6 +128,22 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     height: 40,
   },
+  segment: {
+    marginTop: 16,
+    flexDirection: 'row',
+    backgroundColor: colors.surfaceLilac,
+    borderRadius: radius.pill,
+    padding: 4,
+    gap: 4,
+  },
+  segmentItem: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 8,
+    borderRadius: radius.pill,
+  },
+  segmentItemActive: { backgroundColor: colors.white },
+  segmentLabel: { fontWeight: '600' },
   section: { marginTop: 22, gap: 14 },
   list: { gap: 16 },
   footer: { marginTop: 'auto', paddingTop: 28 },

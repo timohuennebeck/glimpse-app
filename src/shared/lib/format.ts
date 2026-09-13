@@ -31,6 +31,13 @@ export function pairDate(iso: string): string {
     : format(new Date(iso), 'EEE d MMM', { locale });
 }
 
+/** "Tauscht seit September 2026" — when this person joined. */
+export function memberSince(iso: string): string {
+  const locale = dfnsLocale();
+  const when = format(new Date(iso), 'LLLL yyyy', { locale });
+  return locale === de ? `Tauscht seit ${when}` : `Trading since ${when}`;
+}
+
 /** Remaining time before a frosted moment unlocks itself. */
 export function timeUntilUnlock(iso: string | null): string | null {
   if (!iso) return null;

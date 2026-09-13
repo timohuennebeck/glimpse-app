@@ -5,6 +5,13 @@
  * "Ausstehend", "Empfänger wählen"…) are kept verbatim.
  */
 export const de = {
+  nav: {
+    feed: 'Feed',
+    camera: 'Kamera',
+    friends: 'Freunde',
+    profile: 'Profil',
+  },
+
   common: {
     close: 'Schließen',
     back: 'Zurück',
@@ -291,6 +298,8 @@ export const de = {
 
   friends: {
     title: 'Deine Leute',
+    tabFriends: 'Freunde',
+    tabChats: 'Chats',
     storiesLabel: 'Heute getauscht',
     requestsSection: 'Anfragen · %{count}',
     sentSection: 'Gesendet · %{count}',

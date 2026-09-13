@@ -64,7 +64,7 @@ const daysAgo = (n: number) => new Date(Date.now() - n * 86_400_000).toISOString
 export const DEMO_USER_ID = 'demo-self';
 
 export const demoProfiles: Record<string, Profile & { photo: number }> = {
-  [DEMO_USER_ID]: mkProfile(DEMO_USER_ID, 'Du', 'du', AVATARS.self, 'Tauscht seit August'),
+  [DEMO_USER_ID]: { ...mkProfile(DEMO_USER_ID, 'Du', 'du', AVATARS.self, ''), created_at: daysAgo(8) },
   mia: mkProfile('mia', 'Mia', 'miahartmann', AVATARS.mia, 'Wien · tauscht fast täglich'),
   ben: mkProfile('ben', 'Ben', 'benkr', AVATARS.ben, 'Hamburg'),
   lina: mkProfile('lina', 'Lina', 'linam', AVATARS.lina, 'Leipzig'),

@@ -49,19 +49,30 @@ export function GlassButton({
       style={({ pressed }) => [
         { width: size, height: size, borderRadius: radius, opacity: pressed ? 0.72 : 1 },
         // The system material carries its own shadow; ours would double it.
-        !onDark && !native && shadow.glass,
+        !onDark && shadow.glass,
         style,
       ]}
     >
       {native ? (
-        <GlassView
-          glassEffectStyle="regular"
-          colorScheme={onDark ? 'dark' : 'light'}
-          isInteractive
-          style={[styles.fill, { borderRadius: radius }]}
-        >
-          <View style={styles.center}>{children}</View>
-        </GlassView>
+        <>
+          <GlassView
+            glassEffectStyle="regular"
+            colorScheme={onDark ? 'dark' : 'light'}
+            isInteractive
+            style={[styles.fill, { borderRadius: radius }]}
+          >
+            <View style={styles.center}>{children}</View>
+          </GlassView>
+          {/* Glass refracts what is behind it, so over a flat white screen it
+              has nothing to work with and all but disappears. A hairline plus a
+              soft shadow give it an edge without fighting the material. */}
+          {!onDark ? (
+            <View
+              style={[StyleSheet.absoluteFill, styles.lightEdge, { borderRadius: radius }]}
+              pointerEvents="none"
+            />
+          ) : null}
+        </>
       ) : (
         <>
           <View style={[styles.clip, { borderRadius: radius }]}>
@@ -110,4 +121,5 @@ const styles = StyleSheet.create({
     borderBottomColor: 'rgba(139,92,246,.14)',
   },
   ring: { borderWidth: 1 },
+  lightEdge: { borderWidth: StyleSheet.hairlineWidth, borderColor: 'rgba(76,40,120,.16)' },
 });

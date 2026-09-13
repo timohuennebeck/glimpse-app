@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
+import Svg, { Circle, Defs, Pattern, Rect } from 'react-native-svg';
 import { PlusIcon, Text } from '@/shared/ui';
 import { colors, radius } from '@/shared/theme';
 import { t } from '@/shared/i18n';
@@ -32,7 +33,7 @@ export default function AvatarScreen() {
           {photo ? (
             <Image source={{ uri: photo }} style={styles.avatar} contentFit="cover" />
           ) : (
-            <View style={styles.avatarEmpty} />
+            <DottedDisc size={164} />
           )}
           <View style={styles.badge}>
             <PlusIcon size={20} color={colors.white} strokeWidth={2.6} />
@@ -44,6 +45,32 @@ export default function AvatarScreen() {
         </Text>
       </View>
     </OnboardingScreen>
+  );
+}
+
+/**
+ * The mock's empty avatar is a purple disc carrying a fine dot pattern:
+ *   background-image: radial-gradient(rgba(255,255,255,.55) 1.6px, transparent 1.7px)
+ *   background-size: 13px 13px
+ * React Native has no background-image, so it is drawn as an SVG pattern.
+ */
+function DottedDisc({ size }: { size: number }) {
+  const r = size / 2;
+  return (
+    <Svg width={size} height={size}>
+      <Defs>
+        <Pattern id="dots" width={13} height={13} patternUnits="userSpaceOnUse">
+          <Circle cx={6.5} cy={6.5} r={1.6} fill="rgba(255,255,255,.55)" />
+        </Pattern>
+      </Defs>
+      {/* Disc fill, then the dots on top of it. Radii are inset so the
+          outermost stroke sits inside the viewport instead of being clipped. */}
+      <Circle cx={r} cy={r} r={r - 8} fill={colors.purple} />
+      <Circle cx={r} cy={r} r={r - 8} fill="url(#dots)" />
+      {/* The mock's 4px surface-coloured gap ring, then a 2.5px purple outline. */}
+      <Circle cx={r} cy={r} r={r - 6} stroke={colors.surfaceVioletDeep} strokeWidth={4} fill="none" />
+      <Circle cx={r} cy={r} r={r - 2.75} stroke={colors.purple} strokeWidth={2.5} fill="none" />
+    </Svg>
   );
 }
 
@@ -59,14 +86,6 @@ const styles = StyleSheet.create({
   },
   avatarWrap: { width: 164, height: 164 },
   avatar: { width: 164, height: 164, borderRadius: 82 },
-  avatarEmpty: {
-    width: 164,
-    height: 164,
-    borderRadius: 82,
-    backgroundColor: colors.purple,
-    borderWidth: 4,
-    borderColor: colors.surfaceVioletDeep,
-  },
   badge: {
     position: 'absolute',
     right: 2,

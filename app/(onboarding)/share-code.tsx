@@ -52,7 +52,7 @@ export default function ShareCodeScreen() {
         <Text variant="eyebrowAccent" color={colors.purpleDeep}>
           {t('referral.share.codeLabel')}
         </Text>
-        <Text style={styles.code}>{code}</Text>
+        <Text style={styles.code}>{`${code} `}</Text>
         <Text variant="meta" color={colors.purpleMuted}>
           {t('referral.share.codeNote')}
         </Text>
@@ -115,9 +115,14 @@ const styles = StyleSheet.create({
   },
   code: {
     fontFamily: fontFamily.mono,
-    fontSize: 36,
+    fontSize: 32,
     fontWeight: '600',
-    letterSpacing: 36 * 0.18,
+    // Without an explicit lineHeight the mono face clips its own ascenders and
+    // descenders at this size; the trailing space balances the letterSpacing so
+    // the string stays optically centred.
+    lineHeight: 42,
+    letterSpacing: 32 * 0.16,
+    textAlign: 'center',
     color: colors.ink,
   },
   actions: { marginTop: 12, flexDirection: 'row', gap: 12 },
