@@ -1,9 +1,9 @@
-import { useSyncExternalStore, useCallback } from 'react';
+import { useSyncExternalStore } from 'react';
 /**
  * A ~30-line external store, so the composer draft can be shared across screens
  * without pulling in a state library for one use case.
  */
-export function create<T extends object>(initial: T, resetTo: T) {
+export function create<T extends object>(initial: T) {
   let state = initial;
   const listeners = new Set<() => void>();
 
@@ -17,12 +17,12 @@ export function create<T extends object>(initial: T, resetTo: T) {
     listeners.forEach((fn) => fn());
   };
   const reset = () => {
-    state = resetTo;
+    state = initial;
     listeners.forEach((fn) => fn());
   };
 
   return function useStore() {
     const value = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
-    return { ...value, set: useCallback(set, []), reset: useCallback(reset, []) };
+    return { ...value, set, reset };
   };
 }

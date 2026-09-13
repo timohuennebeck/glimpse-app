@@ -10,7 +10,6 @@ export const colors = {
   purpleInkAlt: '#6D34E0',
   purpleMuted: '#5B3FA8',
   purpleSoft: '#B692F6',
-  purpleRing: '#C4A9F7',
   purpleHalo: '#DCD0F7',
 
   // Text
@@ -22,6 +21,8 @@ export const colors = {
 
   // Secondary text
   muted: '#706B86',
+  /** Text on grey chips and muted pills. */
+  mutedChip: '#6F6A80',
   mutedViolet: '#7C73A0',
   mutedGrey: '#8E8B96',
   mutedLilac: '#8F88A6',
@@ -40,7 +41,6 @@ export const colors = {
   surfaceVioletTint: '#F8F4FF',
   surfaceVioletChip: '#EDE5FD',
   surfaceVioletWarm: '#F7F4FD',
-  surfaceVioletPale: '#F7F3FD',
   surfaceChipCool: '#F3F0F9',
 
   // Borders / hairlines
@@ -53,7 +53,6 @@ export const colors = {
   borderStrong: '#DCD4EA',
   borderInput: '#E4DEF0',
   borderChip: '#EDE7F9',
-  borderThumb: '#EDE7F7',
 
   // Dark screens (camera, moment viewer, widget preview)
   black: '#0B0B0E',
@@ -79,16 +78,10 @@ export const alpha = {
   glassBottom: 'rgba(238,231,255,.45)',
   glassBorder: 'rgba(255,255,255,.75)',
   onDarkFill: 'rgba(255,255,255,.16)',
-  onDarkFillSoft: 'rgba(255,255,255,.14)',
   onDarkBorder: 'rgba(255,255,255,.26)',
-  onDarkBorderSoft: 'rgba(255,255,255,.22)',
   onDarkText: 'rgba(255,255,255,.85)',
   onDarkTextSoft: 'rgba(255,255,255,.72)',
   onDarkTextFaint: 'rgba(255,255,255,.6)',
   lockScrim: 'rgba(255,255,255,.26)',
   lockBorder: 'rgba(255,255,255,.34)',
-  homeIndicatorDark: 'rgba(0,0,0,.32)',
-  homeIndicatorLight: 'rgba(255,255,255,.85)',
 } as const;
-
-export type ColorToken = keyof typeof colors;

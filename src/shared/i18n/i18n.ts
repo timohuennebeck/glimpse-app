@@ -4,8 +4,8 @@ import { en } from '@/shared/i18n/locales/en';
 export const i18n = new I18n({ de, en });
 
 /**
- * German is the launch locale, so it is both the default and the fallback: an
- * untranslated English key renders the German string rather than the raw key.
+ * Both locale files are typed as the complete `Translations`, so a missing key
+ * is a compile error and the fallback never fires in practice.
  */
 i18n.defaultLocale = 'en';
 i18n.enableFallback = true;

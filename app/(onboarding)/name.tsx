@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { router } from 'expo-router';
+import { CtaFooter } from '@/shared/ui/cta-footer';
 import { ProgressHeader } from '@/shared/ui/progress-header';
 import { Screen } from '@/shared/ui/screen';
-import { Button } from '@/shared/ui/button';
 import { Text } from '@/shared/ui/text';
 import { colors } from '@/shared/theme/colors';
 import { fontFamily } from '@/shared/theme/fonts';
@@ -16,24 +16,39 @@ import { t, tList } from '@/shared/i18n/i18n';
  * grey — where the grey chip is the live name field. Typing fills it in place,
  * which is why this screen does not use the shared OnboardingScreen headline.
  */
+/**
+ * The headline has two inline chips in the middle of a translated sentence.
+ * The locale string carries `%{friends}` and `%{placeholder}`; those are
+ * interpolated with sentinel markers, then the string is split on them so the
+ * chips render as real components at the right spot in either language.
+ */
+const FRIENDS_SLOT = '\u2063friends\u2063';
+const NAME_SLOT = '\u2063name\u2063';
+const SLOT_SPLIT = /(\u2063friends\u2063|\u2063name\u2063)/;
+
 export default function NameScreen() {
   const [name, setName] = useState('');
   const suggestions = tList<string>('onboarding.name.suggestions');
+  const headlineParts = t('onboarding.name.title', { friends: FRIENDS_SLOT, placeholder: NAME_SLOT }).split(SLOT_SPLIT);
 
   return (
     <Screen scroll bottomInset={spacing.contentBottom}>
       <ProgressHeader step={1} onClose={() => router.back()} />
 
       <Text variant="headlineChips" color={colors.ink} style={styles.headline}>
-        {'Wie sollen dich deine '}
-        <Text variant="headlineChips" color={colors.purpleInkAlt} style={styles.chipFilled}>
-          {` ${t('onboarding.name.friendsChip')} `}
-        </Text>
-        {' nennen, '}
-        <Text variant="headlineChips" color={colors.dashedIdle} style={styles.chipIdle}>
-          {` ${name || t('onboarding.name.placeholderChip')} `}
-        </Text>
-        {'?'}
+        {headlineParts.map((part, i) =>
+          part === FRIENDS_SLOT ? (
+            <Text key={i} variant="headlineChips" color={colors.purpleInkAlt} style={styles.chipFilled}>
+              {` ${t('onboarding.name.friendsChip')} `}
+            </Text>
+          ) : part === NAME_SLOT ? (
+            <Text key={i} variant="headlineChips" color={colors.dashedIdle} style={styles.chipIdle}>
+              {` ${name || t('onboarding.name.placeholderChip')} `}
+            </Text>
+          ) : (
+            part
+          ),
+        )}
       </Text>
 
       <Text variant="bodySm" color={colors.muted} style={styles.subtitle}>
@@ -55,20 +70,18 @@ export default function NameScreen() {
       <View style={styles.chips}>
         {suggestions.map((s) => (
           <Pressable key={s} style={styles.suggestion} onPress={() => setName(s.replace('+ ', ''))}>
-            <Text variant="bodyXs" color="#6F6A80">
+            <Text variant="bodyXs" color={colors.mutedChip}>
               {s}
             </Text>
           </Pressable>
         ))}
       </View>
 
-      <View style={styles.footer}>
-        <Button
-          label={t('onboarding.name.cta')}
-          onPress={() => router.push('/(onboarding)/camera')}
-          disabled={name.trim().length === 0}
-        />
-      </View>
+      <CtaFooter
+        label={t('onboarding.name.cta')}
+        onPress={() => router.push('/(onboarding)/camera')}
+        disabled={name.trim().length === 0}
+      />
     </Screen>
   );
 }
@@ -99,5 +112,4 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
   },
-  footer: { marginTop: 'auto', paddingTop: 28 },
 });

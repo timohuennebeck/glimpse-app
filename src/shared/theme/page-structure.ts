@@ -9,15 +9,12 @@ export const spacing = {
   /** Profile + sign-up screens use slightly different gutters. */
   gutterTight: 18,
   gutterWide: 22,
-  /** Distance from the top of the artboard to the first content row. */
-  contentTop: 72,
   /** Bottom padding above the home indicator on scrollable screens. */
   contentBottom: 40,
 } as const;
 
 export const radius = {
   pill: 999,
-  xl: 28,
   lg: 26,
   card: 24,
   cardSm: 22,
@@ -26,7 +23,6 @@ export const radius = {
   thumbSm: 18,
   chip: 16,
   tile: 12,
-  sm: 8,
 } as const;
 
 /** Matches the SCALE applied to the type scale, so controls shrink with text. */
@@ -47,15 +43,9 @@ export const controlHeight = {
 } as const;
 
 export const avatarSize = {
-  xl: Math.round(104 * 0.93),
-  lg: Math.round(76 * 0.93),
   ring: Math.round(74 * 0.93),
-  md: Math.round(64 * 0.93),
   row: Math.round(52 * 0.93),
-  rowSm: Math.round(46 * 0.93),
   ringSm: Math.round(58 * 0.93),
-  chip: Math.round(40 * 0.93),
-  bubble: Math.round(30 * 0.93),
 } as const;
 
 /** Shadow presets, matched to the `box-shadow` values in the mock. */

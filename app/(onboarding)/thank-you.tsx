@@ -3,12 +3,11 @@ import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { Button } from '@/shared/ui/button';
-import { CloseIcon } from '@/shared/ui/icons';
-import { GlassButton } from '@/shared/ui/glass-button';
+import { CloseRow } from '@/shared/ui/close-row';
 import { Screen } from '@/shared/ui/screen';
 import { Text } from '@/shared/ui/text';
 import { colors } from '@/shared/theme/colors';
-import { radius, spacing } from '@/shared/theme/page-structure';
+import { spacing } from '@/shared/theme/page-structure';
 import { t } from '@/shared/i18n/i18n';
 import { ART } from '@/shared/lib/fixtures';
 /**
@@ -19,22 +18,15 @@ import { ART } from '@/shared/lib/fixtures';
  * users can trip over.
  */
 export default function ThankYouScreen() {
-  const copy = 'onboarding.thankYou.variantA';
-
   return (
     <Screen scroll bottomInset={spacing.contentBottom}>
-      <View style={styles.topRow}>
-        <GlassButton size={32} onPress={() => router.replace('/(app)/feed')}>
-          <CloseIcon size={11} />
-        </GlassButton>
-
-      </View>
+      <CloseRow style={styles.topRow} onPress={() => router.replace('/(app)/feed')} />
 
       <Text variant="display" color={colors.ink} center style={styles.title}>
-        {t(`${copy}.title`)}
+        {t('onboarding.thankYou.variantA.title')}
       </Text>
       <Text variant="bodyMd" color={colors.purpleMuted} center style={styles.subtitle}>
-        {t(`${copy}.subtitle`)}
+        {t('onboarding.thankYou.variantA.subtitle')}
       </Text>
 
       <View style={styles.stage}>
@@ -50,14 +42,14 @@ export default function ThankYouScreen() {
       </Text>
 
       <View style={styles.footer}>
-        <Button label={t(`${copy}.cta`)} onPress={() => router.replace('/camera')} />
+        <Button label={t('onboarding.thankYou.variantA.cta')} onPress={() => router.replace('/camera')} />
         <Text
           variant="buttonSm"
           color={colors.inkSoft}
           center
           onPress={() => router.replace('/(app)/feed')}
         >
-          {t(`${copy}.skip`)}
+          {t('onboarding.thankYou.variantA.skip')}
         </Text>
       </View>
     </Screen>
@@ -65,12 +57,7 @@ export default function ThankYouScreen() {
 }
 
 const styles = StyleSheet.create({
-  topRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    height: 36,
-  },
+  topRow: { height: 36 },
   title: { marginTop: 40 },
   subtitle: { marginTop: 12 },
   stage: { marginTop: 34, height: 280, alignItems: 'center', justifyContent: 'center' },

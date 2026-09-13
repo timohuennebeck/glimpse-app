@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { Pressable, StyleSheet, View, ViewStyle } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
@@ -11,7 +11,6 @@ interface GlassButtonProps {
   children: ReactNode;
   /** Frosted-on-photo variant used by the camera and moment viewer. */
   onDark?: boolean;
-  style?: ViewStyle;
   accessibilityLabel?: string;
 }
 
@@ -34,7 +33,6 @@ export function GlassButton({
   onPress,
   children,
   onDark = false,
-  style,
   accessibilityLabel,
 }: GlassButtonProps) {
   const radius = size / 2;
@@ -50,7 +48,6 @@ export function GlassButton({
         { width: size, height: size, borderRadius: radius, opacity: pressed ? 0.72 : 1 },
         // The system material carries its own shadow; ours would double it.
         !onDark && shadow.glass,
-        style,
       ]}
     >
       {native ? (
@@ -59,7 +56,7 @@ export function GlassButton({
             glassEffectStyle="regular"
             colorScheme={onDark ? 'dark' : 'light'}
             isInteractive
-            style={[styles.fill, { borderRadius: radius }]}
+            style={[styles.clip, { borderRadius: radius }]}
           >
             <View style={styles.center}>{children}</View>
           </GlassView>
@@ -110,7 +107,6 @@ export function GlassButton({
 }
 
 const styles = StyleSheet.create({
-  fill: { flex: 1, overflow: 'hidden' },
   clip: { flex: 1, overflow: 'hidden' },
   center: { ...StyleSheet.absoluteFill, alignItems: 'center', justifyContent: 'center' },
   innerEdges: {

@@ -10,14 +10,10 @@ import type { InboxRow, Message, PairRow, Profile, ThreadRow } from '@/shared/li
 export const AVATARS = {
   self: require('../../../assets/images/av-self.png'),
   mia: require('../../../assets/images/av-mia.png'),
-  miaLarge: require('../../../assets/images/mia-avatar-lg.png'),
-  miaProfile: require('../../../assets/images/p-big-avatar.png'),
   ben: require('../../../assets/images/av-ben.png'),
   lina: require('../../../assets/images/av-lina.png'),
   noah: require('../../../assets/images/c-av-noah.png'),
   alex: require('../../../assets/images/alex-avatar.png'),
-  contactMia: require('../../../assets/images/c-av-mia.png'),
-  contactLina: require('../../../assets/images/c-av-lina.png'),
 } as const;
 
 export const PHOTOS = {
@@ -29,7 +25,6 @@ export const PHOTOS = {
   galFlowers: require('../../../assets/images/gal-flowers.png'),
   viewfinder: require('../../../assets/images/viewfinder.png'),
   widgetCard: require('../../../assets/images/on8-widget-card.png'),
-  videoStill: require('../../../assets/images/thankyou-video-still.png'),
 } as const;
 
 export const ART = {
@@ -70,6 +65,9 @@ export const demoProfiles: Record<string, Profile & { photo: number }> = {
   noah: mkProfile('noah', 'Noah', 'noah.w', AVATARS.noah, 'Zurich'),
   alex: mkProfile('alex', 'Alex', 'alexr', AVATARS.alex, 'Berlin'),
 };
+
+/** Everyone except you — the pool the friend lists and recipient pickers draw from. */
+export const demoOthers = Object.values(demoProfiles).filter((p) => p.id !== DEMO_USER_ID);
 
 function mkProfile(id: string, name: string, username: string, photo: number, tagline: string) {
   return {
@@ -201,6 +199,8 @@ export const demoThreads: Array<ThreadRow & { photo?: number }> = [
     unread_count: 0,
   },
 ];
+
+export const demoUnreadCount = demoThreads.reduce((n, thread) => n + thread.unread_count, 0);
 
 export const demoMessages: Array<Message & { photo?: number }> = [
   {

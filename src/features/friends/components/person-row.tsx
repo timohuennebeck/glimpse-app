@@ -18,8 +18,6 @@ export interface PersonRowProps {
   onPress?: () => void;
   /** Optional leading icon rendered inline before the subtitle. */
   subtitleIcon?: ReactNode;
-  /** Ring treatment on the avatar; friend lists use the lilac halo. */
-  ring?: 'none' | 'halo';
 }
 
 /**
@@ -36,11 +34,10 @@ export function PersonRow({
   size = avatarSize.row,
   onPress,
   subtitleIcon,
-  ring = 'halo',
 }: PersonRowProps) {
   return (
     <Pressable style={styles.row} onPress={onPress} disabled={!onPress}>
-      <Avatar source={avatar} size={size} dimmed={dimmed} ring={ring} />
+      <Avatar source={avatar} size={size} dimmed={dimmed} ring="halo" />
       <View style={styles.text}>
         <View style={styles.nameRow}>
           <Text variant="rowTitleSm" color={colors.ink} numberOfLines={1}>

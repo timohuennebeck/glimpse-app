@@ -1,4 +1,4 @@
-import type { InboxRow, PairRow, TradeStatus } from '@/shared/lib/database.interfaces';
+import type { TradeStatus } from '@/shared/lib/database.interfaces';
 /**
  * A received moment as the UI thinks of it: a photo plus a lock.
  * `photo` is the resolved image source — a remote signed URL, or a bundled
@@ -23,9 +23,19 @@ export interface InboxMoment {
 export interface MomentPair {
   tradeId: string;
   date: string;
+  leftMomentId: string;
+  rightMomentId: string;
   left: string | number;
   right: string | number;
   /** True when this is your own outgoing half still waiting on a reply. */
   locked: boolean;
 }
 
+
+/** What the full-screen photo viewer needs, resolved for any moment id. */
+export interface MomentPhoto {
+  photo: string | number;
+  fromName: string;
+  fromAvatar: string | number | null;
+  capturedAt: string;
+}

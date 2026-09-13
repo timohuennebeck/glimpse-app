@@ -1,15 +1,25 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
-import { Button } from '@/shared/ui/button';
-import { CheckIcon, CloseIcon } from '@/shared/ui/icons';
-import { GlassButton } from '@/shared/ui/glass-button';
+import { CheckCircle } from '@/shared/ui/check-circle';
+import { CloseRow } from '@/shared/ui/close-row';
+import { CtaFooter } from '@/shared/ui/cta-footer';
 import { Screen } from '@/shared/ui/screen';
 import { Text } from '@/shared/ui/text';
 import { colors } from '@/shared/theme/colors';
 import { radius, spacing } from '@/shared/theme/page-structure';
 import { t } from '@/shared/i18n/i18n';
 import { AppStoreChannelIcon, FriendChannelIcon, InstagramChannelIcon, OtherChannelIcon, SearchChannelIcon, TiktokChannelIcon, YoutubeChannelIcon } from '@/features/onboarding/components/channel-icons';
+const OPTIONS = [
+  { key: 'friend', icon: <FriendChannelIcon /> },
+  { key: 'instagram', icon: <InstagramChannelIcon /> },
+  { key: 'tiktok', icon: <TiktokChannelIcon /> },
+  { key: 'appStore', icon: <AppStoreChannelIcon /> },
+  { key: 'youtube', icon: <YoutubeChannelIcon /> },
+  { key: 'search', icon: <SearchChannelIcon /> },
+  { key: 'other', icon: <OtherChannelIcon /> },
+];
+
 /**
  * Screen `12 Where did you hear`.
  *
@@ -20,23 +30,9 @@ import { AppStoreChannelIcon, FriendChannelIcon, InstagramChannelIcon, OtherChan
 export default function HeardAboutScreen() {
   const [choice, setChoice] = useState<string | null>('tiktok');
 
-  const options = [
-    { key: 'friend', icon: <FriendChannelIcon /> },
-    { key: 'instagram', icon: <InstagramChannelIcon /> },
-    { key: 'tiktok', icon: <TiktokChannelIcon /> },
-    { key: 'appStore', icon: <AppStoreChannelIcon /> },
-    { key: 'youtube', icon: <YoutubeChannelIcon /> },
-    { key: 'search', icon: <SearchChannelIcon /> },
-    { key: 'other', icon: <OtherChannelIcon /> },
-  ];
-
   return (
     <Screen scroll bottomInset={spacing.contentBottom}>
-      <View style={styles.topRow}>
-        <GlassButton size={32} onPress={() => router.back()}>
-          <CloseIcon size={11} />
-        </GlassButton>
-      </View>
+      <CloseRow onPress={() => router.back()} />
 
       <Text variant="display" color={colors.ink} style={styles.title}>
         {t('onboarding.heardAbout.title')}
@@ -46,7 +42,7 @@ export default function HeardAboutScreen() {
       </Text>
 
       <View style={styles.list}>
-        {options.map((option) => {
+        {OPTIONS.map((option) => {
           const selected = choice === option.key;
           return (
             <Pressable
@@ -64,35 +60,24 @@ export default function HeardAboutScreen() {
               >
                 {t(`onboarding.heardAbout.options.${option.key}`)}
               </Text>
-              <View style={[styles.radio, selected && styles.radioOn]}>
-                {selected ? <CheckIcon size={12} strokeWidth={2.6} /> : null}
-              </View>
+              <CheckCircle checked={selected} />
             </Pressable>
           );
         })}
       </View>
 
-      <View style={styles.footer}>
-        <Button
-          label={t('onboarding.heardAbout.cta')}
-          disabled={!choice}
-          onPress={() => router.replace('/(onboarding)/thank-you')}
-        />
-        <Text
-          variant="buttonSm"
-          color={colors.inkSoft}
-          center
-          onPress={() => router.replace('/(onboarding)/thank-you')}
-        >
-          {t('onboarding.heardAbout.skip')}
-        </Text>
-      </View>
+      <CtaFooter
+        label={t('onboarding.heardAbout.cta')}
+        disabled={!choice}
+        onPress={() => router.replace('/(onboarding)/thank-you')}
+        secondary={t('onboarding.heardAbout.skip')}
+        onSecondary={() => router.replace('/(onboarding)/thank-you')}
+      />
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  topRow: { flexDirection: 'row', alignItems: 'center', height: 32 },
   title: { marginTop: 26 },
   subtitle: { marginTop: 10 },
   list: { marginTop: 22, gap: 8 },
@@ -121,15 +106,4 @@ const styles = StyleSheet.create({
   },
   label: { flex: 1, fontWeight: '500' },
   labelSelected: { fontWeight: '600' },
-  radio: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    borderWidth: 1.8,
-    borderColor: colors.swatchGrey,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  radioOn: { backgroundColor: colors.purpleDeep, borderColor: colors.purpleDeep },
-  footer: { marginTop: 'auto', paddingTop: 28, gap: 22 },
 });

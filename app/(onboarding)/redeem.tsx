@@ -2,8 +2,7 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { router } from 'expo-router';
 import { Button } from '@/shared/ui/button';
-import { CloseIcon } from '@/shared/ui/icons';
-import { GlassButton } from '@/shared/ui/glass-button';
+import { CloseRow } from '@/shared/ui/close-row';
 import { Screen } from '@/shared/ui/screen';
 import { Text } from '@/shared/ui/text';
 import { colors } from '@/shared/theme/colors';
@@ -24,11 +23,7 @@ export default function RedeemScreen() {
 
   return (
     <Screen scroll bottomInset={spacing.contentBottom}>
-      <View style={styles.topRow}>
-        <GlassButton size={32} onPress={() => router.back()}>
-          <CloseIcon size={11} />
-        </GlassButton>
-      </View>
+      <CloseRow onPress={() => router.back()} />
 
       <Text variant="eyebrowAccent" color={colors.purpleDeep} style={styles.eyebrow}>
         {t('referral.redeem.eyebrow')}
@@ -86,7 +81,6 @@ export default function RedeemScreen() {
 }
 
 const styles = StyleSheet.create({
-  topRow: { flexDirection: 'row', alignItems: 'center', height: 32 },
   eyebrow: { marginTop: 36 },
   title: { marginTop: 6 },
   subtitle: { marginTop: 14 },

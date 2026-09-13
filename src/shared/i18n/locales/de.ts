@@ -7,7 +7,6 @@
 export const de = {
   nav: {
     feed: 'Feed',
-    camera: 'Kamera',
     friends: 'Freunde',
     profile: 'Profil',
   },
@@ -16,14 +15,7 @@ export const de = {
     close: 'Schließen',
     back: 'Zurück',
     next: 'Weiter',
-    skip: 'Überspringen',
-    continue: 'Fortfahren',
-    cancel: 'Abbrechen',
-    done: 'Fertig',
-    retry: 'Nochmal versuchen',
-    or: 'oder',
     you: 'Du',
-    loading: 'Einen Moment …',
   },
 
   onboarding: {
@@ -207,7 +199,6 @@ export const de = {
     },
     cta: 'Kostenlos testen',
     restore: 'Käufe wiederherstellen',
-    skip: 'Ohne Plus weiter',
   },
 
   referral: {
@@ -217,7 +208,6 @@ export const de = {
       subtitle: 'Codes von Partnern und Freunden schalten drei Monate Glimpse Plus frei.',
       cta: 'Code einlösen',
       note: 'Kein Code? Du kannst Glimpse\nauch ohne einen nutzen.',
-      invalid: 'Diesen Code kennen wir nicht.',
     },
     share: {
       eyebrow: 'Danke dir',
@@ -239,7 +229,6 @@ export const de = {
     storiesLabel: 'Deine Leute',
     storiesTrailing: '%{count} offen',
     addFriend: 'einladen',
-    waitingTitle: 'Wartet auf dich',
     momentsTitle: 'Eure Momente',
     lockedBadge: 'Neu',
     lockedCta: 'Tauschen zum Ansehen',
@@ -259,7 +248,6 @@ export const de = {
     shutterLabel: 'Auslösen',
     permissionTitle: 'Kamera nicht erlaubt',
     permissionBody: 'Ohne Kamera kannst du nichts zurücktauschen.',
-    permissionCta: 'In den Einstellungen erlauben',
   },
 
   compose: {
@@ -275,18 +263,14 @@ export const de = {
     sendTo: 'An %{name} senden',
     sendToMany: 'An %{count} senden',
     sendNone: 'Wähle mindestens eine Person',
-    sending: 'Wird gesendet …',
   },
 
   moment: {
-    from: '%{name}',
-    metaSent: 'vor %{time} · %{place}',
     lockedTitle: 'Erst tauschen,\ndann ansehen.',
     lockedBody: 'Schick %{name} einen Moment zurück und ihr seht beide Fotos gleichzeitig.',
     lockedCta: 'Moment zurückschicken',
     replyPlaceholder: 'Antworten …',
     autoUnlock: 'Entsperrt sich in %{time}',
-    savedToGallery: 'In der Galerie gespeichert',
   },
 
   friends: {
@@ -296,14 +280,10 @@ export const de = {
     storiesLabel: 'Heute getauscht',
     requestsSection: 'Anfragen · %{count}',
     sentSection: 'Gesendet · %{count}',
-    friendsSection: 'Freunde · %{count}',
     accept: 'Annehmen',
-    decline: 'Ablehnen',
     pending: 'Ausstehend',
     sentAgo: 'vor %{time} gesendet',
-    sentYesterday: 'gestern gesendet',
     addCta: 'Weitere einladen',
-    capReached: 'Glimpse ist für deine engsten Leute — mehr als %{count} gehen nicht.',
     search: {
       title: 'Freund hinzufügen',
       placeholder: '@nutzername',
@@ -322,7 +302,6 @@ export const de = {
   },
 
   chat: {
-    title: 'Nachrichten',
     searchPlaceholder: 'Suchen …',
     unreadSection: 'Neu',
     unreadTrailing: '%{count} neu',
@@ -330,7 +309,6 @@ export const de = {
     sentPhoto: 'Foto',
     inputPlaceholder: 'Nachricht …',
     online: 'Gerade aktiv',
-    lastSeen: 'zuletzt %{time}',
     dayToday: 'Heute',
   },
 
@@ -338,24 +316,17 @@ export const de = {
     momentsTitle: 'Eure Momente',
     tradeCta: 'Moment senden',
     pairsEmpty: 'Ihr habt noch nichts getauscht.',
-    friendSince: 'befreundet seit %{date}',
   },
 
   invite: {
     title: '%{name} hat dir\neinen Moment geschickt',
     body: 'Du siehst ihn, sobald du einen zurückschickst. So funktioniert Glimpse.',
-    momentMeta: 'vor %{time}',
     cta: 'Moment zurückschicken',
     secondary: 'Erst mal ansehen, was Glimpse ist',
   },
 
   errors: {
     generic: 'Da ist etwas schiefgelaufen.',
-    offline: 'Keine Verbindung.',
-    notFriends: 'Ihr seid noch keine Freunde.',
-    alreadyAnswered: 'Dieser Tausch ist schon abgeschlossen.',
-    friendCap: 'Deine Freundesliste ist voll.',
-    supabaseMissing: 'Noch keine Datenbank verbunden — du siehst Beispieldaten.',
   },
 };
 

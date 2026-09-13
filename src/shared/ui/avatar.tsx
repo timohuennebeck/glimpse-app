@@ -20,9 +20,9 @@ export function Avatar({ source, size = 52, ring = 'none', dimmed = false, style
   const img = typeof source === 'string' ? { uri: source } : source;
 
   if (ring === 'active' || ring === 'idle') {
-    // Mock: a coloured disc with 2.4px padding, and the photo carries a white border.
-    const pad = size * 0.041;
-    const inner = size * 0.041;
+    // Mock: a coloured disc with 2.4px padding, and the photo carries a white
+    // border of the same thickness.
+    const ringWidth = size * 0.041;
     return (
       <View
         style={[
@@ -30,7 +30,7 @@ export function Avatar({ source, size = 52, ring = 'none', dimmed = false, style
             width: size,
             height: size,
             borderRadius: size / 2,
-            padding: pad,
+            padding: ringWidth,
             backgroundColor: ring === 'active' ? colors.purple : colors.avatarRingIdle,
           },
           style,
@@ -42,7 +42,7 @@ export function Avatar({ source, size = 52, ring = 'none', dimmed = false, style
             width: '100%',
             height: '100%',
             borderRadius: size / 2,
-            borderWidth: inner,
+            borderWidth: ringWidth,
             borderColor: colors.white,
             opacity: dimmed ? 0.55 : 1,
           }}

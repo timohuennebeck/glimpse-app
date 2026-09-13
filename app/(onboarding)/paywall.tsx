@@ -1,16 +1,16 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Image } from 'expo-image';
-import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { Button } from '@/shared/ui/button';
-import { CheckIcon, CloseIcon } from '@/shared/ui/icons';
-import { GlassButton } from '@/shared/ui/glass-button';
+import { CheckCircle } from '@/shared/ui/check-circle';
+import { CloseRow } from '@/shared/ui/close-row';
 import { Screen } from '@/shared/ui/screen';
 import { Text } from '@/shared/ui/text';
 import { colors } from '@/shared/theme/colors';
 import { radius, spacing } from '@/shared/theme/page-structure';
 import { t, tList } from '@/shared/i18n/i18n';
+import { BloomBackdrop } from '@/features/onboarding/components/bloom-backdrop';
 import { ART } from '@/shared/lib/fixtures';
 type Plan = 'monthly' | 'yearly';
 
@@ -32,23 +32,8 @@ export default function PaywallScreen() {
   const benefits = tList<string>('paywall.benefits');
 
   return (
-    <Screen
-      scroll
-      bottomInset={spacing.contentBottom}
-      background={colors.white}
-      backdrop={
-        <LinearGradient
-          colors={['rgba(180,140,255,.32)', 'rgba(180,140,255,0)']}
-          style={styles.bloom}
-          pointerEvents="none"
-        />
-      }
-    >
-      <View style={styles.topRow}>
-        <GlassButton size={32} onPress={() => router.push('/(onboarding)/heard-about')}>
-          <CloseIcon size={11} />
-        </GlassButton>
-      </View>
+    <Screen scroll bottomInset={spacing.contentBottom} backdrop={<BloomBackdrop />}>
+      <CloseRow onPress={() => router.push('/(onboarding)/heard-about')} />
 
       <Image source={ART.mascot} style={styles.mascot} contentFit="contain" />
 
@@ -62,9 +47,7 @@ export default function PaywallScreen() {
       <View style={styles.benefits}>
         {benefits.map((benefit) => (
           <View key={benefit} style={styles.benefitRow}>
-            <View style={styles.tick}>
-              <CheckIcon size={12} strokeWidth={2.6} />
-            </View>
+            <CheckCircle checked size={28} />
             <Text variant="body" color={colors.inkBody} style={styles.flex}>
               {benefit}
             </Text>
@@ -134,21 +117,16 @@ export default function PaywallScreen() {
   );
 }
 
-function PlanCard({
-  selected,
-  onPress,
-  label,
-  price,
-  note,
-  badge,
-}: {
+interface PlanCardProps {
   selected: boolean;
   onPress: () => void;
   label: string;
   price: string;
   note: string;
   badge?: string;
-}) {
+}
+
+function PlanCard({ selected, onPress, label, price, note, badge }: PlanCardProps) {
   return (
     <Pressable style={[styles.plan, selected && styles.planSelected]} onPress={onPress}>
       {badge ? (
@@ -168,30 +146,18 @@ function PlanCard({
       <Text variant="meta" color={colors.purpleMuted}>
         {note}
       </Text>
-      <View style={[styles.radio, selected && styles.radioOn]}>
-        {selected ? <CheckIcon size={12} strokeWidth={2.6} /> : null}
-      </View>
+      <CheckCircle checked={selected} size={28} style={styles.radio} />
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  bloom: { position: 'absolute', top: 0, left: 0, right: 0, height: 320 },
-  topRow: { flexDirection: 'row', alignItems: 'center', height: 32 },
   mascot: { width: 150, height: 150, alignSelf: 'center', marginTop: -6 },
   eyebrow: { marginTop: 14 },
   title: { marginTop: 6 },
   benefits: { marginTop: 22, gap: 16 },
   benefitRow: { flexDirection: 'row', alignItems: 'center', gap: 14 },
-  tick: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: colors.purpleDeep,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   plans: { marginTop: 34, flexDirection: 'row', gap: 12 },
   plan: {
     flex: 1,
@@ -217,17 +183,7 @@ const styles = StyleSheet.create({
   },
   planBadgeText: { fontWeight: '600' },
   planPrice: { marginTop: 4 },
-  radio: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    borderWidth: 1.8,
-    borderColor: colors.swatchGrey,
-    marginTop: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  radioOn: { backgroundColor: colors.purpleDeep, borderColor: colors.purpleDeep },
+  radio: { marginTop: 14 },
   trialRow: {
     marginTop: 12,
     borderRadius: radius.cardSm,

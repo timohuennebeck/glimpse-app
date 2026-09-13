@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
-import Svg, { Circle, Defs, Pattern, Rect } from 'react-native-svg';
+import Svg, { Circle, Defs, Pattern } from 'react-native-svg';
 import { PlusIcon } from '@/shared/ui/icons';
 import { Text } from '@/shared/ui/text';
 import { colors } from '@/shared/theme/colors';

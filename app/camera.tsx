@@ -1,9 +1,8 @@
 import { useRef, useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { CameraView, CameraType, FlashMode, useCameraPermissions } from 'expo-camera';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import * as Haptics from 'expo-haptics';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from '@/shared/ui/button';
@@ -13,9 +12,11 @@ import { CloseIcon, FlipCameraIcon, FlashIcon } from '@/shared/ui/icons';
 import { alpha, colors } from '@/shared/theme/colors';
 import { t } from '@/shared/i18n/i18n';
 import { useComposer } from '@/features/moments/hooks/use-composer';
+import { useCapture } from '@/features/camera/hooks/use-capture';
+import { ShutterButton } from '@/features/camera/components/shutter-button';
 /**
- * Screens `02 Kamera` and `02b First glimpse` — the same viewfinder; `02b` is
- * simply the first time you reach it during onboarding.
+ * Screen `02 Kamera` — the viewfinder for a real trade. (The onboarding
+ * practice shot, `02b`, is its own screen: `(onboarding)/first-glimpse.tsx`.)
  *
  * One shot, no retake from here: the mock has no gallery picker, matching the
  * positioning note's "one shot, no retake, no camera roll upload".
@@ -24,25 +25,14 @@ export default function CameraScreen() {
   const [permission, requestPermission] = useCameraPermissions();
   const [facing, setFacing] = useState<CameraType>('back');
   const [flash, setFlash] = useState<FlashMode>('off');
-  const [busy, setBusy] = useState(false);
   const cameraRef = useRef<CameraView>(null);
   const composer = useComposer();
   const insets = useSafeAreaInsets();
 
-  async function capture() {
-    if (busy || !cameraRef.current) return;
-    setBusy(true);
-    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    try {
-      const photo = await cameraRef.current.takePictureAsync({ quality: 0.85, skipProcessing: true });
-      if (photo?.uri) {
-        composer.set({ uri: photo.uri, facing: facing === 'front' ? 'front' : 'back' });
-        router.push('/compose');
-      }
-    } finally {
-      setBusy(false);
-    }
-  }
+  const capture = useCapture(cameraRef, (uri) => {
+    composer.set({ uri, facing });
+    router.push('/compose');
+  });
 
   if (!permission?.granted) {
     return (
@@ -91,14 +81,7 @@ export default function CameraScreen() {
               <FlipCameraIcon size={22} />
             </GlassButton>
 
-            <Pressable
-              onPress={capture}
-              accessibilityRole="button"
-              accessibilityLabel={t('camera.shutterLabel')}
-              style={({ pressed }) => [styles.shutter, pressed && styles.shutterPressed]}
-            >
-              <View style={styles.shutterInner} />
-            </Pressable>
+            <ShutterButton onPress={capture} />
 
             <GlassButton
               size={50}
@@ -138,16 +121,5 @@ const styles = StyleSheet.create({
     width: '100%',
     paddingHorizontal: 26,
   },
-  shutter: {
-    width: 84,
-    height: 84,
-    borderRadius: 42,
-    borderWidth: 5,
-    borderColor: colors.white,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  shutterPressed: { opacity: 0.7 },
-  shutterInner: { width: 66, height: 66, borderRadius: 33, backgroundColor: colors.white },
   hint: { fontWeight: '500' },
 });

@@ -1,5 +1,5 @@
 import Svg, { Circle, Ellipse, Path, Rect, G } from 'react-native-svg';
-import { X, Plus, Check, Search, MoreHorizontal, SlidersHorizontal, SwitchCamera, Zap, RotateCcw, Pencil, Star, Clock, Link2, QrCode, Copy, Mail, Eye, ArrowUp, Paperclip } from 'lucide-react-native';
+import { X, Plus, Check, Search, MoreHorizontal, SlidersHorizontal, SwitchCamera, Zap, RotateCcw, Star, Clock, Link2, QrCode, Copy, Mail, Eye, ArrowUp, Paperclip } from 'lucide-react-native';
 import { colors } from '@/shared/theme/colors';
 /**
  * Icon set.
@@ -137,10 +137,6 @@ export function GoogleIcon({ size = 24 }: IconProps) {
 
 export function EyeIcon({ size = 21, color = colors.muted }: IconProps) {
   return <Eye size={size} color={color} strokeWidth={1.6} />;
-}
-
-export function EnvelopeFieldIcon({ size = 21, color = colors.purple }: IconProps) {
-  return <Mail size={size} color={color} strokeWidth={1.6} />;
 }
 
 export function SendIcon({ size = 17, color = colors.white }: IconProps) {

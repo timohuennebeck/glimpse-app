@@ -17,7 +17,7 @@ export const fontFamily = {
  * Project rule: Glimpse never uses a weight above 600 (semibold).
  * Nothing in this file may introduce 700/800/900.
  */
-export const fontWeight = {
+const fontWeight = {
   regular: '400',
   medium: '500',
   semibold: '600',
@@ -63,9 +63,8 @@ export const type = {
   section: { fontSize: px(24), letterSpacing: px(-0.65), fontWeight: fontWeight.semibold },
   /** 23px — sheet title */
   sheetTitle: { fontSize: px(23), letterSpacing: px(-0.6), fontWeight: fontWeight.semibold },
-  /** 21px / 20px / 19px — primary button labels by size */
+  /** 21px / 19px / 17px — button labels by size */
   buttonXl: { fontSize: px(21), fontWeight: fontWeight.semibold },
-  buttonLg: { fontSize: px(20), fontWeight: fontWeight.semibold },
   button: { fontSize: px(19), fontWeight: fontWeight.semibold },
   buttonSm: { fontSize: px(17), fontWeight: fontWeight.semibold },
   /** 20px — card name, blurred-moment title */

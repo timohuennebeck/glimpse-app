@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { router } from 'expo-router';
 import { Button } from '@/shared/ui/button';
-import { CheckIcon, EnvelopeFieldIcon, EyeIcon } from '@/shared/ui/icons';
+import { CheckIcon, EyeIcon, MailIcon } from '@/shared/ui/icons';
 import { ProgressHeader } from '@/shared/ui/progress-header';
 import { Screen } from '@/shared/ui/screen';
 import { Text } from '@/shared/ui/text';
@@ -42,7 +42,7 @@ export default function DetailsScreen() {
             {t('onboarding.details.emailLabel')}
           </Text>
           <View style={[styles.input, email.length > 0 && styles.inputActive]}>
-            <EnvelopeFieldIcon size={21} />
+            <MailIcon size={21} color={colors.purple} strokeWidth={1.6} />
             <TextInput
               value={email}
               onChangeText={setEmail}
@@ -60,7 +60,7 @@ export default function DetailsScreen() {
           <Text variant="meta" color={colors.muted}>
             {t('onboarding.details.passwordLabel')}
           </Text>
-          <View style={styles.inputMuted}>
+          <View style={[styles.input, styles.inputMuted]}>
             <TextInput
               value={password}
               onChangeText={setPassword}
@@ -145,17 +145,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
   },
   inputActive: { borderColor: colors.purple },
-  inputMuted: {
-    height: 62,
-    borderRadius: radius.input,
-    backgroundColor: colors.surfaceVioletWarm,
-    borderWidth: 1.5,
-    borderColor: colors.borderInput,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    paddingHorizontal: 18,
-  },
+  inputMuted: { backgroundColor: colors.surfaceVioletWarm },
   inputText: {
     flex: 1,
     fontSize: 17.5,

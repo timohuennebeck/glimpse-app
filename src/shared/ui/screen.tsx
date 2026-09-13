@@ -1,23 +1,26 @@
 import { ReactNode } from 'react';
-import { ScrollView, StyleSheet, View, ViewStyle, StatusBar as RNStatusBar } from 'react-native';
+import { ScrollView, StyleSheet, View, StatusBar as RNStatusBar } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { colors } from '@/shared/theme/colors';
 import { spacing } from '@/shared/theme/page-structure';
 interface ScreenProps {
   children: ReactNode;
-  /** Background fill. Dark screens also flip the status-bar content to light. */
   background?: string;
-  dark?: boolean;
   /** Horizontal gutter; the mock uses 20 almost everywhere, 18/22 on a few screens. */
   gutter?: number;
   /** Wrap children in a ScrollView. Off for camera / viewer screens. */
   scroll?: boolean;
   /** Extra bottom padding above the home indicator. */
   bottomInset?: number;
-  style?: ViewStyle;
   /** Render outside the padded content flow (full-bleed images, overlays). */
   backdrop?: ReactNode;
+  /**
+   * Rendered as a sibling of the scroll view, after it. Absolutely positioned
+   * children here stay fixed on screen; inside `children` they would scroll
+   * away with the content.
+   */
+  floating?: ReactNode;
 }
 
 /**
@@ -28,24 +31,23 @@ interface ScreenProps {
 export function Screen({
   children,
   background = colors.white,
-  dark = false,
   gutter = spacing.gutter,
   scroll = false,
   bottomInset = 0,
-  style,
   backdrop,
+  floating,
 }: ScreenProps) {
   const insets = useSafeAreaInsets();
   const paddingTop = Math.max(insets.top, RNStatusBar.currentHeight ?? 0) + 12;
   const paddingBottom = Math.max(insets.bottom, 12) + bottomInset;
 
   const content = (
-    <View style={[styles.flex, { paddingHorizontal: gutter }, style]}>{children}</View>
+    <View style={[styles.flex, { paddingHorizontal: gutter }]}>{children}</View>
   );
 
   return (
     <View style={[styles.flex, { backgroundColor: background }]}>
-      <StatusBar style={dark ? 'light' : 'dark'} />
+      <StatusBar style="dark" />
       {backdrop}
       {scroll ? (
         <ScrollView
@@ -59,6 +61,7 @@ export function Screen({
       ) : (
         <View style={[styles.flex, { paddingTop, paddingBottom }]}>{content}</View>
       )}
+      {floating}
     </View>
   );
 }

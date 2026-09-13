@@ -1,34 +1,35 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
-import { Button } from '@/shared/ui/button';
+import { CtaFooter } from '@/shared/ui/cta-footer';
 import { ClockIcon, PlusIcon } from '@/shared/ui/icons';
 import { GlassButton } from '@/shared/ui/glass-button';
-import { Screen } from '@/shared/ui/screen';
 import { SectionLabel } from '@/shared/ui/section-label';
 import { Text } from '@/shared/ui/text';
 import { colors } from '@/shared/theme/colors';
-import { spacing, avatarSize, radius } from '@/shared/theme/page-structure';
+import { avatarSize, radius } from '@/shared/theme/page-structure';
 import { t } from '@/shared/i18n/i18n';
-import { relativeTime } from '@/shared/lib/format';
+import { durationSince } from '@/shared/lib/format';
 import { PersonRow } from '@/features/friends/components/person-row';
 import { Pill } from '@/features/friends/components/pill';
 import { StoryRail } from '@/features/feed/components/story-rail';
-import { AVATARS, demoFriendRequests, demoSentRequests, DEMO_USER_ID, demoThreads } from '@/shared/lib/fixtures';
 import { ChatsList } from '@/features/chat/components/chats-list';
-import { TAB_BAR_CLEARANCE } from '@/features/navigation/clearance';
-import { CaptureButton } from '@/features/navigation/capture-button';
+import { TabScreen } from '@/features/navigation/tab-screen';
+import { AVATARS, demoFriendRequests, demoSentRequests, demoUnreadCount, DEMO_USER_ID } from '@/shared/lib/fixtures';
+type Tab = 'friends' | 'chats';
+
 /**
  * Screen `08 Freunde` — the story rail, incoming requests, and outgoing requests
  * still waiting. The three sections map 1:1 onto `friendships` rows read from
  * three angles (see docs/database.md §4).
  */
 export default function FriendsScreen() {
-  const [tab, setTab] = useState<'friends' | 'chats'>('friends');
-  const unreadChats = demoThreads.reduce((n, thread) => n + thread.unread_count, 0);
+  const [tab, setTab] = useState<Tab>('friends');
+  // Counts on the toggle, so it says how much is waiting behind each tab.
+  const badges: Record<Tab, number> = { friends: demoFriendRequests.length, chats: demoUnreadCount };
 
   return (
-    <Screen scroll bottomInset={spacing.contentBottom + TAB_BAR_CLEARANCE}>
+    <TabScreen>
       <View style={styles.headerRow}>
         <Text variant="screenTitle" color={colors.ink}>
           {t('friends.title')}
@@ -52,18 +53,10 @@ export default function FriendsScreen() {
             >
               {t(key === 'friends' ? 'friends.tabFriends' : 'friends.tabChats')}
             </Text>
-            {/* Unread count, so the toggle says how much is waiting. */}
-            {key === 'chats' && unreadChats > 0 ? (
+            {badges[key] > 0 ? (
               <View style={styles.segmentBadge}>
                 <Text variant="captionXs" color={colors.white} style={styles.segmentBadgeText}>
-                  {String(unreadChats)}
-                </Text>
-              </View>
-            ) : null}
-            {key === 'friends' && demoFriendRequests.length > 0 ? (
-              <View style={styles.segmentBadge}>
-                <Text variant="captionXs" color={colors.white} style={styles.segmentBadgeText}>
-                  {String(demoFriendRequests.length)}
+                  {String(badges[key])}
                 </Text>
               </View>
             ) : null}
@@ -74,65 +67,62 @@ export default function FriendsScreen() {
       {tab === 'chats' ? (
         <ChatsList />
       ) : (
-      <>
-      <View style={styles.section}>
-        <SectionLabel trailing={t('feed.storiesTrailing', { count: 2 })}>
-          {t('friends.storiesLabel')}
-        </SectionLabel>
-        <StoryRail
-          size={avatarSize.ring}
-          items={[
-            { id: DEMO_USER_ID, name: t('common.you'), avatar: AVATARS.self, waiting: true },
-            { id: 'mia', name: 'Mia', avatar: AVATARS.mia, waiting: false },
-          ]}
-          placeholders={2}
-          placeholderLabel={t('feed.addFriend')}
-          onPressItem={(id) => router.push(`/profile/${id}`)}
-          onPressPlaceholder={() => router.push('/(app)/friends/search')}
-        />
-      </View>
-
-      <View style={styles.section}>
-        <SectionLabel>{t('friends.requestsSection', { count: demoFriendRequests.length })}</SectionLabel>
-        <View style={styles.list}>
-          {demoFriendRequests.map((r) => (
-            <PersonRow
-              key={r.id}
-              avatar={r.profile.photo}
-              name={r.profile.display_name}
-              subtitle={t('friends.search.mutual', { count: r.mutual })}
-              verified={r.verified}
-              trailing={<Pill label={t('friends.accept')} tone={r.verified ? 'filled' : 'outline'} onPress={() => {}} />}
-              onPress={() => router.push(`/profile/${r.profile.id}`)}
+        <>
+          <View style={styles.section}>
+            <SectionLabel trailing={t('feed.storiesTrailing', { count: 2 })}>
+              {t('friends.storiesLabel')}
+            </SectionLabel>
+            <StoryRail
+              size={avatarSize.ring}
+              items={[
+                { id: DEMO_USER_ID, name: t('common.you'), avatar: AVATARS.self, waiting: true },
+                { id: 'mia', name: 'Mia', avatar: AVATARS.mia, waiting: false },
+              ]}
+              placeholders={2}
+              placeholderLabel={t('feed.addFriend')}
+              onPressItem={(id) => router.push(`/profile/${id}`)}
+              onPressPlaceholder={() => router.push('/(app)/friends/search')}
             />
-          ))}
-        </View>
-      </View>
+          </View>
 
-      <View style={styles.section}>
-        <SectionLabel>{t('friends.sentSection', { count: demoSentRequests.length })}</SectionLabel>
-        <View style={styles.list}>
-          {demoSentRequests.map((r) => (
-            <PersonRow
-              key={r.id}
-              avatar={r.profile.photo}
-              name={r.profile.display_name}
-              subtitle={t('friends.sentAgo', { time: relativeTime(r.sentAt).replace('vor ', '') })}
-              subtitleIcon={<ClockIcon size={14} />}
-              dimmed
-              trailing={<Pill label={t('friends.pending')} tone="muted" />}
-            />
-          ))}
-        </View>
-      </View>
+          <View style={styles.section}>
+            <SectionLabel>{t('friends.requestsSection', { count: demoFriendRequests.length })}</SectionLabel>
+            <View style={styles.list}>
+              {demoFriendRequests.map((r) => (
+                <PersonRow
+                  key={r.id}
+                  avatar={r.profile.photo}
+                  name={r.profile.display_name}
+                  subtitle={t('friends.search.mutual', { count: r.mutual })}
+                  verified={r.verified}
+                  trailing={<Pill label={t('friends.accept')} tone={r.verified ? 'filled' : 'outline'} onPress={() => {}} />}
+                  onPress={() => router.push(`/profile/${r.profile.id}`)}
+                />
+              ))}
+            </View>
+          </View>
 
-      <View style={styles.footer}>
-        <Button label={t('friends.addCta')} onPress={() => router.push('/(app)/friends/search')} />
-      </View>
-      </>
+          <View style={styles.section}>
+            <SectionLabel>{t('friends.sentSection', { count: demoSentRequests.length })}</SectionLabel>
+            <View style={styles.list}>
+              {demoSentRequests.map((r) => (
+                <PersonRow
+                  key={r.id}
+                  avatar={r.profile.photo}
+                  name={r.profile.display_name}
+                  subtitle={t('friends.sentAgo', { time: durationSince(r.sentAt) })}
+                  subtitleIcon={<ClockIcon size={14} />}
+                  dimmed
+                  trailing={<Pill label={t('friends.pending')} tone="muted" />}
+                />
+              ))}
+            </View>
+          </View>
+
+          <CtaFooter label={t('friends.addCta')} onPress={() => router.push('/(app)/friends/search')} />
+        </>
       )}
-      <CaptureButton />
-    </Screen>
+    </TabScreen>
   );
 }
 
@@ -174,5 +164,4 @@ const styles = StyleSheet.create({
   segmentLabel: { fontWeight: '600' },
   section: { marginTop: 22, gap: 14 },
   list: { gap: 16 },
-  footer: { marginTop: 'auto', paddingTop: 28 },
 });

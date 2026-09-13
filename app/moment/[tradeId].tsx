@@ -43,10 +43,10 @@ export default function MomentScreen() {
   const locked = !moment.isOpen;
   const countdown = timeUntilUnlock(moment.autoUnlockAt);
 
-  function tradeBack() {
-    composer.set({ replyToTradeId: moment!.tradeId });
+  const tradeBack = () => {
+    composer.set({ replyToTradeId: moment.tradeId });
     router.push('/camera');
-  }
+  };
 
   return (
     <View style={styles.root}>

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
 import { Button } from '@/shared/ui/button';
@@ -16,7 +16,7 @@ import { PersonRow } from '@/features/friends/components/person-row';
 import { Checkbox } from '@/features/friends/components/checkbox';
 import { EmptyState } from '@/features/feed/components/empty-state';
 import { isSupabaseConfigured } from '@/shared/lib/supabase';
-import { demoProfiles, DEMO_USER_ID } from '@/shared/lib/fixtures';
+import { demoOthers, demoProfiles } from '@/shared/lib/fixtures';
 /**
  * Screen `03c Senden · Empfänger wählen`.
  *
@@ -24,20 +24,14 @@ import { demoProfiles, DEMO_USER_ID } from '@/shared/lib/fixtures';
  * dimmed contacts who are not on Glimpse yet. Sending is the last step of the
  * capture flow — from here the trade locks are created.
  */
+const friends = demoOthers.slice(0, 3);
+const notOnGlimpse = demoOthers.slice(3);
+
 export default function RecipientsScreen() {
   const composer = useComposer();
   const [selected, setSelected] = useState<string[]>([]);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const friends = useMemo(
-    () => Object.values(demoProfiles).filter((p) => p.id !== DEMO_USER_ID).slice(0, 3),
-    [],
-  );
-  const notOnGlimpse = useMemo(
-    () => Object.values(demoProfiles).filter((p) => p.id !== DEMO_USER_ID).slice(3),
-    [],
-  );
 
   function toggle(id: string) {
     setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));

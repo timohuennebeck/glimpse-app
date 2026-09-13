@@ -1,7 +1,7 @@
 import { NativeTabs } from 'expo-router/unstable-native-tabs';
 import { t } from '@/shared/i18n/i18n';
 import { useInbox } from '@/features/moments/hooks/use-inbox';
-import { demoThreads } from '@/shared/lib/fixtures';
+import { demoUnreadCount } from '@/shared/lib/fixtures';
 // These are attached to Trigger rather than exported at the top level.
 const { Icon, Label, Badge } = NativeTabs.Trigger;
 
@@ -19,9 +19,8 @@ const { Icon, Label, Badge } = NativeTabs.Trigger;
  */
 export default function AppLayout() {
   const { pending } = useInbox();
-  const unreadChats = demoThreads.reduce((n, thread) => n + thread.unread_count, 0);
   // Friends carries both incoming moments and unread messages.
-  const friendsBadge = unreadChats > 0 ? String(unreadChats) : undefined;
+  const friendsBadge = demoUnreadCount > 0 ? String(demoUnreadCount) : undefined;
   const feedBadge = pending.length > 0 ? String(pending.length) : undefined;
 
   return (

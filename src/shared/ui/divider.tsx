@@ -1,9 +1,12 @@
 import { StyleSheet, View } from 'react-native';
 import { Text } from '@/shared/ui/text';
 import { colors } from '@/shared/theme/colors';
-/** Hairline with an optional centred label ("oder teilen"). */
-export function Divider({ label }: { label?: string }) {
-  if (!label) return <View style={styles.line} />;
+interface DividerProps {
+  /** Centred label between the two hairlines ("or share"). */
+  label: string;
+}
+
+export function Divider({ label }: DividerProps) {
   return (
     <View style={styles.row}>
       <View style={[styles.line, styles.flex]} />

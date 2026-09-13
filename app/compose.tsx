@@ -9,7 +9,6 @@ import { BlurView } from 'expo-blur';
 import { Button } from '@/shared/ui/button';
 import { GlassButton } from '@/shared/ui/glass-button';
 import { CloseIcon, RetakeIcon, PencilIcon } from '@/shared/ui/icons';
-import { Text } from '@/shared/ui/text';
 import { alpha, colors } from '@/shared/theme/colors';
 import { fontFamily } from '@/shared/theme/fonts';
 import { t } from '@/shared/i18n/i18n';

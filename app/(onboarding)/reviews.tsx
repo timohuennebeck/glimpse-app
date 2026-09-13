@@ -1,10 +1,11 @@
 import { StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
 import { Avatar } from '@/shared/ui/avatar';
-import { Button } from '@/shared/ui/button';
-import { CloseIcon, LaurelIcon, StarIcon, VerifiedIcon } from '@/shared/ui/icons';
-import { GlassButton } from '@/shared/ui/glass-button';
+import { CloseRow } from '@/shared/ui/close-row';
+import { CtaFooter } from '@/shared/ui/cta-footer';
+import { LaurelIcon, VerifiedIcon } from '@/shared/ui/icons';
 import { Screen } from '@/shared/ui/screen';
+import { StarRow } from '@/shared/ui/star-row';
 import { Text } from '@/shared/ui/text';
 import { colors } from '@/shared/theme/colors';
 import { radius, spacing } from '@/shared/theme/page-structure';
@@ -19,11 +20,7 @@ export default function ReviewsScreen() {
 
   return (
     <Screen scroll bottomInset={spacing.contentBottom}>
-      <View style={styles.topRow}>
-        <GlassButton size={32} onPress={() => router.back()}>
-          <CloseIcon size={11} />
-        </GlassButton>
-      </View>
+      <CloseRow onPress={() => router.back()} />
 
       <Text variant="display" color={colors.ink} style={styles.title}>
         {t('onboarding.reviews.title')}
@@ -35,11 +32,7 @@ export default function ReviewsScreen() {
       <View style={styles.ratingRow}>
         <LaurelIcon size={42} />
         <View style={styles.ratingCenter}>
-          <View style={styles.stars}>
-            {[0, 1, 2, 3, 4].map((i) => (
-              <StarIcon key={i} size={21} />
-            ))}
-          </View>
+          <StarRow size={21} />
           <Text variant="bodyXs" color={colors.ink} style={styles.ratingText}>
             {t('onboarding.reviews.rating')}
           </Text>
@@ -71,11 +64,7 @@ export default function ReviewsScreen() {
                   {review.since}
                 </Text>
                 <View style={styles.cardStars}>
-                  <View style={styles.stars}>
-                    {[0, 1, 2, 3, 4].map((s) => (
-                      <StarIcon key={s} size={13} />
-                    ))}
-                  </View>
+                  <StarRow size={13} />
                   <Text variant="metaSm" color={colors.inkBody} style={styles.ratingText}>
                     {review.score}
                   </Text>
@@ -95,15 +84,12 @@ export default function ReviewsScreen() {
         <View style={styles.dot} />
       </View>
 
-      <View style={styles.footer}>
-        <Button label={t('onboarding.reviews.cta')} onPress={() => router.push('/(onboarding)/paywall')} />
-      </View>
+      <CtaFooter label={t('onboarding.reviews.cta')} onPress={() => router.push('/(onboarding)/paywall')} />
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  topRow: { flexDirection: 'row', alignItems: 'center', height: 32 },
   title: { marginTop: 20 },
   subtitle: { marginTop: 12 },
   ratingRow: {
@@ -115,7 +101,6 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   ratingCenter: { alignItems: 'center', gap: 4 },
-  stars: { flexDirection: 'row', gap: 3 },
   ratingText: { fontWeight: '600' },
   list: { marginTop: 10, gap: 8 },
   card: {
@@ -153,5 +138,4 @@ const styles = StyleSheet.create({
   },
   dot: { width: 7, height: 7, borderRadius: 4, backgroundColor: colors.dotIdle },
   dotActive: { width: 14, backgroundColor: colors.purple },
-  footer: { marginTop: 'auto', paddingTop: 28 },
 });

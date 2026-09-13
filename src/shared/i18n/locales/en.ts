@@ -2,16 +2,15 @@ import type { Translations } from '@/shared/i18n/locales/de';
 /**
  * English is the active locale. German is kept complete in `de.ts` — the launch
  * plan is still German-speaking circles first, so switching back is one line in
- * `src/shared/i18n/index.ts`.
+ * `src/shared/i18n/i18n.ts`.
  *
- * Typed as the full `Translations` rather than a partial: a missing key would
- * fall back to German and produce a screen in two languages, which is exactly
- * the bug this file previously caused.
+ * Typed as the full `Translations` rather than a partial, so a missing key is a
+ * compile error rather than a screen in two languages — which is exactly the bug
+ * this file previously caused.
  */
 export const en: Translations = {
   nav: {
     feed: 'Feed',
-    camera: 'Camera',
     friends: 'Friends',
     profile: 'Profile',
   },
@@ -20,14 +19,7 @@ export const en: Translations = {
     close: 'Close',
     back: 'Back',
     next: 'Next',
-    skip: 'Skip',
-    continue: 'Continue',
-    cancel: 'Cancel',
-    done: 'Done',
-    retry: 'Try again',
-    or: 'or',
     you: 'You',
-    loading: 'One moment…',
   },
 
   onboarding: {
@@ -211,7 +203,6 @@ export const en: Translations = {
     },
     cta: 'Start free trial',
     restore: 'Restore purchases',
-    skip: 'Continue without Plus',
   },
 
   referral: {
@@ -221,7 +212,6 @@ export const en: Translations = {
       subtitle: 'Partner and friend codes unlock three months of Glimpse Plus.',
       cta: 'Redeem code',
       note: 'No code? You can use Glimpse\nwithout one.',
-      invalid: 'We don’t recognise that code.',
     },
     share: {
       eyebrow: 'Thank you',
@@ -243,7 +233,6 @@ export const en: Translations = {
     storiesLabel: 'Your people',
     storiesTrailing: '%{count} waiting',
     addFriend: 'invite',
-    waitingTitle: 'Waiting on you',
     momentsTitle: 'Your moments',
     lockedBadge: 'New',
     lockedCta: 'Trade to see it',
@@ -263,7 +252,6 @@ export const en: Translations = {
     shutterLabel: 'Capture',
     permissionTitle: 'Camera not allowed',
     permissionBody: 'Without the camera you cannot trade anything back.',
-    permissionCta: 'Allow in Settings',
   },
 
   compose: {
@@ -279,18 +267,14 @@ export const en: Translations = {
     sendTo: 'Send to %{name}',
     sendToMany: 'Send to %{count}',
     sendNone: 'Pick at least one person',
-    sending: 'Sending…',
   },
 
   moment: {
-    from: '%{name}',
-    metaSent: '%{time} ago · %{place}',
     lockedTitle: 'Trade first,\nthen look.',
     lockedBody: 'Send %{name} a moment back and you both see each other’s photo at once.',
     lockedCta: 'Send one back',
     replyPlaceholder: 'Reply…',
     autoUnlock: 'Unlocks in %{time}',
-    savedToGallery: 'Saved to your gallery',
   },
 
   friends: {
@@ -300,14 +284,10 @@ export const en: Translations = {
     storiesLabel: 'Traded today',
     requestsSection: 'Requests · %{count}',
     sentSection: 'Sent · %{count}',
-    friendsSection: 'Friends · %{count}',
     accept: 'Accept',
-    decline: 'Decline',
     pending: 'Pending',
     sentAgo: 'sent %{time} ago',
-    sentYesterday: 'sent yesterday',
     addCta: 'Invite more',
-    capReached: 'Glimpse is for your closest people — more than %{count} is not possible.',
     search: {
       title: 'Add friend',
       placeholder: '@username',
@@ -326,7 +306,6 @@ export const en: Translations = {
   },
 
   chat: {
-    title: 'Messages',
     searchPlaceholder: 'Search…',
     unreadSection: 'New',
     unreadTrailing: '%{count} new',
@@ -334,7 +313,6 @@ export const en: Translations = {
     sentPhoto: 'Photo',
     inputPlaceholder: 'Message…',
     online: 'Active now',
-    lastSeen: 'last seen %{time}',
     dayToday: 'Today',
   },
 
@@ -342,23 +320,16 @@ export const en: Translations = {
     momentsTitle: 'Your moments',
     tradeCta: 'Send a moment',
     pairsEmpty: 'You haven’t traded anything yet.',
-    friendSince: 'friends since %{date}',
   },
 
   invite: {
     title: '%{name} sent you\na moment',
     body: 'You see it as soon as you send one back. That is how Glimpse works.',
-    momentMeta: '%{time} ago',
     cta: 'Send one back',
     secondary: 'First, see what Glimpse is',
   },
 
   errors: {
     generic: 'Something went wrong.',
-    offline: 'No connection.',
-    notFriends: 'You are not friends yet.',
-    alreadyAnswered: 'That trade is already done.',
-    friendCap: 'Your friend list is full.',
-    supabaseMissing: 'No database connected yet — you are seeing sample data.',
   },
 };

@@ -1,6 +1,4 @@
 import { StyleSheet, View } from 'react-native';
-import { Image } from 'expo-image';
-import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { Button } from '@/shared/ui/button';
 import { Divider } from '@/shared/ui/divider';
@@ -9,8 +7,9 @@ import { ProgressHeader } from '@/shared/ui/progress-header';
 import { Screen } from '@/shared/ui/screen';
 import { Text } from '@/shared/ui/text';
 import { colors } from '@/shared/theme/colors';
-import { radius, spacing } from '@/shared/theme/page-structure';
+import { spacing } from '@/shared/theme/page-structure';
 import { t } from '@/shared/i18n/i18n';
+import { HeroPanel } from '@/features/onboarding/components/hero-panel';
 import { ART } from '@/shared/lib/fixtures';
 /**
  * Screen `04 Sign up · 4 of 7`.
@@ -35,14 +34,7 @@ export default function SignUpScreen() {
         {t('onboarding.signUp.subtitle')}
       </Text>
 
-      <LinearGradient
-        colors={['#F4EDFE', '#EDE2FD']}
-        start={{ x: 0.1, y: 0 }}
-        end={{ x: 0.9, y: 1 }}
-        style={styles.hero}
-      >
-        <Image source={ART.signupKey} style={styles.heroImage} contentFit="contain" />
-      </LinearGradient>
+      <HeroPanel source={ART.signupKey} imageStyle={styles.heroImage} style={styles.hero} />
 
       <View style={styles.actions}>
         <Button
@@ -78,13 +70,7 @@ export default function SignUpScreen() {
 const styles = StyleSheet.create({
   title: { marginTop: 14 },
   subtitle: { marginTop: 14 },
-  hero: {
-    marginTop: 6,
-    height: 300,
-    borderRadius: radius.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  hero: { marginTop: 6 },
   heroImage: { width: 308, height: 250 },
   actions: { marginTop: 14, gap: 16 },
   divider: { marginTop: 26 },

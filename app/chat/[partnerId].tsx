@@ -72,12 +72,12 @@ export default function ChatScreen() {
                 <Text variant="caption" color={colors.mutedLilac}>
                   {threadTime(message.created_at)}
                 </Text>
-                <View style={mine ? styles.bubbleRowMine : styles.bubbleRowTheirs}>
+                <View style={styles.bubbleRow}>
                   {message.photo ? (
                     <Image source={message.photo} style={styles.attachment} contentFit="cover" />
                   ) : null}
                   {message.body ? (
-                    <View style={mine ? styles.bubbleMine : styles.bubbleTheirs}>
+                    <View style={[styles.bubble, mine ? styles.bubbleMine : styles.bubbleTheirs]}>
                       <Text variant="bodyXs" color={mine ? colors.white : colors.inkBody}>
                         {message.body}
                       </Text>
@@ -134,24 +134,10 @@ const styles = StyleSheet.create({
   rowMine: { flexDirection: 'row', justifyContent: 'flex-end' },
   stackTheirs: { gap: 6, flexShrink: 1 },
   stackMine: { gap: 6, alignItems: 'flex-end', flexShrink: 1 },
-  bubbleRowTheirs: { flexDirection: 'row', alignItems: 'flex-end', gap: 10 },
-  bubbleRowMine: { flexDirection: 'row', alignItems: 'flex-end', gap: 10 },
-  bubbleTheirs: {
-    maxWidth: 264,
-    backgroundColor: colors.surfaceViolet,
-    borderRadius: 22,
-    borderBottomLeftRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  bubbleMine: {
-    maxWidth: 264,
-    backgroundColor: colors.purple,
-    borderRadius: 22,
-    borderBottomRightRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
+  bubbleRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 10 },
+  bubble: { maxWidth: 264, borderRadius: 22, paddingHorizontal: 16, paddingVertical: 12 },
+  bubbleTheirs: { backgroundColor: colors.surfaceViolet, borderBottomLeftRadius: 8 },
+  bubbleMine: { backgroundColor: colors.purple, borderBottomRightRadius: 8 },
   attachment: {
     width: 78,
     height: 104,

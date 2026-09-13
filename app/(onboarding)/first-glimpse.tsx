@@ -1,10 +1,9 @@
 import { useRef, useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
-import * as Haptics from 'expo-haptics';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from '@/shared/ui/button';
@@ -14,6 +13,8 @@ import { CloseIcon, FlipCameraIcon } from '@/shared/ui/icons';
 import { alpha, colors } from '@/shared/theme/colors';
 import { t } from '@/shared/i18n/i18n';
 import { useComposer } from '@/features/moments/hooks/use-composer';
+import { useCapture } from '@/features/camera/hooks/use-capture';
+import { ShutterButton } from '@/features/camera/components/shutter-button';
 /**
  * Screen `02b First glimpse` — step 2.5 of onboarding.
  *
@@ -29,27 +30,16 @@ export default function FirstGlimpseScreen() {
   const [permission] = useCameraPermissions();
   const [facing, setFacing] = useState<CameraType>('front');
   const [shot, setShot] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
   const cameraRef = useRef<CameraView>(null);
   const composer = useComposer();
   const insets = useSafeAreaInsets();
 
   const granted = permission?.granted ?? false;
 
-  async function capture() {
-    if (busy || !cameraRef.current) return;
-    setBusy(true);
-    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    try {
-      const photo = await cameraRef.current.takePictureAsync({ quality: 0.85, skipProcessing: true });
-      if (photo?.uri) {
-        setShot(photo.uri);
-        composer.set({ uri: photo.uri, facing: facing === 'front' ? 'front' : 'back' });
-      }
-    } finally {
-      setBusy(false);
-    }
-  }
+  const capture = useCapture(cameraRef, (uri) => {
+    setShot(uri);
+    composer.set({ uri, facing });
+  });
 
   function next() {
     router.push('/(onboarding)/avatar');
@@ -105,14 +95,7 @@ export default function FirstGlimpseScreen() {
                   <FlipCameraIcon size={22} />
                 </GlassButton>
 
-                <Pressable
-                  onPress={capture}
-                  accessibilityRole="button"
-                  accessibilityLabel={t('camera.shutterLabel')}
-                  style={({ pressed }) => [styles.shutter, pressed && styles.pressed]}
-                >
-                  <View style={styles.shutterInner} />
-                </Pressable>
+                <ShutterButton onPress={capture} />
 
                 {/* Spacer keeps the shutter centred. */}
                 <View style={styles.spacer} />
@@ -149,17 +132,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 26,
   },
   spacer: { width: 50 },
-  shutter: {
-    width: 84,
-    height: 84,
-    borderRadius: 42,
-    borderWidth: 5,
-    borderColor: colors.white,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  pressed: { opacity: 0.7 },
-  shutterInner: { width: 66, height: 66, borderRadius: 33, backgroundColor: colors.white },
   hint: { fontWeight: '500', textAlign: 'center' },
   ctaRow: { flexDirection: 'row', gap: 12 },
   denied: { maxWidth: 280, alignSelf: 'center' },

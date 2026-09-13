@@ -21,4 +21,4 @@ const emptyDraft: Draft = {
   replyToTradeId: null,
 };
 
-export const useComposer = create<Draft>(emptyDraft, emptyDraft);
+export const useComposer = create<Draft>(emptyDraft);

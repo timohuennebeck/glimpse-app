@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
-import { Button } from '@/shared/ui/button';
-import { CheckIcon, CopyIcon, LinkIcon, MoreIcon, SearchIcon } from '@/shared/ui/icons';
-import { Divider } from '@/shared/ui/divider';
+import { CtaFooter } from '@/shared/ui/cta-footer';
+import { CopyIcon, MoreIcon, SearchIcon } from '@/shared/ui/icons';
 import { ProgressHeader } from '@/shared/ui/progress-header';
 import { Screen } from '@/shared/ui/screen';
 import { Text } from '@/shared/ui/text';
@@ -12,8 +11,9 @@ import { controlHeight, radius, spacing } from '@/shared/theme/page-structure';
 import { t } from '@/shared/i18n/i18n';
 import { PersonRow } from '@/features/friends/components/person-row';
 import { Pill } from '@/features/friends/components/pill';
+import { ShareRow } from '@/features/friends/components/share-row';
 import { ContactsInvite } from '@/features/onboarding/components/contacts-invite';
-import { demoProfiles, DEMO_USER_ID } from '@/shared/lib/fixtures';
+import { demoOthers } from '@/shared/lib/fixtures';
 /**
  * Screens `05 Friends · 5 of 7` and `05a · no contacts access`.
  *
@@ -25,9 +25,7 @@ export default function OnboardingFriendsScreen() {
   const [hasContacts, setHasContacts] = useState(false);
   const [invited, setInvited] = useState<string[]>([]);
 
-  const suggestions = Object.values(demoProfiles)
-    .filter((p) => p.id !== DEMO_USER_ID)
-    .slice(0, 3);
+  const suggestions = demoOthers.slice(0, 3);
 
   return (
     <Screen scroll bottomInset={spacing.contentBottom}>
@@ -90,57 +88,28 @@ export default function OnboardingFriendsScreen() {
         <ContactsInvite onPress={() => setHasContacts(true)} />
       )}
 
-      <View style={styles.shareSection}>
-        <Divider label={t('onboarding.friends.dividerShare')} />
-        <View style={styles.shareRow}>
-          <View style={styles.shareLinkCol}>
-            <View style={styles.shareLink}>
-              <LinkIcon size={16} />
-              <Text variant="subtitle" color={colors.inkSoft} numberOfLines={1} style={styles.flex}>
-                glimpse.app/@du
-              </Text>
-            </View>
-            <Text variant="captionXs" color={colors.muted}>
-              {t('onboarding.friends.shareLink')}
-            </Text>
-          </View>
+      <ShareRow
+        style={styles.share}
+        dividerLabel={t('onboarding.friends.dividerShare')}
+        link="glimpse.app/@du"
+        linkLabel={t('onboarding.friends.shareLink')}
+        actions={[
+          { label: t('onboarding.friends.shareCopy'), icon: <CopyIcon size={22} /> },
+          { label: t('onboarding.friends.shareMore'), icon: <MoreIcon size={22} /> },
+        ]}
+      />
 
-          <ShareAction label={t('onboarding.friends.shareCopy')} icon={<CopyIcon size={22} />} />
-          <ShareAction label={t('onboarding.friends.shareMore')} icon={<MoreIcon size={22} />} />
-        </View>
-      </View>
-
-      <View style={styles.footer}>
-        <Button
-          label={t('onboarding.friends.cta')}
-          onPress={() => router.push('/(onboarding)/notifications')}
-        />
-        <Text
-          variant="buttonSm"
-          color={colors.inkSoft}
-          center
-          onPress={() => router.push('/(onboarding)/notifications')}
-        >
-          {t('onboarding.friends.skip')}
-        </Text>
-      </View>
+      <CtaFooter
+        label={t('onboarding.friends.cta')}
+        onPress={() => router.push('/(onboarding)/notifications')}
+        secondary={t('onboarding.friends.skip')}
+        onSecondary={() => router.push('/(onboarding)/notifications')}
+      />
     </Screen>
   );
 }
 
-function ShareAction({ label, icon }: { label: string; icon: React.ReactNode }) {
-  return (
-    <View style={styles.shareAction}>
-      <View style={styles.shareCircle}>{icon}</View>
-      <Text variant="captionXs" color={colors.muted}>
-        {label}
-      </Text>
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
-  flex: { flex: 1 },
   title: { marginTop: 26 },
   subtitle: { marginTop: 12 },
   search: {
@@ -164,28 +133,5 @@ const styles = StyleSheet.create({
   },
   countText: { fontWeight: '600' },
   list: { gap: 14 },
-  shareSection: { marginTop: 22, gap: 18 },
-  shareRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
-  shareLinkCol: { flex: 1, minWidth: 0, alignItems: 'center', gap: 6 },
-  shareLink: {
-    width: '100%',
-    height: controlHeight.fieldSm,
-    borderRadius: radius.pill,
-    borderWidth: 1.6,
-    borderColor: colors.border,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    paddingHorizontal: 14,
-  },
-  shareAction: { alignItems: 'center', gap: 6 },
-  shareCircle: {
-    width: controlHeight.fieldSm,
-    height: controlHeight.fieldSm,
-    borderRadius: controlHeight.fieldSm / 2,
-    backgroundColor: colors.surfaceLilac,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  footer: { marginTop: 'auto', paddingTop: 28, gap: 22 },
+  share: { marginTop: 22 },
 });

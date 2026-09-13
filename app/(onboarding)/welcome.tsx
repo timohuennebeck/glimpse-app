@@ -4,7 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { Button } from '@/shared/ui/button';
 import { Screen } from '@/shared/ui/screen';
-import { StarIcon } from '@/shared/ui/icons';
+import { StarRow } from '@/shared/ui/star-row';
 import { Text } from '@/shared/ui/text';
 import { colors } from '@/shared/theme/colors';
 import { spacing } from '@/shared/theme/page-structure';
@@ -46,11 +46,7 @@ export default function WelcomeScreen() {
 
       <View style={styles.footer}>
         <View style={styles.rating}>
-          <View style={styles.stars}>
-            {[0, 1, 2, 3, 4].map((i) => (
-              <StarIcon key={i} size={16} />
-            ))}
-          </View>
+          <StarRow size={16} gap={2} />
           <Text variant="bodyXs" color={colors.ink} style={styles.ratingText}>
             {t('onboarding.welcome.rating')}
           </Text>
@@ -100,7 +96,6 @@ const styles = StyleSheet.create({
   subtitle: { marginTop: 14 },
   footer: { marginTop: 'auto', paddingTop: 32, gap: 22, alignItems: 'center' },
   rating: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  stars: { flexDirection: 'row', gap: 2 },
   ratingText: { fontWeight: '600' },
   link: { fontWeight: '600' },
   legal: { flexDirection: 'row', alignItems: 'center', gap: 10 },

@@ -1,9 +1,9 @@
 import { StyleSheet, View } from 'react-native';
-import { router, useLocalSearchParams } from 'expo-router';
+import { router } from 'expo-router';
 import { Avatar } from '@/shared/ui/avatar';
 import { Button } from '@/shared/ui/button';
-import { CameraIcon, CloseIcon } from '@/shared/ui/icons';
-import { GlassButton } from '@/shared/ui/glass-button';
+import { CloseRow } from '@/shared/ui/close-row';
+import { CameraIcon } from '@/shared/ui/icons';
 import { LockedImage } from '@/shared/ui/locked-image';
 import { Screen } from '@/shared/ui/screen';
 import { Text } from '@/shared/ui/text';
@@ -20,19 +20,15 @@ import { AVATARS, PHOTOS } from '@/shared/lib/fixtures';
  * which is what makes the invite worth opening.
  *
  * Reached via the `glimpse://invite/<token>` scheme and the matching universal
- * link; the token is the capability (see the `invites` table).
+ * link; the token is the capability (see the `invites` table). Until the
+ * `invites` lookup is wired, the screen renders the fixture moment.
  */
 export default function InviteScreen() {
-  const { token } = useLocalSearchParams<{ token: string }>();
   const sentAt = new Date(Date.now() - 4 * 60_000).toISOString();
 
   return (
     <Screen scroll bottomInset={spacing.contentBottom}>
-      <View style={styles.topRow}>
-        <GlassButton size={32} onPress={() => router.back()}>
-          <CloseIcon size={11} />
-        </GlassButton>
-      </View>
+      <CloseRow onPress={() => router.back()} />
 
       <View style={styles.intro}>
         <Avatar source={AVATARS.mia} size={76} ring="halo" />
@@ -73,7 +69,6 @@ export default function InviteScreen() {
 }
 
 const styles = StyleSheet.create({
-  topRow: { flexDirection: 'row', alignItems: 'center', height: 32 },
   intro: { alignItems: 'center', gap: 14, marginTop: 26 },
   body: { maxWidth: 280 },
   preview: { width: '100%', aspectRatio: 4 / 5, marginTop: 24 },

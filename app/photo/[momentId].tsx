@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -11,24 +11,35 @@ import { CloseIcon, MoreIcon } from '@/shared/ui/icons';
 import { Text } from '@/shared/ui/text';
 import { alpha, colors } from '@/shared/theme/colors';
 import { pairDate } from '@/shared/lib/format';
-import { useInbox } from '@/features/moments/hooks/use-inbox';
-import { PHOTOS } from '@/shared/lib/fixtures';
-/** Screen `07c Foto Vollbild` — an unlocked moment, full bleed. */
+import { fetchMomentPhoto } from '@/features/moments/data/moments-api';
+import type { MomentPhoto } from '@/features/moments/interfaces';
+
+/**
+ * Screen `07c Foto Vollbild` — an unlocked moment, full bleed.
+ *
+ * Resolves the moment by id rather than searching the inbox: photos opened
+ * from a profile's pair grid were never in the inbox, so that lookup always
+ * missed and showed a fixture with a blank name.
+ */
 export default function PhotoScreen() {
   const { momentId } = useLocalSearchParams<{ momentId: string }>();
-  const { data } = useInbox();
   const insets = useSafeAreaInsets();
+  const [moment, setMoment] = useState<MomentPhoto | null>(null);
 
-  const moment = useMemo(() => data.find((m) => m.momentId === momentId), [data, momentId]);
+  useEffect(() => {
+    if (!momentId) return;
+    fetchMomentPhoto(momentId)
+      .then(setMoment)
+      .catch((error: unknown) => {
+        if (__DEV__) console.warn('fetchMomentPhoto failed', error);
+        setMoment(null);
+      });
+  }, [momentId]);
 
   return (
     <View style={styles.root}>
       <StatusBar style="light" />
-      <Image
-        source={moment?.photo ?? PHOTOS.momentOpen}
-        style={StyleSheet.absoluteFill}
-        contentFit="cover"
-      />
+      {moment ? <Image source={moment.photo} style={StyleSheet.absoluteFill} contentFit="cover" /> : null}
       <LinearGradient
         colors={['rgba(0,0,0,.5)', 'rgba(0,0,0,0)', 'rgba(0,0,0,0)', 'rgba(0,0,0,.45)']}
         locations={[0, 0.22, 0.78, 1]}
@@ -42,9 +53,9 @@ export default function PhotoScreen() {
         </GlassButton>
 
         <View style={styles.meta}>
-          <Avatar source={moment?.from.avatar ?? ''} size={52} />
+          {moment?.fromAvatar ? <Avatar source={moment.fromAvatar} size={52} /> : null}
           <Text variant="subtitle" color={alpha.onDarkText} style={styles.metaText}>
-            {moment ? `${moment.from.name} · ${pairDate(moment.capturedAt)}` : ''}
+            {moment ? `${moment.fromName} · ${pairDate(moment.capturedAt)}` : ''}
           </Text>
         </View>
 

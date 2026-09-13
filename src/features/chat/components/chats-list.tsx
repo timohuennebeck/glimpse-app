@@ -9,7 +9,7 @@ import { colors } from '@/shared/theme/colors';
 import { controlHeight, radius } from '@/shared/theme/page-structure';
 import { t } from '@/shared/i18n/i18n';
 import { threadTime } from '@/shared/lib/format';
-import { demoThreads, demoProfiles, DEMO_USER_ID } from '@/shared/lib/fixtures';
+import { demoThreads, demoProfiles, demoUnreadCount, DEMO_USER_ID } from '@/shared/lib/fixtures';
 /**
  * The conversation list, backed by `public.v_threads`.
  *
@@ -18,8 +18,6 @@ import { demoThreads, demoProfiles, DEMO_USER_ID } from '@/shared/lib/fixtures';
  * app, not a destination of its own.
  */
 export function ChatsList() {
-  const unread = demoThreads.reduce((n, thread) => n + thread.unread_count, 0);
-
   return (
     <View>
       <View style={styles.search}>
@@ -30,7 +28,7 @@ export function ChatsList() {
       </View>
 
       <View style={styles.section}>
-        <SectionLabel trailing={t('chat.unreadTrailing', { count: unread })}>
+        <SectionLabel trailing={t('chat.unreadTrailing', { count: demoUnreadCount })}>
           {t('chat.unreadSection')}
         </SectionLabel>
 

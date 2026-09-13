@@ -20,21 +20,8 @@ interface LockedImageProps {
 }
 
 /**
- * A moment you have received but not yet traded for: the photo is rendered
- * frosted with a darkening scrim and a lock puck.
- *
- * NOTE: this is presentation only. The blur here must never be the sole thing
- * keeping a locked photo private — the server hands out a separately stored,
- * pre-blurred rendition and only signs a URL for the original once the trade
- * unlocks. See `supabase/migrations` and `docs/database.md`.
- */
-/**
  * Blur strengths per surface. Tuned so the subject is unreadable rather than
  * merely softened: a locked moment should give away nothing but colour.
- *
- * Presentation only — the real guarantee is that the server serves a separately
- * stored, pre-blurred rendition and never signs the original until the trade
- * opens. See docs/database.md §3.
  */
 export const BLUR = {
   /** Small tiles in the profile pair grid. */
@@ -45,6 +32,15 @@ export const BLUR = {
   full: 60,
 } as const;
 
+/**
+ * A moment you have received but not yet traded for: the photo is rendered
+ * frosted with a darkening scrim and a lock puck.
+ *
+ * NOTE: this is presentation only. The blur here must never be the sole thing
+ * keeping a locked photo private — the server hands out a separately stored,
+ * pre-blurred rendition and only signs a URL for the original once the trade
+ * unlocks. See `supabase/migrations` and `docs/database.md` §3.
+ */
 export function LockedImage({
   source,
   radius = 18,

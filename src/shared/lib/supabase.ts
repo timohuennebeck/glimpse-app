@@ -8,7 +8,7 @@ const anonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
 
 /**
  * The app is intentionally runnable before a Supabase project exists: every
- * data hook falls back to fixtures when this is false. See `src/shared/lib/env.ts`.
+ * data hook falls back to fixtures when this is false.
  */
 export const isSupabaseConfigured = Boolean(url && anonKey);
 

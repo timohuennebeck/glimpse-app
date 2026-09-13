@@ -2,11 +2,12 @@ import { ReactNode } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View, ViewStyle } from 'react-native';
 import { Text } from '@/shared/ui/text';
 import { colors } from '@/shared/theme/colors';
+import { TypeToken } from '@/shared/theme/fonts';
 import { controlHeight, radius, shadow } from '@/shared/theme/page-structure';
-type Variant = 'primary' | 'purple' | 'outline' | 'ghost' | 'muted';
+type Variant = 'primary' | 'purple' | 'outline' | 'ghost';
 type Size = 'xl' | 'lg' | 'md' | 'sm' | 'xs';
 
-const sizeMap: Record<Size, { height: number; variant: 'buttonXl' | 'buttonLg' | 'button' | 'buttonSm' }> = {
+const sizeMap: Record<Size, { height: number; variant: TypeToken }> = {
   xl: { height: controlHeight.xl, variant: 'buttonXl' },
   lg: { height: controlHeight.lg, variant: 'button' },
   md: { height: controlHeight.md, variant: 'button' },
@@ -85,8 +86,6 @@ function paletteFor(variant: Variant): { background: string; text: string; borde
       return { background: colors.white, text: colors.inkBody, border: colors.border };
     case 'ghost':
       return { background: 'transparent', text: colors.inkSoft };
-    case 'muted':
-      return { background: colors.surfaceChipCool, text: '#6F6A80' };
     case 'primary':
     default:
       return { background: colors.ink, text: colors.white };

@@ -13,6 +13,11 @@ export function relativeTime(iso: string): string {
     : `${formatDistanceToNowStrict(new Date(iso), { locale })} ago`;
 }
 
+/** Bare "2 days" / "2 Tage" with no prefix or suffix, for templates that add their own. */
+export function durationSince(iso: string): string {
+  return formatDistanceToNowStrict(new Date(iso), { locale: dfnsLocale() });
+}
+
 /** "9:24" / "Gestern" / "Mo" — the chat-list timestamp rule. */
 export function threadTime(iso: string): string {
   const d = new Date(iso);

@@ -2,13 +2,11 @@ import { useMemo } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
-import { Screen } from '@/shared/ui/screen';
+import { SectionHeading } from '@/shared/ui/section-heading';
 import { SectionLabel } from '@/shared/ui/section-label';
 import { Text } from '@/shared/ui/text';
-import { GlassButton } from '@/shared/ui/glass-button';
-import { FilterIcon } from '@/shared/ui/icons';
 import { colors } from '@/shared/theme/colors';
-import { radius, spacing } from '@/shared/theme/page-structure';
+import { radius } from '@/shared/theme/page-structure';
 import { t } from '@/shared/i18n/i18n';
 import { memberSince } from '@/shared/lib/format';
 import { useInbox } from '@/features/moments/hooks/use-inbox';
@@ -17,9 +15,8 @@ import { FeedHeader } from '@/features/feed/components/feed-header';
 import { StoryRail, StoryItem } from '@/features/feed/components/story-rail';
 import { LockedMomentCard } from '@/features/feed/components/locked-moment-card';
 import { EmptyState } from '@/features/feed/components/empty-state';
+import { TabScreen } from '@/features/navigation/tab-screen';
 import { AVATARS, demoProfiles, DEMO_USER_ID } from '@/shared/lib/fixtures';
-import { TAB_BAR_CLEARANCE } from '@/features/navigation/clearance';
-import { CaptureButton } from '@/features/navigation/capture-button';
 /**
  * Screens `01 Feed` and `01c Feed · leer`.
  *
@@ -53,7 +50,7 @@ export default function FeedScreen() {
   }
 
   return (
-    <Screen scroll bottomInset={spacing.contentBottom + TAB_BAR_CLEARANCE}>
+    <TabScreen>
       <View style={styles.stack}>
         <FeedHeader
           avatar={AVATARS.self}
@@ -93,14 +90,7 @@ export default function FeedScreen() {
 
             {pending.length > 1 ? <Dots count={pending.length} /> : null}
 
-            <View style={styles.sectionRow}>
-              <Text variant="section" color={colors.ink}>
-                {t('feed.momentsTitle')}
-              </Text>
-              <GlassButton size={36}>
-                <FilterIcon size={20} />
-              </GlassButton>
-            </View>
+            <SectionHeading title={t('feed.momentsTitle')} />
 
             <View style={styles.grid}>
               {open.map((moment) => (
@@ -125,8 +115,7 @@ export default function FeedScreen() {
           )
         )}
       </View>
-      <CaptureButton />
-    </Screen>
+    </TabScreen>
   );
 }
 
@@ -151,7 +140,6 @@ function greetingForNow(): string {
 const styles = StyleSheet.create({
   stack: { gap: 16, flex: 1 },
   gap12: { gap: 12 },
-  sectionRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   grid: { flexDirection: 'row', gap: 13, flexWrap: 'wrap' },
   // Fixed share rather than flex:1 — a single item used to stretch across the
   // full width and render a portrait photo as a letterbox strip.

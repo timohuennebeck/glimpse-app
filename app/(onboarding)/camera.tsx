@@ -1,6 +1,4 @@
 import { StyleSheet, View } from 'react-native';
-import { Image } from 'expo-image';
-import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useCameraPermissions } from 'expo-camera';
 import { CameraIcon } from '@/shared/ui/icons';
@@ -8,6 +6,7 @@ import { Text } from '@/shared/ui/text';
 import { colors } from '@/shared/theme/colors';
 import { radius } from '@/shared/theme/page-structure';
 import { t } from '@/shared/i18n/i18n';
+import { HeroPanel } from '@/features/onboarding/components/hero-panel';
 import { OnboardingScreen } from '@/features/onboarding/components/onboarding-screen';
 import { ART } from '@/shared/lib/fixtures';
 /** Screen `02 Camera · 2 of 7` — the camera permission ask. */
@@ -30,14 +29,7 @@ export default function CameraIntroScreen() {
       secondary={t('onboarding.camera.later')}
       onSecondary={() => router.push('/(onboarding)/first-glimpse')}
     >
-      <LinearGradient
-        colors={['#F4EDFE', '#EDE2FD']}
-        start={{ x: 0.1, y: 0 }}
-        end={{ x: 0.9, y: 1 }}
-        style={styles.hero}
-      >
-        <Image source={ART.cameraHero} style={styles.heroImage} contentFit="contain" />
-      </LinearGradient>
+      <HeroPanel source={ART.cameraHero} imageStyle={styles.heroImage} style={styles.hero} />
 
       <View style={styles.badgeRow}>
         <View style={styles.badge}>
@@ -56,13 +48,7 @@ export default function CameraIntroScreen() {
 }
 
 const styles = StyleSheet.create({
-  hero: {
-    marginTop: 22,
-    height: 300,
-    borderRadius: radius.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  hero: { marginTop: 22 },
   heroImage: { width: 318, height: 240 },
   badgeRow: { marginTop: 22, alignItems: 'center' },
   badge: {

@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { StyleSheet, TextInput, View, Pressable } from 'react-native';
 import { router } from 'expo-router';
-import { CloseIcon, CopyIcon, LinkIcon, MoreIcon, QrIcon, SearchIcon } from '@/shared/ui/icons';
-import { Divider } from '@/shared/ui/divider';
+import { CloseIcon, MoreIcon, QrIcon, SearchIcon } from '@/shared/ui/icons';
 import { GlassButton } from '@/shared/ui/glass-button';
 import { Screen } from '@/shared/ui/screen';
 import { SectionLabel } from '@/shared/ui/section-label';
@@ -13,7 +12,8 @@ import { fontFamily } from '@/shared/theme/fonts';
 import { t } from '@/shared/i18n/i18n';
 import { PersonRow } from '@/features/friends/components/person-row';
 import { Pill } from '@/features/friends/components/pill';
-import { demoProfiles, DEMO_USER_ID } from '@/shared/lib/fixtures';
+import { ShareRow } from '@/features/friends/components/share-row';
+import { demoOthers } from '@/shared/lib/fixtures';
 type RequestState = 'add' | 'sent' | 'friends';
 
 /** Screen `D Freund suchen` — search by @username, or share your link. */
@@ -25,12 +25,12 @@ export default function FriendSearchScreen() {
     alex: 'friends',
   });
 
-  const results = Object.values(demoProfiles).filter(
+  const needle = query.toLowerCase().replace('@', '');
+  const results = demoOthers.filter(
     (p) =>
-      p.id !== DEMO_USER_ID &&
-      (query.length === 0 ||
-        p.display_name.toLowerCase().includes(query.toLowerCase().replace('@', '')) ||
-        (p.username ?? '').includes(query.toLowerCase().replace('@', ''))),
+      query.length === 0 ||
+      p.display_name.toLowerCase().includes(needle) ||
+      (p.username ?? '').includes(needle),
   );
 
   return (
@@ -101,42 +101,21 @@ export default function FriendSearchScreen() {
         </View>
       </View>
 
-      <View style={styles.shareSection}>
-        <Divider label={t('friends.search.dividerShare')} />
-        <View style={styles.shareRow}>
-          <View style={styles.shareLinkCol}>
-            <View style={styles.shareLink}>
-              <LinkIcon size={16} />
-              <Text variant="subtitle" color={colors.inkSoft} numberOfLines={1} style={styles.flex}>
-                glimpse.app/@du
-              </Text>
-            </View>
-            <Text variant="captionXs" color={colors.muted}>
-              {t('friends.search.link')}
-            </Text>
-          </View>
-
-          <ShareAction label={t('friends.search.qr')} icon={<QrIcon size={22} />} />
-          <ShareAction label={t('friends.search.more')} icon={<MoreIcon size={22} />} />
-        </View>
-      </View>
+      <ShareRow
+        style={styles.share}
+        dividerLabel={t('friends.search.dividerShare')}
+        link="glimpse.app/@du"
+        linkLabel={t('friends.search.link')}
+        actions={[
+          { label: t('friends.search.qr'), icon: <QrIcon size={22} /> },
+          { label: t('friends.search.more'), icon: <MoreIcon size={22} /> },
+        ]}
+      />
     </Screen>
   );
 }
 
-function ShareAction({ label, icon }: { label: string; icon: React.ReactNode }) {
-  return (
-    <View style={styles.shareAction}>
-      <View style={styles.shareCircle}>{icon}</View>
-      <Text variant="captionXs" color={colors.muted}>
-        {label}
-      </Text>
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
-  flex: { flex: 1 },
   headerRow: { flexDirection: 'row', alignItems: 'center', gap: 12, height: 40 },
   field: {
     marginTop: 20,
@@ -162,27 +141,5 @@ const styles = StyleSheet.create({
   },
   section: { marginTop: 26, gap: 14 },
   list: { gap: 18 },
-  shareSection: { marginTop: 30, gap: 18 },
-  shareRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
-  shareLinkCol: { flex: 1, minWidth: 0, alignItems: 'center', gap: 6 },
-  shareLink: {
-    width: '100%',
-    height: controlHeight.fieldSm,
-    borderRadius: radius.pill,
-    borderWidth: 1.6,
-    borderColor: colors.border,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    paddingHorizontal: 14,
-  },
-  shareAction: { alignItems: 'center', gap: 6 },
-  shareCircle: {
-    width: controlHeight.fieldSm,
-    height: controlHeight.fieldSm,
-    borderRadius: controlHeight.fieldSm / 2,
-    backgroundColor: colors.surfaceLilac,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  share: { marginTop: 30 },
 });

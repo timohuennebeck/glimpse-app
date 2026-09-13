@@ -1,18 +1,17 @@
 import { ReactNode } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { router } from 'expo-router';
-import { Button } from '@/shared/ui/button';
+import { CtaFooter } from '@/shared/ui/cta-footer';
 import { ProgressHeader } from '@/shared/ui/progress-header';
 import { Screen } from '@/shared/ui/screen';
 import { Text } from '@/shared/ui/text';
 import { colors } from '@/shared/theme/colors';
 import { spacing } from '@/shared/theme/page-structure';
 interface OnboardingScreenProps {
-  /** Omit to hide the progress header (welcome, reviews, paywall). */
-  step?: number;
-  total?: number;
-  title?: string;
-  subtitle?: string;
+  /** 1-based index in the 7-step flow. */
+  step: number;
+  title: string;
+  subtitle: string;
   children?: ReactNode;
   /** Primary CTA. */
   cta: string;
@@ -21,11 +20,7 @@ interface OnboardingScreenProps {
   secondary?: string;
   onSecondary?: () => void;
   ctaIcon?: ReactNode;
-  ctaDisabled?: boolean;
-  background?: string;
-  gutter?: number;
-  scroll?: boolean;
-  /** Extra content rendered between the CTA and the bottom edge. */
+  /** Extra copy rendered between the content and the CTA. */
   footnote?: string;
 }
 
@@ -36,7 +31,6 @@ interface OnboardingScreenProps {
  */
 export function OnboardingScreen({
   step,
-  total = 7,
   title,
   subtitle,
   children,
@@ -45,27 +39,18 @@ export function OnboardingScreen({
   secondary,
   onSecondary,
   ctaIcon,
-  ctaDisabled,
-  background = colors.white,
-  gutter = spacing.gutter,
-  scroll = true,
   footnote,
 }: OnboardingScreenProps) {
   return (
-    <Screen background={background} gutter={gutter} scroll={scroll} bottomInset={spacing.contentBottom}>
-      {step ? <ProgressHeader step={step} total={total} onClose={() => router.back()} /> : null}
+    <Screen scroll bottomInset={spacing.contentBottom}>
+      <ProgressHeader step={step} onClose={() => router.back()} />
 
-      {title ? (
-        <Text variant="display" color={colors.ink} style={styles.title}>
-          {title}
-        </Text>
-      ) : null}
-
-      {subtitle ? (
-        <Text variant="bodySm" color={colors.muted} style={styles.subtitle}>
-          {subtitle}
-        </Text>
-      ) : null}
+      <Text variant="display" color={colors.ink} style={styles.title}>
+        {title}
+      </Text>
+      <Text variant="bodySm" color={colors.muted} style={styles.subtitle}>
+        {subtitle}
+      </Text>
 
       {children}
 
@@ -75,14 +60,7 @@ export function OnboardingScreen({
         </Text>
       ) : null}
 
-      <View style={styles.footer}>
-        <Button label={cta} onPress={onNext} size="lg" icon={ctaIcon} disabled={ctaDisabled} />
-        {secondary ? (
-          <Text variant="buttonSm" color={colors.inkSoft} center onPress={onSecondary}>
-            {secondary}
-          </Text>
-        ) : null}
-      </View>
+      <CtaFooter label={cta} onPress={onNext} icon={ctaIcon} secondary={secondary} onSecondary={onSecondary} />
     </Screen>
   );
 }
@@ -91,5 +69,4 @@ const styles = StyleSheet.create({
   title: { marginTop: 26 },
   subtitle: { marginTop: 12 },
   footnote: { marginTop: 20 },
-  footer: { marginTop: 'auto', paddingTop: 28, gap: 22, alignItems: 'stretch' },
 });

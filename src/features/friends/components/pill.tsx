@@ -15,7 +15,7 @@ export function Pill({ label, tone = 'filled', onPress, compact = false }: PillP
   const palette = {
     filled: { bg: colors.purple, fg: colors.white, border: 'transparent' },
     outline: { bg: 'transparent', fg: colors.inkBody, border: colors.border },
-    muted: { bg: colors.surfaceChipCool, fg: '#6F6A80', border: 'transparent' },
+    muted: { bg: colors.surfaceChipCool, fg: colors.mutedChip, border: 'transparent' },
     quiet: { bg: 'transparent', fg: colors.mutedLilac, border: colors.border },
   }[tone];
 

@@ -1,17 +1,17 @@
 import { StyleSheet, View } from 'react-native';
 import { Image } from 'expo-image';
-import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
 import { Button } from '@/shared/ui/button';
-import { CloseIcon, CopyIcon, MoreIcon } from '@/shared/ui/icons';
-import { GlassButton } from '@/shared/ui/glass-button';
+import { CloseRow } from '@/shared/ui/close-row';
+import { CopyIcon, MoreIcon } from '@/shared/ui/icons';
 import { Screen } from '@/shared/ui/screen';
 import { Text } from '@/shared/ui/text';
 import { colors } from '@/shared/theme/colors';
 import { fontFamily } from '@/shared/theme/fonts';
 import { radius, spacing } from '@/shared/theme/page-structure';
 import { t } from '@/shared/i18n/i18n';
+import { BloomBackdrop } from '@/features/onboarding/components/bloom-backdrop';
 import { ART } from '@/shared/lib/fixtures';
 /**
  * Screen `10b Share your code · after purchase`.
@@ -23,23 +23,8 @@ export default function ShareCodeScreen() {
   const code = 'G7K-4PZ';
 
   return (
-    <Screen
-      scroll
-      bottomInset={spacing.contentBottom}
-      background={colors.white}
-      backdrop={
-        <LinearGradient
-          colors={['rgba(180,140,255,.32)', 'rgba(180,140,255,0)']}
-          style={styles.bloom}
-          pointerEvents="none"
-        />
-      }
-    >
-      <View style={styles.topRow}>
-        <GlassButton size={32} onPress={() => router.push('/(onboarding)/heard-about')}>
-          <CloseIcon size={11} />
-        </GlassButton>
-      </View>
+    <Screen scroll bottomInset={spacing.contentBottom} backdrop={<BloomBackdrop />}>
+      <CloseRow onPress={() => router.push('/(onboarding)/heard-about')} />
 
       <Image source={ART.mascotHeart} style={styles.mascot} contentFit="contain" />
 
@@ -101,8 +86,6 @@ export default function ShareCodeScreen() {
 }
 
 const styles = StyleSheet.create({
-  bloom: { position: 'absolute', top: 0, left: 0, right: 0, height: 320 },
-  topRow: { flexDirection: 'row', alignItems: 'center', height: 32 },
   mascot: { width: 210, height: 190, alignSelf: 'center', marginTop: -18, marginBottom: -12 },
   eyebrow: { marginTop: 14 },
   title: { marginTop: 6 },

@@ -10,24 +10,14 @@ interface EmptyStateProps {
   body: string;
   cta: string;
   onPress?: () => void;
-  art?: number;
-  /** Dashed border = "nothing here yet" (feed empty, recipients empty). */
-  dashed?: boolean;
   artSize?: number;
 }
 
-export function EmptyState({
-  title,
-  body,
-  cta,
-  onPress,
-  art = ART.mascotUnlock,
-  dashed = true,
-  artSize = 132,
-}: EmptyStateProps) {
+/** Dashed "nothing here yet" card with the mascot (empty feed, recipients). */
+export function EmptyState({ title, body, cta, onPress, artSize = 132 }: EmptyStateProps) {
   return (
-    <View style={[styles.card, dashed ? styles.dashed : styles.solid]}>
-      <Image source={art} style={{ width: artSize, height: artSize }} contentFit="contain" />
+    <View style={styles.card}>
+      <Image source={ART.mascotUnlock} style={{ width: artSize, height: artSize }} contentFit="contain" />
       <Text variant="cardTitleLg" color={colors.ink} center>
         {title}
       </Text>
@@ -47,14 +37,11 @@ const styles = StyleSheet.create({
     paddingBottom: 22,
     alignItems: 'center',
     gap: 14,
-  },
-  dashed: {
     borderWidth: 1.5,
     borderStyle: 'dashed',
     borderColor: colors.borderStrong,
     backgroundColor: colors.surface,
   },
-  solid: { backgroundColor: colors.surfaceVioletDeep },
   body: { maxWidth: 270 },
   cta: { width: '100%', marginTop: 2 },
 });
