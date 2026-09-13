@@ -1,25 +1,105 @@
-# CODING AGENTS: READ THIS FIRST
+# Glimpse
 
-This is a **handoff bundle** from Claude Design (claude.ai/design).
+> Locket is a window into someone's day. Glimpse is a window that only opens both ways.
 
-A user mocked up designs in HTML/CSS/JS using an AI design tool, then exported this bundle so a coding agent can implement the designs for real.
+An Expo (iOS + Android) app implementing the designs handed off from Claude Design.
+The original bundle is preserved in `project/`; the handoff instructions are in
+`docs/design-handoff.md`.
 
-## What you should do — IMPORTANT
+## The mechanic
 
-**Read the chat transcripts first.** There are 1 chat transcript(s) in `chats/`. The transcripts show the full back-and-forth between the user and the design assistant — they tell you **what the user actually wants** and **where they landed** after iterating. Don't skip them. The final HTML files are the output, but the chat is where the intent lives.
+Everything in this codebase follows from one rule:
 
-**Read `project/Glimpse App Screens.dc.html` in full.** The user had this file open when they triggered the handoff, so it's almost certainly the primary design they want built. Read it top to bottom — don't skim. Then **follow its imports**: open every file it pulls in (shared components, CSS, scripts) so you understand how the pieces fit together before you start implementing.
+> Their photo lands on your homescreen **frosted**, with their name on it. Tap it
+> and the camera opens. The second you send one back, **both** photos unlock — on
+> your widget and theirs, side by side. No sending without receiving, no looking
+> without sending.
 
-**If anything is ambiguous, ask the user to confirm before you start implementing.** It's much cheaper to clarify scope up front than to build the wrong thing.
+With a soft escape: an unanswered moment unlocks itself after 24 hours, so the app
+is playful rather than nagging.
 
-## About the design files
+That is why the central database table is `trades` (a pair of photos with a lock
+on it) and not `posts`, and why the widget deep-links into the **camera** rather
+than the photo.
 
-The design medium is **HTML/CSS/JS** — these are prototypes, not production code. Your job is to **recreate them pixel-perfectly** in whatever technology makes sense for the target codebase (React, Vue, native, whatever fits). Match the visual output; don't copy the prototype's internal structure unless it happens to fit.
+## Getting started
 
-**Don't render these files in a browser or take screenshots unless the user asks you to.** Everything you need — dimensions, colors, layout rules — is spelled out in the source. Read the HTML and CSS directly; a screenshot won't tell you anything they don't.
+```bash
+npm install
+cp .env.example .env      # optional — the app runs on fixtures without it
+npx expo start
+```
 
-## Bundle contents
+Without Supabase credentials the app runs entirely on the sample data in
+`src/shared/lib/fixtures.ts`, so every screen is reviewable immediately.
 
-- `README.md` — this file
-- `chats/` — conversation transcripts (read these!)
-- `project/` — the `Glimpse app` project files (HTML prototypes, assets, components)
+```bash
+npm run typecheck    # tsc --noEmit
+npx expo export --platform ios     # verify the bundle
+```
+
+> **The widget needs a dev build.** Expo Go cannot load a widget extension.
+> See `widgets/README.md`.
+
+## Layout
+
+Feature-based: each feature owns its components, hooks and data access, and
+`shared/` holds only what genuinely crosses features.
+
+```
+app/                      expo-router routes — thin, they delegate to features
+  (onboarding)/           the 7-step signup flow, paywall, referrals
+  (app)/                  feed, friends, chats
+  camera · compose · recipients      the capture → send flow
+  moment/ · photo/ · profile/ · chat/ · invite/
+
+src/
+  features/
+    moments/              THE trade loop: inbox, composer draft, send, unlock
+    feed/ camera/ friends/ chat/ profile/
+    onboarding/ paywall/ referrals/ auth/
+    widget/               JS ↔ native snapshot bridge
+  shared/
+    theme/                tokens transcribed from the mock
+    ui/                   Text, Button, GlassButton, LockedImage, icons…
+    i18n/                 de (active) + en
+    lib/                  supabase client, typed schema, formatters, fixtures
+
+supabase/migrations/      schema, functions, RLS, storage, views
+widgets/ios · widgets/android    native widget sources
+docs/database.md          schema design and rationale
+```
+
+## Conventions
+
+- **Never a font weight above 600.** Project rule from `project/CLAUDE.md`;
+  enforced centrally in `src/shared/ui/Text.tsx`.
+- **All copy goes through i18n.** German is the launch locale (the positioning
+  note says to seed German-speaking circles first); English is scaffolded and
+  falls back to German for untranslated keys.
+- **Screens do not query Supabase directly.** They call a feature's `data/`
+  module, which falls back to fixtures when unconfigured.
+
+## What is deliberately not built
+
+| Area | State |
+|---|---|
+| Google / Apple sign-in | Designed and rendered; no provider wired. Supabase console config + `signInWithOAuth`. |
+| Payments | The paywall is real UI; nothing charges. `subscriptions` is a mirror table awaiting a store webhook. |
+| The widget itself | Both native UIs are written; the target, config plugin and native module need a Mac + Xcode. See `widgets/README.md`. |
+| Blurred renditions | `visible_moment_url()` falls back to the original until the Edge Function that generates `blurred/` is deployed. **Do not ship without it** — see `docs/database.md` §3. |
+| Contacts import | The permission-granted and permission-denied states both render; no contacts are read. |
+
+## Open product questions
+
+Carried over from the positioning note, and worth deciding before more screens:
+
+1. **Is Glimpse for a pair, or a small crew?** The trade mechanic reads very
+   differently for a couple than for six friends. Current answer: `max_friends`
+   defaults to 20 in `app_config`.
+2. **Does an unsent trade expire, or unlock itself?** Current answer: unlocks
+   after 24h (`trade_auto_unlock_hours`). The schema supports either without a
+   migration.
+3. **The paywall sits before the first trade.** If the growth loop is pairs, that
+   is probably backwards — the mock puts it at step 10 and this build follows the
+   mock, but moving it is a one-line routing change in `reviews.tsx`.

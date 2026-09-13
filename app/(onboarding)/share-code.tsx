@@ -1,0 +1,119 @@
+import { StyleSheet, View } from 'react-native';
+import { Image } from 'expo-image';
+import { LinearGradient } from 'expo-linear-gradient';
+import { router } from 'expo-router';
+import * as Clipboard from 'expo-clipboard';
+import { Button, CloseIcon, CopyIcon, GlassButton, MoreIcon, Screen, Text } from '@/shared/ui';
+import { colors, fontFamily, radius, spacing } from '@/shared/theme';
+import { t } from '@/shared/i18n';
+import { ART } from '@/shared/lib/fixtures';
+
+/**
+ * Screen `10b Share your code · after purchase`.
+ *
+ * The code is the growth loop's second surface: Plus is worth more when the
+ * people you trade with also have it, so giving it away is the point.
+ */
+export default function ShareCodeScreen() {
+  const code = 'G7K-4PZ';
+
+  return (
+    <Screen scroll bottomInset={spacing.contentBottom} background="transparent">
+      <View style={StyleSheet.absoluteFill} pointerEvents="none">
+        <LinearGradient colors={['rgba(180,140,255,.32)', 'rgba(180,140,255,0)']} style={styles.bloom} />
+      </View>
+
+      <View style={styles.topRow}>
+        <GlassButton size={32} onPress={() => router.push('/(onboarding)/heard-about')}>
+          <CloseIcon size={11} />
+        </GlassButton>
+      </View>
+
+      <Image source={ART.mascotHeart} style={styles.mascot} contentFit="contain" />
+
+      <Text variant="eyebrowAccent" color={colors.purpleDeep} style={styles.eyebrow}>
+        {t('referral.share.eyebrow')}
+      </Text>
+      <Text variant="displayLg" color={colors.ink} style={styles.title}>
+        {t('referral.share.title')}
+      </Text>
+      <Text variant="body" color={colors.purpleMuted} style={styles.subtitle}>
+        {t('referral.share.subtitle')}
+      </Text>
+
+      <View style={styles.codeCard}>
+        <Text variant="eyebrowAccent" color={colors.purpleDeep}>
+          {t('referral.share.codeLabel')}
+        </Text>
+        <Text style={styles.code}>{code}</Text>
+        <Text variant="meta" color={colors.purpleMuted}>
+          {t('referral.share.codeNote')}
+        </Text>
+      </View>
+
+      <View style={styles.actions}>
+        <Button
+          label={t('referral.share.copy')}
+          variant="outline"
+          size="xs"
+          icon={<CopyIcon size={14} color={colors.inkBody} />}
+          style={styles.action}
+          onPress={() => void Clipboard.setStringAsync(code)}
+        />
+        <Button
+          label={t('referral.share.share')}
+          variant="purple"
+          size="xs"
+          icon={<MoreIcon size={14} color={colors.white} />}
+          style={styles.action}
+        />
+      </View>
+
+      <View style={styles.footer}>
+        <Button
+          label={t('referral.share.cta')}
+          size="md"
+          onPress={() => router.push('/(onboarding)/heard-about')}
+        />
+        <Text
+          variant="bodyXs"
+          color={colors.purpleMuted}
+          center
+          onPress={() => router.push('/(onboarding)/heard-about')}
+        >
+          {t('referral.share.later')}
+        </Text>
+      </View>
+    </Screen>
+  );
+}
+
+const styles = StyleSheet.create({
+  bloom: { height: 320 },
+  topRow: { flexDirection: 'row', alignItems: 'center', height: 32 },
+  mascot: { width: 210, height: 190, alignSelf: 'center', marginTop: -18, marginBottom: -12 },
+  eyebrow: { marginTop: 14 },
+  title: { marginTop: 6 },
+  subtitle: { marginTop: 14 },
+  codeCard: {
+    marginTop: 32,
+    borderWidth: 2,
+    borderColor: colors.purple,
+    borderRadius: radius.cardSm,
+    backgroundColor: colors.surfaceVioletTint,
+    paddingVertical: 22,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    gap: 6,
+  },
+  code: {
+    fontFamily: fontFamily.mono,
+    fontSize: 36,
+    fontWeight: '600',
+    letterSpacing: 36 * 0.18,
+    color: colors.ink,
+  },
+  actions: { marginTop: 12, flexDirection: 'row', gap: 12 },
+  action: { flex: 1 },
+  footer: { marginTop: 'auto', paddingTop: 28, gap: 14 },
+});

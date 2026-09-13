@@ -1,0 +1,66 @@
+{
+  "expo": {
+    "name": "Glimpse",
+    "slug": "glimpse",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "glimpse",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "icon": "./assets/images/mascot.png",
+    "splash": {
+      "image": "./assets/images/mascot.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#F7F3FE"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "app.glimpse.mobile",
+      "entitlements": {
+        "com.apple.security.application-groups": ["group.app.glimpse.mobile"]
+      },
+      "infoPlist": {
+        "NSCameraUsageDescription": "Glimpse braucht die Kamera, damit du einen Moment aufnehmen und zurücktauschen kannst.",
+        "NSPhotoLibraryAddUsageDescription": "Damit du getauschte Momente in deiner Galerie sichern kannst.",
+        "NSContactsUsageDescription": "Damit Glimpse dir zeigen kann, welche deiner Kontakte schon dabei sind.",
+        "NSMicrophoneUsageDescription": "Nur nötig, wenn du später kurze Video-Momente aufnimmst."
+      }
+    },
+    "android": {
+      "package": "app.glimpse.mobile",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/mascot.png",
+        "backgroundColor": "#F7F3FE"
+      },
+      "permissions": ["android.permission.CAMERA", "android.permission.READ_CONTACTS"],
+      "edgeToEdgeEnabled": true
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-localization",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Glimpse braucht die Kamera, damit du einen Moment aufnehmen und zurücktauschen kannst."
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/mascot.png",
+          "imageWidth": 180,
+          "resizeMode": "contain",
+          "backgroundColor": "#F7F3FE"
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {}
+    }
+  }
+}
