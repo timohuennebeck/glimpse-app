@@ -18,11 +18,18 @@ export default function ShareCodeScreen() {
   const code = 'G7K-4PZ';
 
   return (
-    <Screen scroll bottomInset={spacing.contentBottom} background="transparent">
-      <View style={StyleSheet.absoluteFill} pointerEvents="none">
-        <LinearGradient colors={['rgba(180,140,255,.32)', 'rgba(180,140,255,0)']} style={styles.bloom} />
-      </View>
-
+    <Screen
+      scroll
+      bottomInset={spacing.contentBottom}
+      background={colors.white}
+      backdrop={
+        <LinearGradient
+          colors={['rgba(180,140,255,.32)', 'rgba(180,140,255,0)']}
+          style={styles.bloom}
+          pointerEvents="none"
+        />
+      }
+    >
       <View style={styles.topRow}>
         <GlassButton size={32} onPress={() => router.push('/(onboarding)/heard-about')}>
           <CloseIcon size={11} />
@@ -89,7 +96,7 @@ export default function ShareCodeScreen() {
 }
 
 const styles = StyleSheet.create({
-  bloom: { height: 320 },
+  bloom: { position: 'absolute', top: 0, left: 0, right: 0, height: 320 },
   topRow: { flexDirection: 'row', alignItems: 'center', height: 32 },
   mascot: { width: 210, height: 190, alignSelf: 'center', marginTop: -18, marginBottom: -12 },
   eyebrow: { marginTop: 14 },

@@ -25,8 +25,8 @@ export const de = {
     welcome: {
       title: 'Ein Blick.\nNur wenn du\neinen zurückgibst.',
       subtitle: 'Das Foto deiner Freundin liegt auf deinem\nHomescreen — verschwommen, bis du tauschst.',
-      rating: '4,9 von 5 Sternen',
-      ratingMeta: '· über 2.000 Bewertungen',
+      rating: '4,9 von 5',
+      ratingMeta: '· 2.000+ Bewertungen',
       cta: 'Los geht’s',
       hasAccount: 'Schon dabei?',
       signIn: 'Anmelden',
@@ -53,7 +53,7 @@ export const de = {
     },
 
     firstGlimpse: {
-      hint: 'Dein erster Moment',
+      hint: 'Sieht gut aus. Genau so einfach ist ein Tausch.',
     },
 
     avatar: {

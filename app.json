@@ -17,13 +17,15 @@
       "supportsTablet": false,
       "bundleIdentifier": "app.glimpse.mobile",
       "entitlements": {
-        "com.apple.security.application-groups": ["group.app.glimpse.mobile"]
+        "com.apple.security.application-groups": [
+          "group.app.glimpse.mobile"
+        ]
       },
       "infoPlist": {
-        "NSCameraUsageDescription": "Glimpse braucht die Kamera, damit du einen Moment aufnehmen und zurücktauschen kannst.",
+        "NSCameraUsageDescription": "Glimpse braucht die Kamera, damit du einen Moment aufnehmen und zur\u00fccktauschen kannst.",
         "NSPhotoLibraryAddUsageDescription": "Damit du getauschte Momente in deiner Galerie sichern kannst.",
         "NSContactsUsageDescription": "Damit Glimpse dir zeigen kann, welche deiner Kontakte schon dabei sind.",
-        "NSMicrophoneUsageDescription": "Nur nötig, wenn du später kurze Video-Momente aufnimmst."
+        "NSMicrophoneUsageDescription": "Nur n\u00f6tig, wenn du sp\u00e4ter kurze Video-Momente aufnimmst."
       }
     },
     "android": {
@@ -32,7 +34,10 @@
         "foregroundImage": "./assets/images/mascot.png",
         "backgroundColor": "#F7F3FE"
       },
-      "permissions": ["android.permission.CAMERA", "android.permission.READ_CONTACTS"],
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.READ_CONTACTS"
+      ],
       "edgeToEdgeEnabled": true
     },
     "plugins": [
@@ -42,7 +47,7 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Glimpse braucht die Kamera, damit du einen Moment aufnehmen und zurücktauschen kannst."
+          "cameraPermission": "Glimpse braucht die Kamera, damit du einen Moment aufnehmen und zur\u00fccktauschen kannst."
         }
       ],
       [
@@ -61,6 +66,10 @@
     "extra": {
       "router": {},
       "eas": {}
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single"
     }
   }
 }

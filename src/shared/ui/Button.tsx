@@ -100,6 +100,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 12,
+    // Fill the parent even when it centres its children (several footers use
+    // alignItems:'center' to centre the text links beneath the CTA). Without
+    // this the button shrink-wraps its label.
+    alignSelf: 'stretch',
   },
   icon: { alignItems: 'center', justifyContent: 'center' },
 });

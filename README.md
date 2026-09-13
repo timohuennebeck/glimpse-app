@@ -34,9 +34,15 @@ Without Supabase credentials the app runs entirely on the sample data in
 `src/shared/lib/fixtures.ts`, so every screen is reviewable immediately.
 
 ```bash
-npm run typecheck    # tsc --noEmit
+npm run typecheck                  # tsc --noEmit
 npx expo export --platform ios     # verify the bundle
+npx expo start --web               # drive the real UI in a browser
 ```
+
+**Typecheck and bundling are not verification.** Both pass on an app that never
+leaves its first screen. Before calling UI work done, run the web target and
+click through the flow — that is what catches dead-end routes, wrong locales
+and shrink-wrapped buttons.
 
 > **The widget needs a dev build.** Expo Go cannot load a widget extension.
 > See `widgets/README.md`.

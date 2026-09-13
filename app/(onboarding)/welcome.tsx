@@ -15,13 +15,21 @@ import { ART } from '@/shared/lib/fixtures';
  */
 export default function WelcomeScreen() {
   return (
-    <Screen scroll bottomInset={spacing.contentBottom} gutter={spacing.gutterWide} background="transparent">
-      <LinearGradient
-        colors={['#E9DFFB', '#EEE6FC', '#F7F3FE', '#FFFFFF']}
-        locations={[0, 0.32, 0.54, 0.66]}
-        style={StyleSheet.absoluteFill}
-      />
-
+    <Screen
+      scroll
+      bottomInset={spacing.contentBottom}
+      gutter={spacing.gutterWide}
+      background="transparent"
+      // Full-bleed: as a child it would be clipped to the padded content box
+      // and leave a white band above the status bar.
+      backdrop={
+        <LinearGradient
+          colors={['#E9DFFB', '#EEE6FC', '#F7F3FE', '#FFFFFF']}
+          locations={[0, 0.32, 0.54, 0.66]}
+          style={StyleSheet.absoluteFill}
+        />
+      }
+    >
       <View style={styles.body}>
         <Image source={ART.welcomeHero} style={styles.hero} contentFit="contain" />
 
