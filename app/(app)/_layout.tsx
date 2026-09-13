@@ -1,62 +1,48 @@
-import { Tabs } from 'expo-router';
-import { router } from 'expo-router';
-import { colors } from '@/shared/theme';
+import { NativeTabs } from 'expo-router/unstable-native-tabs';
 import { t } from '@/shared/i18n';
-import { GlassTabBar } from '@/features/navigation/GlassTabBar';
-import {
-  FeedTabIcon,
-  CameraTabIcon,
-  FriendsTabIcon,
-  ProfileTabIcon,
-} from '@/shared/ui/tabIcons';
+import { useInbox } from '@/features/moments';
+import { demoThreads } from '@/shared/lib/fixtures';
+
+// These are attached to Trigger rather than exported at the top level.
+const { Icon, Label, Badge } = NativeTabs.Trigger;
 
 /**
- * The signed-in area.
+ * The signed-in shell, built on the platform's own tab bar.
  *
- * Camera is a tab for reachability, but it opens the full-screen capture modal
- * rather than rendering inside the tab shell — a viewfinder with a navigation
- * bar across it would be wrong.
+ * This replaces a hand-rolled JS tab bar. NativeTabs renders a real UITabBar,
+ * which means iOS 26 gives us the system Liquid Glass, the scroll-edge
+ * behaviour and the minimise-on-scroll for free — none of which a View with a
+ * BlurView behind it can imitate.
+ *
+ * Camera is deliberately NOT a tab: a viewfinder is a modal task, not a place
+ * you navigate to and linger. It lives on the capture button that floats beside
+ * the bar (see `CaptureButton`).
  */
 export default function AppLayout() {
+  const { pending } = useInbox();
+  const unreadChats = demoThreads.reduce((n, thread) => n + thread.unread_count, 0);
+  // Friends carries both incoming moments and unread messages.
+  const friendsBadge = unreadChats > 0 ? String(unreadChats) : undefined;
+  const feedBadge = pending.length > 0 ? String(pending.length) : undefined;
+
   return (
-    <Tabs
-      tabBar={(props) => <GlassTabBar {...props} />}
-      screenOptions={{ headerShown: false, sceneStyle: { backgroundColor: colors.white } }}
-    >
-      <Tabs.Screen
-        name="feed"
-        options={{
-          title: t('nav.feed'),
-          tabBarIcon: ({ color, focused }) => <FeedTabIcon color={color} active={focused} />,
-        }}
-      />
-      <Tabs.Screen
-        name="camera"
-        options={{
-          title: t('nav.camera'),
-          tabBarIcon: ({ color, focused }) => <CameraTabIcon color={color} active={focused} />,
-        }}
-        listeners={{
-          tabPress: (e) => {
-            e.preventDefault();
-            router.push('/camera');
-          },
-        }}
-      />
-      <Tabs.Screen
-        name="friends"
-        options={{
-          title: t('nav.friends'),
-          tabBarIcon: ({ color, focused }) => <FriendsTabIcon color={color} active={focused} />,
-        }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: t('nav.profile'),
-          tabBarIcon: ({ color, focused }) => <ProfileTabIcon color={color} active={focused} />,
-        }}
-      />
-    </Tabs>
+    <NativeTabs>
+      <NativeTabs.Trigger name="feed">
+        <Icon sf="square.stack" drawable="ic_menu_gallery" />
+        <Label>{t('nav.feed')}</Label>
+        {feedBadge ? <Badge>{feedBadge}</Badge> : null}
+      </NativeTabs.Trigger>
+
+      <NativeTabs.Trigger name="friends">
+        <Icon sf="person.2" drawable="ic_menu_friendslist" />
+        <Label>{t('nav.friends')}</Label>
+        {friendsBadge ? <Badge>{friendsBadge}</Badge> : null}
+      </NativeTabs.Trigger>
+
+      <NativeTabs.Trigger name="profile">
+        <Icon sf="person.crop.circle" drawable="ic_menu_myplaces" />
+        <Label>{t('nav.profile')}</Label>
+      </NativeTabs.Trigger>
+    </NativeTabs>
   );
 }

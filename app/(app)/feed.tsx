@@ -13,6 +13,7 @@ import { LockedMomentCard } from '@/features/feed/components/LockedMomentCard';
 import { EmptyState } from '@/features/feed/components/EmptyState';
 import { AVATARS, demoProfiles, DEMO_USER_ID } from '@/shared/lib/fixtures';
 import { TAB_BAR_CLEARANCE } from '@/features/navigation/clearance';
+import { CaptureButton } from '@/features/navigation/CaptureButton';
 
 /**
  * Screens `01 Feed` and `01c Feed · leer`.
@@ -119,6 +120,7 @@ export default function FeedScreen() {
           )
         )}
       </View>
+      <CaptureButton />
     </Screen>
   );
 }
@@ -146,8 +148,10 @@ const styles = StyleSheet.create({
   gap12: { gap: 12 },
   sectionRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   grid: { flexDirection: 'row', gap: 13, flexWrap: 'wrap' },
-  gridCell: { flex: 1, minWidth: '45%' },
-  gridImage: { width: '100%', height: 112, borderRadius: radius.thumb },
+  // Fixed share rather than flex:1 — a single item used to stretch across the
+  // full width and render a portrait photo as a letterbox strip.
+  gridCell: { width: '48%' },
+  gridImage: { width: '100%', aspectRatio: 4 / 5, borderRadius: radius.thumb },
   dots: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: -6 },
   dot: { width: 8, height: 8, borderRadius: radius.pill, backgroundColor: colors.borderStrong },
   dotActive: { width: 16, backgroundColor: colors.purple },

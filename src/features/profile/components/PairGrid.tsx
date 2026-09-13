@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Image } from 'expo-image';
 import { LockedImage, Text } from '@/shared/ui';
+import { BLUR } from '@/shared/ui/LockedImage';
 import { colors, radius } from '@/shared/theme';
 import { pairDate } from '@/shared/lib/format';
 import type { MomentPair } from '@/features/moments';
@@ -60,7 +61,7 @@ function Pair({
             <LockedImage
               source={pair.left}
               radius={tile}
-              blur={wide ? 7 : 3.5}
+              blur={wide ? BLUR.card : BLUR.tile}
               puckSize={wide ? 56 : 38}
               style={{ height }}
             />

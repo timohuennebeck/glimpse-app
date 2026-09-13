@@ -47,7 +47,7 @@ export default function InviteScreen() {
         </Text>
       </View>
 
-      <LockedImage source={PHOTOS.momentOpen} radius={radius.lg} blur={8} puckSize={62} style={styles.preview}>
+      <LockedImage source={PHOTOS.momentOpen} radius={radius.lg} puckSize={62} style={styles.preview}>
         <View style={styles.previewMeta}>
           <Text variant="meta" color="rgba(255,255,255,.78)">
             {relativeTime(sentAt)}

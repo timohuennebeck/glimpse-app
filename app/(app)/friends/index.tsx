@@ -16,9 +16,10 @@ import { relativeTime } from '@/shared/lib/format';
 import { PersonRow } from '@/features/friends/components/PersonRow';
 import { Pill } from '@/features/friends/components/Pill';
 import { StoryRail } from '@/features/feed/components/StoryRail';
-import { AVATARS, demoFriendRequests, demoSentRequests, DEMO_USER_ID } from '@/shared/lib/fixtures';
+import { AVATARS, demoFriendRequests, demoSentRequests, DEMO_USER_ID, demoThreads } from '@/shared/lib/fixtures';
 import { ChatsList } from '@/features/chat/components/ChatsList';
 import { TAB_BAR_CLEARANCE } from '@/features/navigation/clearance';
+import { CaptureButton } from '@/features/navigation/CaptureButton';
 
 /**
  * Screen `08 Freunde` — the story rail, incoming requests, and outgoing requests
@@ -27,6 +28,7 @@ import { TAB_BAR_CLEARANCE } from '@/features/navigation/clearance';
  */
 export default function FriendsScreen() {
   const [tab, setTab] = useState<'friends' | 'chats'>('friends');
+  const unreadChats = demoThreads.reduce((n, thread) => n + thread.unread_count, 0);
 
   return (
     <Screen scroll bottomInset={spacing.contentBottom + TAB_BAR_CLEARANCE}>
@@ -53,6 +55,21 @@ export default function FriendsScreen() {
             >
               {t(key === 'friends' ? 'friends.tabFriends' : 'friends.tabChats')}
             </Text>
+            {/* Unread count, so the toggle says how much is waiting. */}
+            {key === 'chats' && unreadChats > 0 ? (
+              <View style={styles.segmentBadge}>
+                <Text variant="captionXs" color={colors.white} style={styles.segmentBadgeText}>
+                  {String(unreadChats)}
+                </Text>
+              </View>
+            ) : null}
+            {key === 'friends' && demoFriendRequests.length > 0 ? (
+              <View style={styles.segmentBadge}>
+                <Text variant="captionXs" color={colors.white} style={styles.segmentBadgeText}>
+                  {String(demoFriendRequests.length)}
+                </Text>
+              </View>
+            ) : null}
           </Pressable>
         ))}
       </View>
@@ -117,6 +134,7 @@ export default function FriendsScreen() {
       </View>
       </>
       )}
+      <CaptureButton />
     </Screen>
   );
 }
@@ -138,10 +156,23 @@ const styles = StyleSheet.create({
   },
   segmentItem: {
     flex: 1,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 7,
     paddingVertical: 8,
     borderRadius: radius.pill,
   },
+  segmentBadge: {
+    minWidth: 20,
+    height: 20,
+    borderRadius: radius.pill,
+    backgroundColor: colors.purple,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 6,
+  },
+  segmentBadgeText: { fontWeight: '600' },
   segmentItemActive: { backgroundColor: colors.white },
   segmentLabel: { fontWeight: '600' },
   section: { marginTop: 22, gap: 14 },

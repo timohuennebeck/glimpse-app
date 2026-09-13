@@ -9,21 +9,21 @@ export const i18n = new I18n({ de, en });
  * German is the launch locale, so it is both the default and the fallback: an
  * untranslated English key renders the German string rather than the raw key.
  */
-i18n.defaultLocale = 'de';
+i18n.defaultLocale = 'en';
 i18n.enableFallback = true;
 
 /**
- * German is pinned as the ACTIVE locale, not merely the fallback.
+ * English is pinned as the ACTIVE locale.
  *
- * Following the device locale meant an English phone rendered the handful of
- * keys translated in `en.ts` in English and fell back to German for the rest —
- * one screen in two languages. Until English is a complete translation that we
- * actually intend to ship, the launch locale is German for everyone.
+ * It is pinned rather than read from the device because both locales must be
+ * complete before following the device is safe — a partial locale renders a
+ * screen in two languages. German in `de.ts` is complete and stays the
+ * fallback, so switching the launch market back is this one line.
  *
  * `deviceLocale` is read so the choice is visible and easy to re-enable.
  */
-export const deviceLocale = getLocales()[0]?.languageCode ?? 'de';
-i18n.locale = 'de';
+export const deviceLocale = getLocales()[0]?.languageCode ?? 'en';
+i18n.locale = 'en';
 
 /** Look up a translation. Path is dot-notated, e.g. `feed.storiesLabel`. */
 export function t(key: string, options?: Record<string, unknown>): string {

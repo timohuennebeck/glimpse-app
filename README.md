@@ -44,6 +44,10 @@ leaves its first screen. Before calling UI work done, run the web target and
 click through the flow — that is what catches dead-end routes, wrong locales
 and shrink-wrapped buttons.
 
+**What the web target cannot verify:** the navigation shell (`NativeTabs` has a
+separate web implementation), the Liquid Glass material, real safe-area insets
+and the camera. Those need a simulator or a device.
+
 > **The widget needs a dev build.** Expo Go cannot load a widget extension.
 > See `widgets/README.md`.
 
@@ -80,9 +84,12 @@ docs/database.md          schema design and rationale
 
 - **Never a font weight above 600.** Project rule from `project/CLAUDE.md`;
   enforced centrally in `src/shared/ui/Text.tsx`.
-- **All copy goes through i18n.** German is the launch locale (the positioning
-  note says to seed German-speaking circles first); English is scaffolded and
-  falls back to German for untranslated keys.
+- **All copy goes through i18n.** English is the active locale; German is kept
+  complete in `de.ts`, since the go-to-market plan is German-speaking circles
+  first. Both files are typed as the full `Translations`, so a missing key is a
+  compile error rather than a screen in two languages.
+- **Icons come from `lucide-react-native`.** Only the brand marks — the camera
+  with its punched-out lens, the lock puck, the verified rosette — stay bespoke.
 - **Screens do not query Supabase directly.** They call a feature's `data/`
   module, which falls back to fixtures when unconfigured.
 

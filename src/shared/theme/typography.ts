@@ -1,14 +1,16 @@
 import { Platform, TextStyle } from 'react-native';
 
 /**
- * The mock sets `font-family:'TikTok Sans'`. That face is loaded at runtime via
- * expo-font (see `src/shared/theme/fonts.ts`); until it resolves we fall back to
- * the platform UI face so layout never shifts to a serif.
+ * The mock sets `font-family:'TikTok Sans'`.
+ *
+ * These names must match the keys `useFonts()` is given in `app/_layout.tsx`
+ * exactly — a name with no loaded font does not error, it silently falls back
+ * to the system face, which is how this shipped unnoticed at first.
  */
 export const fontFamily = {
-  regular: Platform.select({ ios: 'TikTokSans-Regular', android: 'TikTokSans-Regular', default: 'System' }),
-  medium: Platform.select({ ios: 'TikTokSans-Medium', android: 'TikTokSans-Medium', default: 'System' }),
-  semibold: Platform.select({ ios: 'TikTokSans-SemiBold', android: 'TikTokSans-SemiBold', default: 'System' }),
+  regular: 'TikTokSans_400Regular',
+  medium: 'TikTokSans_500Medium',
+  semibold: 'TikTokSans_600SemiBold',
   mono: Platform.select({ ios: 'Menlo', android: 'monospace', default: 'monospace' }),
 } as const;
 

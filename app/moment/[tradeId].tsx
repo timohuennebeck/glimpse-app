@@ -16,6 +16,7 @@ import {
   Text,
 } from '@/shared/ui';
 import { alpha, colors, fontFamily, radius } from '@/shared/theme';
+import { BLUR } from '@/shared/ui/LockedImage';
 import { t } from '@/shared/i18n';
 import { relativeTime, timeUntilUnlock } from '@/shared/lib/format';
 import { useInbox, useComposer, markTradeSeen } from '@/features/moments';
@@ -57,8 +58,7 @@ export default function MomentScreen() {
         source={moment.photo}
         style={StyleSheet.absoluteFill}
         contentFit="cover"
-        // 26px CSS blur on the full-screen locked view, vs 8px on the feed card.
-        blurRadius={locked ? 26 : 0}
+        blurRadius={locked ? BLUR.full : 0}
       />
       <LinearGradient
         colors={

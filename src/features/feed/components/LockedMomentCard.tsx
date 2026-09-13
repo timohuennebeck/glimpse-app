@@ -40,7 +40,7 @@ export function LockedMomentCard({ moment, onPressTrade, onPressCard }: LockedMo
       </Pressable>
 
       <Pressable onPress={onPressCard}>
-        <LockedImage source={moment.photo} radius={radius.thumbSm} blur={8} style={styles.image} />
+        <LockedImage source={moment.photo} radius={radius.thumbSm} style={styles.image} />
       </Pressable>
 
       {moment.caption ? (
@@ -83,6 +83,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   badgeText: { fontWeight: '600' },
-  // The mock draws this at aspect-ratio 16/10.
-  image: { width: '100%', aspectRatio: 16 / 10 },
+  // The mock drew this 16:10, but a moment is a phone photo — always portrait.
+  // 4:5 keeps the card from eating the whole screen the way 3:4 or 9:16 would.
+  image: { width: '100%', aspectRatio: 4 / 5 },
 });

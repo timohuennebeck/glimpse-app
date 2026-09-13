@@ -1,5 +1,11 @@
 import { useEffect } from 'react';
 import { Stack } from 'expo-router';
+import {
+  useFonts,
+  TikTokSans_400Regular,
+  TikTokSans_500Medium,
+  TikTokSans_600SemiBold,
+} from '@expo-google-fonts/tiktok-sans';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as SplashScreen from 'expo-splash-screen';
@@ -11,9 +17,20 @@ import '@/shared/i18n';
 void SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+  // Keys here must match `fontFamily` in src/shared/theme/typography.ts.
+  const [fontsLoaded] = useFonts({
+    TikTokSans_400Regular,
+    TikTokSans_500Medium,
+    TikTokSans_600SemiBold,
+  });
+
   useEffect(() => {
-    void SplashScreen.hideAsync();
-  }, []);
+    // Hold the splash until the type is ready, otherwise the first frame
+    // renders in the system face and reflows once TikTok Sans arrives.
+    if (fontsLoaded) void SplashScreen.hideAsync();
+  }, [fontsLoaded]);
+
+  if (!fontsLoaded) return null;
 
   return (
     <GestureHandlerRootView style={styles.root}>

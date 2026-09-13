@@ -10,6 +10,7 @@ import { PairGrid } from '@/features/profile/components/PairGrid';
 import { fetchPairs, type MomentPair } from '@/features/moments';
 import { demoProfiles, DEMO_USER_ID } from '@/shared/lib/fixtures';
 import { TAB_BAR_CLEARANCE } from '@/features/navigation/clearance';
+import { CaptureButton } from '@/features/navigation/CaptureButton';
 
 /** Your own profile — the Profile tab. */
 export default function OwnProfileScreen() {
@@ -67,6 +68,7 @@ export default function OwnProfileScreen() {
           {t('profile.pairsEmpty')}
         </Text>
       )}
+      <CaptureButton />
     </Screen>
   );
 }

@@ -9,9 +9,9 @@ type LockedImageProps = {
   /** Corner radius; the mock varies this by context (12 / 16 / 18 / 26). */
   radius?: number;
   /**
-   * Blur strength. The mock uses different CSS blur radii per surface:
-   * 3.5px in the small profile grid, 7-8px on cards, 26px on the full viewer.
-   * expo-image takes a 0-100 scale, so these are mapped rather than copied.
+   * Blur strength, from `BLUR`. The mock's CSS radii do not translate directly —
+   * expo-image's blurRadius is far weaker at the same number, which left faces
+   * clearly recognisable through a "locked" photo.
    */
   blur?: number;
   /** Size of the frosted lock puck. `0` hides it. */
@@ -29,10 +29,27 @@ type LockedImageProps = {
  * pre-blurred rendition and only signs a URL for the original once the trade
  * unlocks. See `supabase/migrations` and `docs/database.md`.
  */
+/**
+ * Blur strengths per surface. Tuned so the subject is unreadable rather than
+ * merely softened: a locked moment should give away nothing but colour.
+ *
+ * Presentation only — the real guarantee is that the server serves a separately
+ * stored, pre-blurred rendition and never signs the original until the trade
+ * opens. See docs/database.md §3.
+ */
+export const BLUR = {
+  /** Small tiles in the profile pair grid. */
+  tile: 16,
+  /** The feed's trade card. */
+  card: 32,
+  /** Full-screen moment viewer. */
+  full: 60,
+} as const;
+
 export function LockedImage({
   source,
   radius = 18,
-  blur = 8,
+  blur = BLUR.card,
   puckSize = 56,
   style,
   children,
