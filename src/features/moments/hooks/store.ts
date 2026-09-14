@@ -1,10 +1,11 @@
 import { useSyncExternalStore } from 'react';
 /**
- * A ~30-line external store, so the composer draft and the inbox can be shared
- * across screens without pulling in a state library for two use cases.
+ * A ~30-line external store for client-only state (the composer draft), so it
+ * can be shared across screens without a state library. Server state is not
+ * kept here: that is TanStack Query's job (see `src/shared/lib/queries.ts`).
  *
  * The returned hook also carries `set`, `reset` and `getState` as static
- * members, so data modules can update the store from outside React.
+ * members, so the store can be updated from outside React.
  */
 export function create<T extends object>(initial: T) {
   let state = initial;

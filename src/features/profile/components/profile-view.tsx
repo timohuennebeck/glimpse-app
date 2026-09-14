@@ -1,5 +1,6 @@
-import { ReactNode, useEffect, useState } from 'react';
+import { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
+import { useQuery } from '@tanstack/react-query';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { Button } from '@/shared/ui/button';
@@ -11,8 +12,7 @@ import { colors } from '@/shared/theme/colors';
 import { t } from '@/shared/i18n/i18n';
 import type { Profile } from '@/shared/lib/database.interfaces';
 import { PairGrid } from '@/features/profile/components/pair-grid';
-import { fetchPairs } from '@/features/moments/data/moments-api';
-import type { MomentPair } from '@/features/moments/interfaces';
+import { queries } from '@/shared/lib/queries';
 interface ProfileViewProps {
   profile: Profile & { photo: number };
   /** Line under the name: a tagline, or "Trading since …". */
@@ -28,18 +28,8 @@ interface ProfileViewProps {
  * only in the top-left control and where the CTA sends you.
  */
 export function ProfileView({ profile, subtitle, leading, onPressTrade }: ProfileViewProps) {
-  const [pairs, setPairs] = useState<MomentPair[]>([]);
-
-  useEffect(() => {
-    // A failed fetch must not escape as an unhandled rejection; the grid falls
-    // back to its empty state.
-    fetchPairs(profile.id)
-      .then(setPairs)
-      .catch((error: unknown) => {
-        if (__DEV__) console.warn('fetchPairs failed', error);
-        setPairs([]);
-      });
-  }, [profile.id]);
+  // A failed fetch leaves the grid in its empty state rather than crashing the screen.
+  const { data: pairs = [] } = useQuery(queries.moments.pairs(profile.id));
 
   return (
     <>

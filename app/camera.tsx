@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { Linking, StyleSheet, View } from 'react-native';
 import { CameraView, CameraType, FlashMode, useCameraPermissions } from 'expo-camera';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -33,13 +33,11 @@ export default function CameraScreen() {
   const insets = useSafeAreaInsets();
 
   const capture = useCapture(cameraRef, (uri) => {
-    composer.set({ uri, facing });
+    // A widget deep link names the trade in the URL; the in-app path set it
+    // on the draft before opening the camera.
+    composer.set({ uri, facing, replyToTradeId: trade ?? composer.replyToTradeId });
     router.push('/compose');
   });
-
-  useEffect(() => {
-    if (trade) composer.set({ replyToTradeId: trade });
-  }, [trade]); // eslint-disable-line react-hooks/exhaustive-deps -- composer.set is stable
 
   /** Abandoning the capture drops the draft, so a stale reply target cannot hijack the next fresh one. */
   function close() {

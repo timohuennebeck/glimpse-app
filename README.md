@@ -108,6 +108,11 @@ docs/database.md          schema design and rationale
   with its punched-out lens, the lock puck, the verified rosette — stay bespoke.
 - **Screens do not query Supabase directly.** They call a feature's `data/`
   module, which falls back to fixtures when unconfigured.
+- **Server state goes through TanStack Query.** Each feature declares its keys
+  and fetchers with `@lukemorales/query-key-factory` in a `data/*-queries.ts`
+  file; `src/shared/lib/queries.ts` merges them, so `useQuery(queries.moments.inbox)`
+  is the whole call and a mutation invalidates by the same key. No fetching
+  inside `useEffect`.
 
 ## What is deliberately not built
 

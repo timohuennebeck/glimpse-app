@@ -10,7 +10,8 @@ import { colors } from '@/shared/theme/colors';
 import { avatarSize, radius } from '@/shared/theme/page-structure';
 import { t } from '@/shared/i18n/i18n';
 import { relativeTime } from '@/shared/lib/format';
-import { errorMessage } from '@/shared/lib/use-async-action';
+import { useMutation } from '@tanstack/react-query';
+import { errorMessage } from '@/shared/lib/error-message';
 import { PersonRow } from '@/features/friends/components/person-row';
 import { Pill } from '@/features/friends/components/pill';
 import { StoryRail } from '@/features/feed/components/story-rail';
@@ -29,7 +30,6 @@ type Tab = 'friends' | 'chats';
 export default function FriendsScreen() {
   const [tab, setTab] = useState<Tab>('friends');
   const [requests, setRequests] = useState(demoFriendRequests);
-  const [error, setError] = useState<string | null>(null);
   // Counts on the toggle, so it says how much is waiting behind each tab.
   const badges: Record<Tab, number> = { friends: requests.length, chats: demoUnreadCount };
 
@@ -39,11 +39,10 @@ export default function FriendsScreen() {
   ];
   const waiting = rail.filter((item) => item.waiting).length;
 
-  function accept(id: string) {
-    respondToFriendRequest(id, 'accepted')
-      .then(() => setRequests((rs) => rs.filter((r) => r.id !== id)))
-      .catch((e: unknown) => setError(errorMessage(e)));
-  }
+  const accept = useMutation({
+    mutationFn: (id: string) => respondToFriendRequest(id, 'accepted'),
+    onSuccess: (_, id) => setRequests((rs) => rs.filter((r) => r.id !== id)),
+  });
 
   return (
     <TabScreen>
@@ -116,14 +115,14 @@ export default function FriendsScreen() {
                   subtitle={t('friends.search.mutual', { count: r.mutual })}
                   verified={r.verified}
                   trailing={
-                    <Pill label={t('friends.accept')} tone={r.verified ? 'filled' : 'outline'} onPress={() => accept(r.id)} />
+                    <Pill label={t('friends.accept')} tone={r.verified ? 'filled' : 'outline'} onPress={() => accept.mutate(r.id)} />
                   }
                   onPress={() => router.push(`/profile/${r.profile.id}`)}
                 />
               ))}
-              {error ? (
+              {accept.error ? (
                 <Text variant="meta" color={colors.purpleDeep}>
-                  {error}
+                  {errorMessage(accept.error)}
                 </Text>
               ) : null}
             </View>

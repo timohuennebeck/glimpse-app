@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
+import { useQuery } from '@tanstack/react-query';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -12,8 +12,7 @@ import { Text } from '@/shared/ui/text';
 import { alpha, colors } from '@/shared/theme/colors';
 import { t } from '@/shared/i18n/i18n';
 import { pairDate } from '@/shared/lib/format';
-import { fetchMomentPhoto } from '@/features/moments/data/moments-api';
-import type { MomentPhoto } from '@/features/moments/interfaces';
+import { queries } from '@/shared/lib/queries';
 
 /**
  * Screen `07c Foto Vollbild` — an unlocked moment, full bleed.
@@ -24,17 +23,7 @@ import type { MomentPhoto } from '@/features/moments/interfaces';
 export default function PhotoScreen() {
   const { momentId } = useLocalSearchParams<{ momentId: string }>();
   const insets = useSafeAreaInsets();
-  const [moment, setMoment] = useState<MomentPhoto | null>(null);
-
-  useEffect(() => {
-    if (!momentId) return;
-    fetchMomentPhoto(momentId)
-      .then(setMoment)
-      .catch((error: unknown) => {
-        if (__DEV__) console.warn('fetchMomentPhoto failed', error);
-        setMoment(null);
-      });
-  }, [momentId]);
+  const { data: moment } = useQuery({ ...queries.moments.photo(momentId ?? ''), enabled: Boolean(momentId) });
 
   return (
     <View style={styles.root}>

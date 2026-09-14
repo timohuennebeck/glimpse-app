@@ -13,11 +13,12 @@ import { CloseIcon, RetakeIcon, PencilIcon } from '@/shared/ui/icons';
 import { alpha, colors } from '@/shared/theme/colors';
 import { fontFamily } from '@/shared/theme/fonts';
 import { t } from '@/shared/i18n/i18n';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useComposer } from '@/features/moments/hooks/use-composer';
-import { reloadInbox } from '@/features/moments/hooks/use-inbox';
 import { createMoment, respondToTrade } from '@/features/moments/data/moments-api';
 import { isSupabaseConfigured } from '@/shared/lib/supabase';
-import { useAsyncAction } from '@/shared/lib/use-async-action';
+import { queries } from '@/shared/lib/queries';
+import { errorMessage } from '@/shared/lib/error-message';
 import { PHOTOS } from '@/shared/lib/fixtures';
 /**
  * Screen `03b Senden · Bestätigen` — review the shot and add a caption before
@@ -27,39 +28,40 @@ export default function ComposeScreen() {
   const composer = useComposer();
   const insets = useSafeAreaInsets();
   const [caption, setCaption] = useState(composer.caption);
-  const { busy, error, run } = useAsyncAction();
+  const queryClient = useQueryClient();
 
-  /**
-   * Two exits. Answering a frosted moment is the unlock itself — the recipient
-   * is already known, so it skips recipient selection and calls
-   * `respond_to_trade`. Only a fresh moment goes on to choose who sees it.
-   */
-  async function next() {
-    composer.set({ caption });
-    const tradeId = composer.replyToTradeId;
-
-    if (!tradeId) {
-      router.push('/recipients');
-      return;
-    }
-
-    await run(async () => {
-      if (isSupabaseConfigured && composer.uri) {
-        const momentId = await createMoment({
-          localUri: composer.uri,
-          caption: caption || null,
-          facing: composer.facing,
-        });
-        await respondToTrade(tradeId, momentId);
-        void reloadInbox();
-      }
+  /** Answering a frosted moment: upload, then `respond_to_trade` unlocks the pair. */
+  const reply = useMutation({
+    mutationFn: async (tradeId: string) => {
+      if (!isSupabaseConfigured || !composer.uri) return;
+      const momentId = await createMoment({
+        localUri: composer.uri,
+        caption: caption || null,
+        facing: composer.facing,
+      });
+      await respondToTrade(tradeId, momentId);
+    },
+    onSuccess: (_, tradeId) => {
+      void queryClient.invalidateQueries({ queryKey: queries.moments.inbox.queryKey });
       composer.reset();
       // Land on the now-open pair rather than back on the feed. `push`, not
       // `replace`, so the tab root stays underneath and the moment's close
       // button has somewhere to go back to.
       router.dismissAll();
       router.push(`/moment/${tradeId}`);
-    });
+    },
+  });
+
+  /**
+   * Two exits. Answering a frosted moment is the unlock itself — the recipient
+   * is already known, so it skips recipient selection. Only a fresh moment goes
+   * on to choose who sees it.
+   */
+  function next() {
+    composer.set({ caption });
+    const tradeId = composer.replyToTradeId;
+    if (tradeId) reply.mutate(tradeId);
+    else router.push('/recipients');
   }
 
   return (
@@ -95,9 +97,9 @@ export default function ComposeScreen() {
         {/* Frosted action bar, matching `rgba(18,16,24,.62)` + blur(22px). */}
         <BlurView intensity={40} tint="dark" style={styles.bar}>
           <View style={[styles.barInner, { paddingBottom: insets.bottom + 22 }]}>
-            {error ? (
+            {reply.error ? (
               <Text variant="meta" color={alpha.onDarkText} style={styles.error}>
-                {error}
+                {errorMessage(reply.error)}
               </Text>
             ) : null}
             <View style={styles.captionRow}>
@@ -117,7 +119,7 @@ export default function ComposeScreen() {
               variant="purple"
               size="xl"
               onPress={next}
-              loading={busy}
+              loading={reply.isPending}
             />
           </View>
         </BlurView>
