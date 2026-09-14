@@ -6,7 +6,6 @@ import { ProgressHeader } from '@/shared/ui/progress-header';
 import { Screen } from '@/shared/ui/screen';
 import { Text } from '@/shared/ui/text';
 import { colors } from '@/shared/theme/colors';
-import { spacing } from '@/shared/theme/page-structure';
 interface OnboardingScreenProps {
   /** 1-based index in the 7-step flow. */
   step: number;
@@ -26,7 +25,8 @@ interface OnboardingScreenProps {
 
 /**
  * Shared chrome for the onboarding steps: progress header at the top, a
- * headline/subtitle block, free-form middle, and a pinned CTA stack. Every
+ * headline/subtitle block, free-form middle, and the CTA stack pinned in the
+ * screen's footer slot. Every
  * `N of 7` artboard in the mock follows this skeleton.
  */
 export function OnboardingScreen({
@@ -42,7 +42,10 @@ export function OnboardingScreen({
   footnote,
 }: OnboardingScreenProps) {
   return (
-    <Screen scroll bottomInset={spacing.contentBottom}>
+    <Screen
+      scroll
+      footer={<CtaFooter label={cta} onPress={onNext} icon={ctaIcon} secondary={secondary} onSecondary={onSecondary} />}
+    >
       <ProgressHeader step={step} onClose={() => router.back()} />
 
       <Text variant="display" color={colors.ink} style={styles.title}>
@@ -59,8 +62,6 @@ export function OnboardingScreen({
           {footnote}
         </Text>
       ) : null}
-
-      <CtaFooter label={cta} onPress={onNext} icon={ctaIcon} secondary={secondary} onSecondary={onSecondary} />
     </Screen>
   );
 }

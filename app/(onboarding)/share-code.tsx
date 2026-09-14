@@ -9,7 +9,7 @@ import { Screen } from '@/shared/ui/screen';
 import { Text } from '@/shared/ui/text';
 import { colors } from '@/shared/theme/colors';
 import { fontFamily } from '@/shared/theme/fonts';
-import { radius, spacing } from '@/shared/theme/page-structure';
+import { radius } from '@/shared/theme/page-structure';
 import { t } from '@/shared/i18n/i18n';
 import { BloomBackdrop } from '@/features/onboarding/components/bloom-backdrop';
 import { ART } from '@/shared/lib/fixtures';
@@ -23,7 +23,26 @@ export default function ShareCodeScreen() {
   const code = 'G7K-4PZ';
 
   return (
-    <Screen scroll bottomInset={spacing.contentBottom} backdrop={<BloomBackdrop />}>
+    <Screen
+      footer={
+        <View style={styles.footer}>
+          <Button
+            label={t('referral.share.cta')}
+            size="md"
+            onPress={() => router.push('/(onboarding)/heard-about')}
+          />
+          <Text
+            variant="bodyXs"
+            color={colors.purpleMuted}
+            center
+            accessibilityRole="link"
+            onPress={() => router.push('/(onboarding)/heard-about')}
+          >
+            {t('referral.share.later')}
+          </Text>
+        </View>
+      }
+      scroll backdrop={<BloomBackdrop />}>
       <CloseRow onPress={() => router.push('/(onboarding)/heard-about')} />
 
       <Image source={ART.mascotHeart} style={styles.mascot} contentFit="contain" />
@@ -66,23 +85,6 @@ export default function ShareCodeScreen() {
           onPress={() => void Share.share({ message: code })}
         />
       </View>
-
-      <View style={styles.footer}>
-        <Button
-          label={t('referral.share.cta')}
-          size="md"
-          onPress={() => router.push('/(onboarding)/heard-about')}
-        />
-        <Text
-          variant="bodyXs"
-          color={colors.purpleMuted}
-          center
-          accessibilityRole="link"
-          onPress={() => router.push('/(onboarding)/heard-about')}
-        >
-          {t('referral.share.later')}
-        </Text>
-      </View>
     </Screen>
   );
 }
@@ -117,5 +119,5 @@ const styles = StyleSheet.create({
   },
   actions: { marginTop: 12, flexDirection: 'row', gap: 12 },
   action: { flex: 1 },
-  footer: { marginTop: 'auto', paddingTop: 28, gap: 14 },
+  footer: { gap: 14 },
 });

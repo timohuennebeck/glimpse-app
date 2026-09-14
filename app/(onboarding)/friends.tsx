@@ -8,7 +8,7 @@ import { ProgressHeader } from '@/shared/ui/progress-header';
 import { Screen } from '@/shared/ui/screen';
 import { Text } from '@/shared/ui/text';
 import { colors } from '@/shared/theme/colors';
-import { controlHeight, radius, spacing } from '@/shared/theme/page-structure';
+import { controlHeight, radius } from '@/shared/theme/page-structure';
 import { t } from '@/shared/i18n/i18n';
 import { PersonRow } from '@/features/friends/components/person-row';
 import { Pill } from '@/features/friends/components/pill';
@@ -29,7 +29,16 @@ export default function OnboardingFriendsScreen() {
   const suggestions = demoOthers.slice(0, 3);
 
   return (
-    <Screen scroll bottomInset={spacing.contentBottom}>
+    <Screen
+      footer={
+        <CtaFooter
+          label={t('onboarding.friends.cta')}
+          onPress={() => router.push('/(onboarding)/notifications')}
+          secondary={t('onboarding.friends.skip')}
+          onSecondary={() => router.push('/(onboarding)/notifications')}
+        />
+      }
+      scroll>
       <ProgressHeader step={5} onClose={() => router.back()} />
 
       <Text variant="displaySm" color={colors.ink} style={styles.title}>
@@ -106,13 +115,6 @@ export default function OnboardingFriendsScreen() {
             onPress: () => void Share.share({ message: t('common.profileLink') }),
           },
         ]}
-      />
-
-      <CtaFooter
-        label={t('onboarding.friends.cta')}
-        onPress={() => router.push('/(onboarding)/notifications')}
-        secondary={t('onboarding.friends.skip')}
-        onSecondary={() => router.push('/(onboarding)/notifications')}
       />
     </Screen>
   );

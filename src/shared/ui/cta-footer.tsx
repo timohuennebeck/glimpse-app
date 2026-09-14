@@ -13,7 +13,7 @@ interface CtaFooterProps {
   onSecondary?: () => void;
 }
 
-/** The CTA stack pinned to the bottom of a full-height screen. */
+/** The CTA stack for a screen's `footer` slot: primary button plus an optional text action. */
 export function CtaFooter({ label, onPress, icon, disabled, secondary, onSecondary }: CtaFooterProps) {
   return (
     <View style={styles.footer}>
@@ -28,5 +28,5 @@ export function CtaFooter({ label, onPress, icon, disabled, secondary, onSeconda
 }
 
 const styles = StyleSheet.create({
-  footer: { marginTop: 'auto', paddingTop: 28, gap: 22 },
+  footer: { gap: 22 },
 });

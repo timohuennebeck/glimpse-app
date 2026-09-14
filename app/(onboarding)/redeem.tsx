@@ -7,7 +7,7 @@ import { Screen } from '@/shared/ui/screen';
 import { Text } from '@/shared/ui/text';
 import { colors } from '@/shared/theme/colors';
 import { fontFamily } from '@/shared/theme/fonts';
-import { radius, spacing } from '@/shared/theme/page-structure';
+import { radius } from '@/shared/theme/page-structure';
 import { t } from '@/shared/i18n/i18n';
 const LENGTH = 6;
 
@@ -23,7 +23,21 @@ export default function RedeemScreen() {
   const complete = code.length === LENGTH;
 
   return (
-    <Screen scroll bottomInset={spacing.contentBottom}>
+    <Screen
+      footer={
+        <View style={styles.footer}>
+          <Button
+            label={t('referral.redeem.cta')}
+            size="md"
+            disabled={!complete}
+            onPress={() => router.push('/(onboarding)/heard-about')}
+          />
+          <Text variant="bodyXs" color={colors.purpleMuted} center>
+            {t('referral.redeem.note')}
+          </Text>
+        </View>
+      }
+      scroll>
       <CloseRow onPress={() => router.back()} />
 
       <Text variant="eyebrowAccent" color={colors.purpleDeep} style={styles.eyebrow}>
@@ -72,18 +86,6 @@ export default function RedeemScreen() {
         style={styles.hiddenInput}
         textContentType="oneTimeCode"
       />
-
-      <View style={styles.footer}>
-        <Button
-          label={t('referral.redeem.cta')}
-          size="md"
-          disabled={!complete}
-          onPress={() => router.push('/(onboarding)/heard-about')}
-        />
-        <Text variant="bodyXs" color={colors.purpleMuted} center>
-          {t('referral.redeem.note')}
-        </Text>
-      </View>
     </Screen>
   );
 }
@@ -107,5 +109,5 @@ const styles = StyleSheet.create({
   boxChar: { fontFamily: fontFamily.mono, fontSize: 24, fontWeight: '600', color: colors.ink },
   cursor: { width: 2, height: 28, borderRadius: 1, backgroundColor: colors.purpleDeep },
   hiddenInput: { position: 'absolute', opacity: 0, height: 1, width: 1 },
-  footer: { marginTop: 'auto', paddingTop: 34, gap: 14 },
+  footer: { gap: 14 },
 });

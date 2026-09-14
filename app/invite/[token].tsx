@@ -8,7 +8,7 @@ import { LockedImage } from '@/shared/ui/locked-image';
 import { Screen } from '@/shared/ui/screen';
 import { Text } from '@/shared/ui/text';
 import { colors } from '@/shared/theme/colors';
-import { radius, spacing } from '@/shared/theme/page-structure';
+import { radius } from '@/shared/theme/page-structure';
 import { t } from '@/shared/i18n/i18n';
 import { relativeTime } from '@/shared/lib/format';
 import { AVATARS, PHOTOS } from '@/shared/lib/fixtures';
@@ -27,7 +27,27 @@ export default function InviteScreen() {
   const sentAt = new Date(Date.now() - 4 * 60_000).toISOString();
 
   return (
-    <Screen scroll bottomInset={spacing.contentBottom}>
+    <Screen
+      footer={
+        <View style={styles.footer}>
+          <Button
+            label={t('invite.cta')}
+            size="lg"
+            icon={<CameraIcon size={21} lensColor={colors.ink} />}
+            onPress={() => router.push('/camera')}
+          />
+          <Text
+            variant="buttonSm"
+            color={colors.inkSoft}
+            center
+            accessibilityRole="link"
+            onPress={() => router.replace('/(onboarding)/welcome')}
+          >
+            {t('invite.secondary')}
+          </Text>
+        </View>
+      }
+      scroll>
       <CloseRow onPress={() => router.back()} />
 
       <View style={styles.intro}>
@@ -47,24 +67,6 @@ export default function InviteScreen() {
           </Text>
         </View>
       </LockedImage>
-
-      <View style={styles.footer}>
-        <Button
-          label={t('invite.cta')}
-          size="lg"
-          icon={<CameraIcon size={21} lensColor={colors.ink} />}
-          onPress={() => router.push('/camera')}
-        />
-        <Text
-          variant="buttonSm"
-          color={colors.inkSoft}
-          center
-          accessibilityRole="link"
-          onPress={() => router.replace('/(onboarding)/welcome')}
-        >
-          {t('invite.secondary')}
-        </Text>
-      </View>
     </Screen>
   );
 }
@@ -74,5 +76,5 @@ const styles = StyleSheet.create({
   body: { maxWidth: 280 },
   preview: { width: '100%', aspectRatio: 4 / 5, marginTop: 24 },
   previewMeta: { position: 'absolute', left: 18, right: 18, bottom: 18, gap: 4 },
-  footer: { marginTop: 'auto', paddingTop: 32, gap: 20, alignItems: 'center' },
+  footer: { gap: 20, alignItems: 'center' },
 });

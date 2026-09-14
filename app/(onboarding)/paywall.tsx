@@ -8,7 +8,7 @@ import { CloseRow } from '@/shared/ui/close-row';
 import { Screen } from '@/shared/ui/screen';
 import { Text } from '@/shared/ui/text';
 import { colors } from '@/shared/theme/colors';
-import { radius, spacing } from '@/shared/theme/page-structure';
+import { radius } from '@/shared/theme/page-structure';
 import { t, tList } from '@/shared/i18n/i18n';
 import { BloomBackdrop } from '@/features/onboarding/components/bloom-backdrop';
 import { ART } from '@/shared/lib/fixtures';
@@ -32,7 +32,32 @@ export default function PaywallScreen() {
   const benefits = tList<string>('paywall.benefits');
 
   return (
-    <Screen scroll bottomInset={spacing.contentBottom} backdrop={<BloomBackdrop />}>
+    <Screen
+      footer={
+        <View style={styles.footer}>
+          <Button
+            label={t('paywall.cta')}
+            size="md"
+            onPress={() => router.push('/(onboarding)/share-code')}
+          />
+          <View style={styles.footerLinks}>
+            <Text variant="bodyXs" color={colors.purpleMuted}>
+              {t('paywall.restore')}
+            </Text>
+            <View style={styles.footerDot} />
+            <Text
+              variant="bodyXs"
+              color={colors.purpleDeep}
+              style={styles.footerLink}
+              accessibilityRole="link"
+              onPress={() => router.push('/(onboarding)/redeem')}
+            >
+              {t('referral.redeem.cta')}
+            </Text>
+          </View>
+        </View>
+      }
+      scroll backdrop={<BloomBackdrop />}>
       <CloseRow onPress={() => router.push('/(onboarding)/heard-about')} />
 
       <Image source={ART.mascot} style={styles.mascot} contentFit="contain" />
@@ -90,29 +115,6 @@ export default function PaywallScreen() {
         >
           <View style={[styles.knob, trial ? styles.knobOn : styles.knobOff]} />
         </Pressable>
-      </View>
-
-      <View style={styles.footer}>
-        <Button
-          label={t('paywall.cta')}
-          size="md"
-          onPress={() => router.push('/(onboarding)/share-code')}
-        />
-        <View style={styles.footerLinks}>
-          <Text variant="bodyXs" color={colors.purpleMuted}>
-            {t('paywall.restore')}
-          </Text>
-          <View style={styles.footerDot} />
-          <Text
-            variant="bodyXs"
-            color={colors.purpleDeep}
-            style={styles.footerLink}
-            accessibilityRole="link"
-            onPress={() => router.push('/(onboarding)/redeem')}
-          >
-            {t('referral.redeem.cta')}
-          </Text>
-        </View>
       </View>
     </Screen>
   );
@@ -211,7 +213,7 @@ const styles = StyleSheet.create({
   knob: { width: 28, height: 28, borderRadius: 14, backgroundColor: colors.white },
   knobOn: { alignSelf: 'flex-end', marginRight: 3 },
   knobOff: { alignSelf: 'flex-start', marginLeft: 3 },
-  footer: { marginTop: 'auto', paddingTop: 28, gap: 14, alignItems: 'center' },
+  footer: { gap: 14, alignItems: 'center' },
   footerLinks: { flexDirection: 'row', alignItems: 'center', gap: 18 },
   footerDot: { width: 4, height: 4, borderRadius: 2, backgroundColor: colors.swatchGrey },
   footerLink: { fontWeight: '600' },

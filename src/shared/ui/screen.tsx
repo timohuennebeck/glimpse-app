@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { ScrollView, StyleSheet, View, StatusBar as RNStatusBar } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View, StatusBar as RNStatusBar } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { colors } from '@/shared/theme/colors';
@@ -21,6 +21,12 @@ interface ScreenProps {
    * away with the content.
    */
   floating?: ReactNode;
+  /**
+   * The screen's actions, pinned below the scrolling content and always
+   * visible — long content scrolls behind it instead of pushing it around.
+   * Rises with the keyboard, so a form's CTA is never hidden under it.
+   */
+  footer?: ReactNode;
 }
 
 /**
@@ -36,17 +42,25 @@ export function Screen({
   bottomInset = 0,
   backdrop,
   floating,
+  footer,
 }: ScreenProps) {
   const insets = useSafeAreaInsets();
   const paddingTop = Math.max(insets.top, RNStatusBar.currentHeight ?? 0) + 12;
-  const paddingBottom = Math.max(insets.bottom, 12) + bottomInset;
+  const safeBottom = Math.max(insets.bottom, 12);
+  // With a pinned footer the content only needs breathing room above it; the
+  // footer carries the home-indicator inset itself.
+  const paddingBottom = footer ? spacing.footerGap : safeBottom + bottomInset;
 
   const content = (
     <View style={[styles.flex, { paddingHorizontal: gutter }]}>{children}</View>
   );
 
   return (
-    <View style={[styles.flex, { backgroundColor: background }]}>
+    <KeyboardAvoidingView
+      style={[styles.flex, { backgroundColor: background }]}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      enabled={Boolean(footer)}
+    >
       <StatusBar style="dark" />
       {backdrop}
       {scroll ? (
@@ -61,8 +75,11 @@ export function Screen({
       ) : (
         <View style={[styles.flex, { paddingTop, paddingBottom }]}>{content}</View>
       )}
+      {footer ? (
+        <View style={{ paddingHorizontal: gutter, paddingBottom: safeBottom + spacing.footerGap }}>{footer}</View>
+      ) : null}
       {floating}
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 

@@ -8,7 +8,7 @@ import { Screen } from '@/shared/ui/screen';
 import { StarRow } from '@/shared/ui/star-row';
 import { Text } from '@/shared/ui/text';
 import { colors } from '@/shared/theme/colors';
-import { radius, spacing } from '@/shared/theme/page-structure';
+import { radius } from '@/shared/theme/page-structure';
 import { t, tList } from '@/shared/i18n/i18n';
 import { AVATARS } from '@/shared/lib/fixtures';
 interface Review { name: string; since: string; score: string; quote: string }
@@ -19,7 +19,11 @@ export default function ReviewsScreen() {
   const faces = [AVATARS.mia, AVATARS.ben, AVATARS.lina];
 
   return (
-    <Screen scroll bottomInset={spacing.contentBottom}>
+    <Screen
+      footer={
+        <CtaFooter label={t('onboarding.reviews.cta')} onPress={() => router.push('/(onboarding)/paywall')} />
+      }
+      scroll>
       <CloseRow onPress={() => router.back()} />
 
       <Text variant="display" color={colors.ink} style={styles.title}>
@@ -83,8 +87,6 @@ export default function ReviewsScreen() {
         <View style={[styles.dot, styles.dotActive]} />
         <View style={styles.dot} />
       </View>
-
-      <CtaFooter label={t('onboarding.reviews.cta')} onPress={() => router.push('/(onboarding)/paywall')} />
     </Screen>
   );
 }

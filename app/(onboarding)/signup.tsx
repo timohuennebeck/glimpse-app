@@ -23,7 +23,33 @@ export default function SignUpScreen() {
       background={colors.surfaceAlt}
       gutter={spacing.gutterWide}
       scroll
-      bottomInset={spacing.contentBottom}
+      footer={
+        <View style={styles.footer}>
+          <View style={styles.actions}>
+            <Button
+              label={t('onboarding.signUp.email')}
+              size="xl"
+              icon={<MailIcon size={26} />}
+              onPress={() => router.push('/(onboarding)/details')}
+            />
+            <Button
+              label={t('onboarding.signUp.google')}
+              variant="outline"
+              size="xl"
+              icon={<GoogleIcon size={24} />}
+              // Not wired: see the note in docs/database.md §6.
+              onPress={() => router.push('/(onboarding)/details')}
+            />
+          </View>
+          <Divider label={t('onboarding.signUp.divider')} />
+          <Text variant="subtitle" color={colors.mutedLilac} center style={styles.legal}>
+            {t('onboarding.signUp.legal', {
+              terms: t('onboarding.signUp.terms'),
+              privacy: t('onboarding.signUp.privacy'),
+            })}
+          </Text>
+        </View>
+      }
     >
       <ProgressHeader step={4} onClose={() => router.back()} />
 
@@ -35,34 +61,6 @@ export default function SignUpScreen() {
       </Text>
 
       <HeroPanel source={ART.signupKey} imageStyle={styles.heroImage} style={styles.hero} />
-
-      <View style={styles.actions}>
-        <Button
-          label={t('onboarding.signUp.email')}
-          size="xl"
-          icon={<MailIcon size={26} />}
-          onPress={() => router.push('/(onboarding)/details')}
-        />
-        <Button
-          label={t('onboarding.signUp.google')}
-          variant="outline"
-          size="xl"
-          icon={<GoogleIcon size={24} />}
-          // Not wired: see the note in docs/database.md §6.
-          onPress={() => router.push('/(onboarding)/details')}
-        />
-      </View>
-
-      <View style={styles.divider}>
-        <Divider label={t('onboarding.signUp.divider')} />
-      </View>
-
-      <Text variant="subtitle" color={colors.mutedLilac} center style={styles.legal}>
-        {t('onboarding.signUp.legal', {
-          terms: t('onboarding.signUp.terms'),
-          privacy: t('onboarding.signUp.privacy'),
-        })}
-      </Text>
     </Screen>
   );
 }
@@ -72,7 +70,7 @@ const styles = StyleSheet.create({
   subtitle: { marginTop: 14 },
   hero: { marginTop: 6 },
   heroImage: { width: 308, height: 250 },
-  actions: { marginTop: 14, gap: 16 },
-  divider: { marginTop: 26 },
-  legal: { marginTop: 'auto', paddingTop: 32, lineHeight: 14.5 * 1.6 },
+  footer: { gap: 22 },
+  actions: { gap: 16 },
+  legal: { lineHeight: 14.5 * 1.6 },
 });

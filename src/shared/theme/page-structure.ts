@@ -11,6 +11,8 @@ export const spacing = {
   gutterWide: 22,
   /** Bottom padding above the home indicator on scrollable screens. */
   contentBottom: 40,
+  /** Space between scrolling content and a pinned footer, and below the footer. */
+  footerGap: 12,
 } as const;
 
 export const radius = {

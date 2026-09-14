@@ -7,7 +7,6 @@ import { CloseRow } from '@/shared/ui/close-row';
 import { Screen } from '@/shared/ui/screen';
 import { Text } from '@/shared/ui/text';
 import { colors } from '@/shared/theme/colors';
-import { spacing } from '@/shared/theme/page-structure';
 import { t } from '@/shared/i18n/i18n';
 import { ART } from '@/shared/lib/fixtures';
 /**
@@ -19,7 +18,29 @@ import { ART } from '@/shared/lib/fixtures';
  */
 export default function ThankYouScreen() {
   return (
-    <Screen scroll bottomInset={spacing.contentBottom}>
+    <Screen
+      footer={
+        <View style={styles.footer}>
+          <Button
+            label={t('onboarding.thankYou.variantA.cta')}
+            onPress={() => {
+              // The feed has to be underneath, or closing the camera has nowhere to go.
+              router.replace('/(app)/feed');
+              router.push('/camera');
+            }}
+          />
+          <Text
+            variant="buttonSm"
+            color={colors.inkSoft}
+            center
+            accessibilityRole="link"
+            onPress={() => router.replace('/(app)/feed')}
+          >
+            {t('onboarding.thankYou.variantA.skip')}
+          </Text>
+        </View>
+      }
+      scroll>
       <CloseRow style={styles.topRow} onPress={() => router.replace('/(app)/feed')} />
 
       <Text variant="display" color={colors.ink} center style={styles.title}>
@@ -40,26 +61,6 @@ export default function ThankYouScreen() {
       <Text variant="bodyMd" color={colors.purpleMuted} center style={styles.footnote}>
         {t('onboarding.thankYou.variantA.footnote')}
       </Text>
-
-      <View style={styles.footer}>
-        <Button
-          label={t('onboarding.thankYou.variantA.cta')}
-          onPress={() => {
-            // The feed has to be underneath, or closing the camera has nowhere to go.
-            router.replace('/(app)/feed');
-            router.push('/camera');
-          }}
-        />
-        <Text
-          variant="buttonSm"
-          color={colors.inkSoft}
-          center
-          accessibilityRole="link"
-          onPress={() => router.replace('/(app)/feed')}
-        >
-          {t('onboarding.thankYou.variantA.skip')}
-        </Text>
-      </View>
     </Screen>
   );
 }
@@ -72,5 +73,5 @@ const styles = StyleSheet.create({
   halo: { position: 'absolute', width: 260, height: 260, borderRadius: 130 },
   mascot: { width: 250, height: 250 },
   footnote: { marginTop: 44 },
-  footer: { marginTop: 'auto', paddingTop: 32, gap: 24 },
+  footer: { gap: 24 },
 });

@@ -7,7 +7,7 @@ import { CtaFooter } from '@/shared/ui/cta-footer';
 import { Screen } from '@/shared/ui/screen';
 import { Text } from '@/shared/ui/text';
 import { colors } from '@/shared/theme/colors';
-import { radius, spacing } from '@/shared/theme/page-structure';
+import { radius } from '@/shared/theme/page-structure';
 import { t } from '@/shared/i18n/i18n';
 import type { Translations } from '@/shared/i18n/locales/de';
 import { AppStoreChannelIcon, FriendChannelIcon, InstagramChannelIcon, OtherChannelIcon, SearchChannelIcon, TiktokChannelIcon, YoutubeChannelIcon } from '@/features/onboarding/components/channel-icons';
@@ -41,7 +41,17 @@ export default function HeardAboutScreen() {
   const [choice, setChoice] = useState<ChannelKey | null>('tiktok');
 
   return (
-    <Screen scroll bottomInset={spacing.contentBottom}>
+    <Screen
+      footer={
+        <CtaFooter
+          label={t('onboarding.heardAbout.cta')}
+          disabled={!choice}
+          onPress={() => router.replace('/(onboarding)/thank-you')}
+          secondary={t('onboarding.heardAbout.skip')}
+          onSecondary={() => router.replace('/(onboarding)/thank-you')}
+        />
+      }
+      scroll>
       <CloseRow onPress={() => router.back()} />
 
       <Text variant="display" color={colors.ink} style={styles.title}>
@@ -75,14 +85,6 @@ export default function HeardAboutScreen() {
           );
         })}
       </View>
-
-      <CtaFooter
-        label={t('onboarding.heardAbout.cta')}
-        disabled={!choice}
-        onPress={() => router.replace('/(onboarding)/thank-you')}
-        secondary={t('onboarding.heardAbout.skip')}
-        onSecondary={() => router.replace('/(onboarding)/thank-you')}
-      />
     </Screen>
   );
 }

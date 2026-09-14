@@ -22,10 +22,34 @@ export default function DetailsScreen() {
 
   return (
     <Screen
+      footer={
+        <View style={styles.footer}>
+          <Button
+            label={t('onboarding.details.cta')}
+            size="xl"
+            disabled={!valid}
+            onPress={() => router.push('/(onboarding)/friends')}
+          />
+          <Text variant="subtitle" color={colors.mutedLilac} center>
+            {t('onboarding.details.hasAccount')}{' '}
+            {/* Until auth is wired this form doubles as sign-in, so the link
+                simply clears the flow above it. */}
+            <Text
+              variant="subtitle"
+              color={colors.inkBody}
+              style={styles.link}
+              accessibilityRole="link"
+              onPress={() => router.dismissTo('/(onboarding)/welcome')}
+            >
+              {t('onboarding.details.signIn')}
+            </Text>
+          </Text>
+        </View>
+      }
       background={colors.surfaceAlt}
       gutter={spacing.gutterWide}
       scroll
-      bottomInset={spacing.contentBottom}
+     
     >
       <ProgressHeader step={4} onClose={() => router.back()} />
 
@@ -108,29 +132,6 @@ export default function DetailsScreen() {
           })}
         </Text>
       </Pressable>
-
-      <View style={styles.footer}>
-        <Button
-          label={t('onboarding.details.cta')}
-          size="xl"
-          disabled={!valid}
-          onPress={() => router.push('/(onboarding)/friends')}
-        />
-        <Text variant="subtitle" color={colors.mutedLilac} center>
-          {t('onboarding.details.hasAccount')}{' '}
-          {/* Until auth is wired this form doubles as sign-in, so the link
-              simply clears the flow above it. */}
-          <Text
-            variant="subtitle"
-            color={colors.inkBody}
-            style={styles.link}
-            accessibilityRole="link"
-            onPress={() => router.dismissTo('/(onboarding)/welcome')}
-          >
-            {t('onboarding.details.signIn')}
-          </Text>
-        </Text>
-      </View>
     </Screen>
   );
 }
@@ -186,6 +187,6 @@ const styles = StyleSheet.create({
     marginTop: 1,
   },
   checkboxOff: { backgroundColor: 'transparent', borderWidth: 1.8, borderColor: colors.swatchGrey },
-  footer: { marginTop: 'auto', paddingTop: 32, gap: 18 },
+  footer: { gap: 18 },
   link: { fontWeight: '600' },
 });

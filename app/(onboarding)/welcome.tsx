@@ -19,8 +19,52 @@ import { ART } from '@/shared/lib/fixtures';
 export default function WelcomeScreen() {
   return (
     <Screen
+      footer={
+        <View style={styles.footer}>
+          <View style={styles.rating}>
+            <StarRow size={16} gap={2} />
+            <Text variant="bodyXs" color={colors.ink} style={styles.ratingText}>
+              {t('onboarding.welcome.rating')}
+            </Text>
+            <Text variant="meta" color={colors.mutedLilac}>
+              {t('onboarding.welcome.ratingMeta')}
+            </Text>
+          </View>
+
+          <Button
+            label={t('onboarding.welcome.cta')}
+            size="xl"
+            onPress={() => router.push('/(onboarding)/name')}
+          />
+
+          <Text variant="body" color={colors.ink} center>
+            {t('onboarding.welcome.hasAccount')}{' '}
+            <Text
+              variant="body"
+              color={colors.ink}
+              style={styles.link}
+              accessibilityRole="link"
+              onPress={() => router.push('/(onboarding)/details')}
+            >
+              {t('onboarding.welcome.signIn')}
+            </Text>
+          </Text>
+
+          <View style={styles.legal}>
+            <Text variant="subtitle" color={colors.mutedLilac}>
+              {t('onboarding.welcome.legalPrivacy')}
+            </Text>
+            <Text variant="subtitle" color={colors.mutedLilac}>
+              ·
+            </Text>
+            <Text variant="subtitle" color={colors.mutedLilac}>
+              {t('onboarding.welcome.legalTerms')}
+            </Text>
+          </View>
+        </View>
+      }
       scroll
-      bottomInset={spacing.contentBottom}
+     
       gutter={spacing.gutterWide}
       background="transparent"
       // Full-bleed: as a child it would be clipped to the padded content box
@@ -43,49 +87,6 @@ export default function WelcomeScreen() {
           {t('onboarding.welcome.subtitle')}
         </Text>
       </View>
-
-      <View style={styles.footer}>
-        <View style={styles.rating}>
-          <StarRow size={16} gap={2} />
-          <Text variant="bodyXs" color={colors.ink} style={styles.ratingText}>
-            {t('onboarding.welcome.rating')}
-          </Text>
-          <Text variant="meta" color={colors.mutedLilac}>
-            {t('onboarding.welcome.ratingMeta')}
-          </Text>
-        </View>
-
-        <Button
-          label={t('onboarding.welcome.cta')}
-          size="xl"
-          onPress={() => router.push('/(onboarding)/name')}
-        />
-
-        <Text variant="body" color={colors.ink} center>
-          {t('onboarding.welcome.hasAccount')}{' '}
-          <Text
-            variant="body"
-            color={colors.ink}
-            style={styles.link}
-            accessibilityRole="link"
-            onPress={() => router.push('/(onboarding)/details')}
-          >
-            {t('onboarding.welcome.signIn')}
-          </Text>
-        </Text>
-
-        <View style={styles.legal}>
-          <Text variant="subtitle" color={colors.mutedLilac}>
-            {t('onboarding.welcome.legalPrivacy')}
-          </Text>
-          <Text variant="subtitle" color={colors.mutedLilac}>
-            ·
-          </Text>
-          <Text variant="subtitle" color={colors.mutedLilac}>
-            {t('onboarding.welcome.legalTerms')}
-          </Text>
-        </View>
-      </View>
     </Screen>
   );
 }
@@ -96,7 +97,7 @@ const styles = StyleSheet.create({
   hero: { width: '100%', maxWidth: 348, aspectRatio: 348 / 300, marginTop: 6 },
   title: { marginTop: 18 },
   subtitle: { marginTop: 14 },
-  footer: { marginTop: 'auto', paddingTop: 32, gap: 22, alignItems: 'center' },
+  footer: { gap: 22, alignItems: 'center' },
   rating: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   ratingText: { fontWeight: '600' },
   link: { fontWeight: '600' },
