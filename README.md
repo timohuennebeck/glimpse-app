@@ -31,6 +31,25 @@ npx expo start
 Without Supabase credentials the app runs entirely on the sample data in
 `src/shared/lib/fixtures.ts`, so every screen is reviewable immediately.
 
+### Supabase keys
+
+The client uses the project's **publishable key** (`sb_publishable_…`) as
+`EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. Supabase is retiring the legacy
+JWT-shaped `anon` and `service_role` keys in favour of publishable and secret
+keys ([docs](https://supabase.com/docs/guides/getting-started/api-keys)); the
+app, `.env.example` and the docs use only the new names. The secret key
+(`sb_secret_…`) is server-side only and is never read by the app.
+
+Related, and already accounted for:
+
+- **JWT signing keys.** The app never inspects the JWT itself; it calls
+  `auth.getClaims()`, which verifies against the project's current signing
+  key, and the SQL relies on `auth.uid()`. Rotating to asymmetric keys in the
+  dashboard needs no code change.
+- **Generated types.** `src/shared/lib/database.interfaces.ts` is hand-written
+  against the migrations. Once a project exists, regenerate it with
+  `supabase gen types typescript` so it cannot drift.
+
 ```bash
 npm run typecheck                  # tsc --noEmit
 npx expo export --platform ios     # verify the bundle

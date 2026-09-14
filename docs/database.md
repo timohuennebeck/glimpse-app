@@ -1,6 +1,6 @@
 # Glimpse — database design
 
-Target: **Supabase** (Postgres 15 + GoTrue auth + Storage + RLS).
+Target: **Supabase** (Postgres 15 + Supabase Auth + Storage + RLS).
 
 Everything here follows from one mechanic in the positioning note:
 
@@ -158,7 +158,7 @@ Blocks are checked in `profiles`, `friendships`, `trades`, `messages` and inside
   active; the database never mirrors it. If the server ever needs to gate
   something on Plus, add RevenueCat's webhook writing a single `is_plus` flag
   rather than reimplementing their state machine.
-- **Google/Apple auth.** Supabase GoTrue handles the identity rows itself; the
+- **Google/Apple auth.** Supabase Auth handles the identity rows itself; the
   app currently only uses email OTP. Turning the provider on is console config
   plus a button that already exists in the UI.
 - **Widget delivery.** The widget reads a snapshot the app writes to the shared

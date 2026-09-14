@@ -103,8 +103,10 @@ interface CreateMomentArgs {
  */
 export async function createMoment(args: CreateMomentArgs): Promise<string> {
   const sb = requireSupabase();
-  const { data: auth } = await sb.auth.getUser();
-  const userId = auth.user?.id;
+  // `getClaims` verifies the session's JWT locally against the project's
+  // asymmetric signing keys (no round trip to the auth server per capture).
+  const { data: auth } = await sb.auth.getClaims();
+  const userId = auth?.claims.sub;
   if (!userId) throw new Error('not_authenticated');
 
   const objectKey = `${userId}/${Date.now()}.jpg`;
