@@ -32,8 +32,8 @@
 - Commit subjects use a conventional prefix (`feat:`, `fix:`, `refactor:`, `chore:`, `docs:`, `test:`) and every commit message ends with:
 
   ```
-  Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>
-  Claude-Session: https://claude.ai/code/session_01XKE3Z4Mi437u3iDrbumuSC
+  Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+  Claude-Session: https://claude.ai/code/session_012A2gz59aWK6CCueq4SYbS6
   ```
 
 ## Decisions made while planning (owner-approved unless marked)
@@ -117,6 +117,7 @@ Deleted: `src/features/moments/hooks/store.ts` (moved to `src/shared/lib/store.t
 **Files:**
 - Modify: `package.json`, `app.json`
 - Create: `src/shared/lib/format.test.ts`
+- Generate (gitignored, never committed): `expo-env.d.ts`
 
 **Interfaces:**
 - Consumes: nothing.
@@ -127,10 +128,25 @@ Deleted: `src/features/moments/hooks/store.ts` (moved to `src/shared/lib/store.t
 Run: `npm install`
 Expected: exits 0. `ls node_modules/nativewind node_modules/tailwind-merge node_modules/prettier-plugin-tailwindcss` lists all three.
 
+Then generate the Expo type shim, which is gitignored and so is absent from a
+fresh clone:
+
+```bash
+printf '/// <reference types="expo/types" />\n' > expo-env.d.ts
+```
+
+`tsconfig.json` already includes this file, and it is the only thing that pulls
+in `declare module '*.css'` from `expo/types`. Without it, TypeScript 6 fails
+`app/_layout.tsx`'s `import '../global.css'` with TS2882. Expo's CLI writes it on
+the first `npx expo start`; this is the same one line, without starting a server.
+It must never appear in a `git add`.
+
 - [ ] **Step 2: Confirm the baseline is clean**
 
 Run: `npm run typecheck`
-Expected: exits 0 with no output. If any error remains, stop and report it; later tasks assume a clean baseline.
+Expected: exits 0 with no output. The only acceptable pre-fix is the generated
+`expo-env.d.ts` from Step 1; any error pointing into `app/`, `src/` or `widgets/`
+means stop and report it, because later tasks assume a clean baseline.
 
 - [ ] **Step 3: Add the runtime packages**
 
@@ -213,8 +229,8 @@ In `app.json`, add to `"plugins"` after `"expo-localization"`:
 
 ```bash
 git add package.json package-lock.json app.json src/shared/lib/format.test.ts
-git commit -m "chore: add image picker, crypto, query persistence and jest-expo" -m "Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01XKE3Z4Mi437u3iDrbumuSC"
+git commit -m "chore: add image picker, crypto, query persistence and jest-expo" -m "Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_012A2gz59aWK6CCueq4SYbS6"
 ```
 
 ---
@@ -431,8 +447,8 @@ Call `get_advisors` with `type: "security"`, then with `type: "performance"`. Ke
 
 ```bash
 git add supabase/tests supabase/migrations
-git commit -m "chore: apply the schema to the Supabase project and add a local migration harness" -m "Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01XKE3Z4Mi437u3iDrbumuSC"
+git commit -m "chore: apply the schema to the Supabase project and add a local migration harness" -m "Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_012A2gz59aWK6CCueq4SYbS6"
 ```
 
 ---
@@ -686,8 +702,8 @@ Expected: `function_search_path_mutable`, `unindexed_foreign_keys` and `auth_rls
 
 ```bash
 git add supabase/migrations supabase/tests/app-wiring.test.sql
-git commit -m "feat: realtime publication, batch mutual counts and private chat presence" -m "Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01XKE3Z4Mi437u3iDrbumuSC"
+git commit -m "feat: realtime publication, batch mutual counts and private chat presence" -m "Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_012A2gz59aWK6CCueq4SYbS6"
 ```
 
 ---
@@ -907,8 +923,8 @@ Expected: all pass.
 
 ```bash
 git add src/shared/lib/database.interfaces.ts src/shared/lib/database.types.ts src/shared/lib/supabase.ts app src
-git commit -m "refactor: generated database types and an always-configured Supabase client" -m "Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01XKE3Z4Mi437u3iDrbumuSC"
+git commit -m "refactor: generated database types and an always-configured Supabase client" -m "Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_012A2gz59aWK6CCueq4SYbS6"
 ```
 
 ---
@@ -1138,8 +1154,8 @@ Expected: one row deleted; its profile and moment rows cascade. The two storage 
 
 ```bash
 git add supabase/functions/blur-moment/index.ts scripts/smoke-blur.mjs
-git commit -m "feat: blur-moment edge function for server-made frosted renditions" -m "Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01XKE3Z4Mi437u3iDrbumuSC"
+git commit -m "feat: blur-moment edge function for server-made frosted renditions" -m "Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_012A2gz59aWK6CCueq4SYbS6"
 ```
 
 ---
@@ -1581,8 +1597,8 @@ Expected: all pass.
 
 ```bash
 git add app src
-git commit -m "refactor: typed translation key constants and the strings the wiring needs" -m "Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01XKE3Z4Mi437u3iDrbumuSC"
+git commit -m "refactor: typed translation key constants and the strings the wiring needs" -m "Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_012A2gz59aWK6CCueq4SYbS6"
 ```
 
 ---
@@ -1908,8 +1924,8 @@ Expected: all pass.
 
 ```bash
 git add src/shared/lib/optimistic.ts src/shared/lib/optimistic.test.ts src/shared/lib/signed-urls.ts src/shared/lib/signed-urls.test.ts
-git commit -m "feat: optimistic cache patch helper and a stable signed URL cache" -m "Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01XKE3Z4Mi437u3iDrbumuSC"
+git commit -m "feat: optimistic cache patch helper and a stable signed URL cache" -m "Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_012A2gz59aWK6CCueq4SYbS6"
 ```
 
 ---
@@ -2361,8 +2377,8 @@ Expected: all pass.
 
 ```bash
 git add app src
-git commit -m "feat: session store, protected routes and a persisted query cache" -m "Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01XKE3Z4Mi437u3iDrbumuSC"
+git commit -m "feat: session store, protected routes and a persisted query cache" -m "Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_012A2gz59aWK6CCueq4SYbS6"
 ```
 
 ---
@@ -3077,8 +3093,8 @@ Expected: Prettier rewrites nothing unexpected; all tests pass.
 
 ```bash
 git add app src
-git commit -m "feat: email and password sign up and sign in" -m "Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01XKE3Z4Mi437u3iDrbumuSC"
+git commit -m "feat: email and password sign up and sign in" -m "Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_012A2gz59aWK6CCueq4SYbS6"
 ```
 
 ---
@@ -3813,8 +3829,8 @@ Expected: all tests pass.
 
 ```bash
 git add app src
-git commit -m "feat: real profiles, avatar uploads, the avatar placeholder and sign out" -m "Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01XKE3Z4Mi437u3iDrbumuSC"
+git commit -m "feat: real profiles, avatar uploads, the avatar placeholder and sign out" -m "Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_012A2gz59aWK6CCueq4SYbS6"
 ```
 
 ---
@@ -4291,8 +4307,8 @@ Expected: all tests pass.
 
 ```bash
 git add app src
-git commit -m "feat: friendships, search and mutual counts with optimistic mutations" -m "Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01XKE3Z4Mi437u3iDrbumuSC"
+git commit -m "feat: friendships, search and mutual counts with optimistic mutations" -m "Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_012A2gz59aWK6CCueq4SYbS6"
 ```
 
 ---
@@ -4942,8 +4958,8 @@ Expected: all tests pass.
 
 ```bash
 git add -A app src
-git commit -m "feat: real friend search, requests and the friends tab" -m "Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01XKE3Z4Mi437u3iDrbumuSC"
+git commit -m "feat: real friend search, requests and the friends tab" -m "Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_012A2gz59aWK6CCueq4SYbS6"
 ```
 
 ---
@@ -5737,8 +5753,8 @@ Expected: all tests pass.
 
 ```bash
 git add app src
-git commit -m "feat: moments on real data, cached signed URLs and the unlock timer" -m "Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01XKE3Z4Mi437u3iDrbumuSC"
+git commit -m "feat: moments on real data, cached signed URLs and the unlock timer" -m "Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_012A2gz59aWK6CCueq4SYbS6"
 ```
 
 ---
@@ -6462,8 +6478,8 @@ Expected: `All matched files use Prettier code style!`
 
 ```bash
 git add app src
-git commit -m "feat: outbox-backed sending, waiting-on-you recipients and the feed's sending line" -m "Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01XKE3Z4Mi437u3iDrbumuSC"
+git commit -m "feat: outbox-backed sending, waiting-on-you recipients and the feed's sending line" -m "Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_012A2gz59aWK6CCueq4SYbS6"
 ```
 
 ---
@@ -6980,8 +6996,8 @@ Expected: all tests pass.
 
 ```bash
 git add app src
-git commit -m "feat: feed, profile grid, moment and photo screens on real data" -m "Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01XKE3Z4Mi437u3iDrbumuSC"
+git commit -m "feat: feed, profile grid, moment and photo screens on real data" -m "Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_012A2gz59aWK6CCueq4SYbS6"
 ```
 
 ---
@@ -7521,8 +7537,8 @@ Expected: all tests pass.
 
 ```bash
 git add app src
-git commit -m "feat: chat threads, messages and unread counts on real data" -m "Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01XKE3Z4Mi437u3iDrbumuSC"
+git commit -m "feat: chat threads, messages and unread counts on real data" -m "Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_012A2gz59aWK6CCueq4SYbS6"
 ```
 
 ---
@@ -7943,8 +7959,8 @@ Expected: all tests pass.
 
 ```bash
 git add app src
-git commit -m "feat: chat on real messages, with per-conversation presence" -m "Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01XKE3Z4Mi437u3iDrbumuSC"
+git commit -m "feat: chat on real messages, with per-conversation presence" -m "Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_012A2gz59aWK6CCueq4SYbS6"
 ```
 
 ---
@@ -8356,8 +8372,8 @@ Expected: all tests pass.
 
 ```bash
 git add app src
-git commit -m "feat: live inbox, chat and friend updates over one realtime channel" -m "Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01XKE3Z4Mi437u3iDrbumuSC"
+git commit -m "feat: live inbox, chat and friend updates over one realtime channel" -m "Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_012A2gz59aWK6CCueq4SYbS6"
 ```
 
 ---
@@ -8825,8 +8841,8 @@ Expected: all tests pass.
 
 ```bash
 git add app src
-git commit -m "feat: invite links, preview and claim" -m "Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01XKE3Z4Mi437u3iDrbumuSC"
+git commit -m "feat: invite links, preview and claim" -m "Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_012A2gz59aWK6CCueq4SYbS6"
 ```
 
 ---
@@ -9076,8 +9092,8 @@ run `npx prettier --write README.md docs` and re-check.
 
 ```bash
 git add -A app src assets README.md docs
-git commit -m "chore: drop the fixtures and the not-configured fallback, update the docs" -m "Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01XKE3Z4Mi437u3iDrbumuSC"
+git commit -m "chore: drop the fixtures and the not-configured fallback, update the docs" -m "Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_012A2gz59aWK6CCueq4SYbS6"
 ```
 
 ---
@@ -9378,7 +9394,7 @@ report rather than making an empty commit.
 - `supabase/tests/run.sh` needs a local Postgres server and `psql`. Where none exists, skip the local runs and rely on applying to the project plus the SQL checks inside each task.
 - "Confirm email" must be switched off in the dashboard before Task 5.
 - Task 21 needs the Chrome DevTools MCP.
-- Local baseline before Task 1: `npm run typecheck` reported 6 errors, all from `nativewind` and `tailwind-merge` missing in `node_modules`; `npm install` is expected to clear them.
+- Local baseline before Task 1: `npm run typecheck` reported 6 errors, all from `nativewind` and `tailwind-merge` missing in `node_modules`. `npm install` clears those five; the sixth, TS2882 on `import '../global.css'`, needs the gitignored `expo-env.d.ts` that Task 1 Step 1 now generates.
 - **The tasks are strictly ordered.** Each one ends on a green `npm run typecheck` and a green `npm test`, and several of them deliberately patch a screen minimally — just enough to keep the tree compiling — before a later task rewrites that screen in full. Skipping a task, or doing two out of order, leaves the build red for reasons that look like bugs.
 - Five files are touched by more than one task on purpose: `app/_layout.tsx` (Tasks 8, 10, 16, 18), `app/(app)/feed.tsx` (10, 12, 13, 14, 15), `app/recipients.tsx` (11, 13, 14), `app/moment/[tradeId].tsx` (13, 15, 17) and `app/(onboarding)/details.tsx` (9, 10, 19). The task that gives a file its whole new content says so; the others show only the lines they touch.
 - Every screen after Task 6 uses translation constants (`t(FEED.STORIES_LABEL)`), so the code quoted in Tasks 8-21 is the post-Task-6 form. If a snippet does not match the file, check that Task 6 Step 6 ran over it.
