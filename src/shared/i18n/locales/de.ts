@@ -228,27 +228,6 @@ export const de = {
     restore: 'Käufe wiederherstellen',
   },
 
-  referral: {
-    redeem: {
-      eyebrow: 'Einladungscode',
-      title: 'Hast du einen\nCode bekommen?',
-      subtitle: 'Codes von Partnern und Freunden schalten drei Monate Glimpse Plus frei.',
-      cta: 'Code einlösen',
-      inputLabel: 'Einladungscode, 6 Zeichen',
-      note: 'Kein Code? Du kannst Glimpse\nauch ohne einen nutzen.',
-    },
-    share: {
-      eyebrow: 'Danke dir',
-      title: 'Teile Plus mit\ndeinen Leuten.',
-      subtitle: 'Dein Code schaltet für drei Freunde jeweils drei Monate Plus frei. Kostet dich nichts.',
-      codeLabel: 'Dein Code',
-      codeNote: 'noch 3-mal einlösbar',
-      copy: 'Kopieren',
-      share: 'Teilen',
-      cta: 'Weiter zur App',
-      later: 'Später',
-    },
-  },
 
   feed: {
     greetingMorning: 'Guten Morgen.',

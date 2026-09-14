@@ -231,27 +231,6 @@ export const en: Translations = {
     restore: 'Restore purchases',
   },
 
-  referral: {
-    redeem: {
-      eyebrow: 'Invite code',
-      title: 'Got a code\nfrom someone?',
-      subtitle: 'Partner and friend codes unlock three months of Glimpse Plus.',
-      cta: 'Redeem code',
-      inputLabel: 'Invite code, 6 characters',
-      note: 'No code? You can use Glimpse\nwithout one.',
-    },
-    share: {
-      eyebrow: 'Thank you',
-      title: 'Share Plus with\nyour people.',
-      subtitle: 'Your code unlocks three months of Plus for three friends. Costs you nothing.',
-      codeLabel: 'Your code',
-      codeNote: '3 uses left',
-      copy: 'Copy',
-      share: 'Share',
-      cta: 'Continue to the app',
-      later: 'Later',
-    },
-  },
 
   feed: {
     greetingMorning: 'Good morning.',

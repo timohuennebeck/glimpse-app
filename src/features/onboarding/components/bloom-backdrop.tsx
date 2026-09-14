@@ -1,5 +1,5 @@
 import { LinearGradient } from 'expo-linear-gradient';
-/** Soft violet glow behind the top of the paywall and share-code screens. */
+/** Soft violet glow behind the top of the paywall screen. */
 export function BloomBackdrop() {
   return (
     <LinearGradient

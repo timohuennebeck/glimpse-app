@@ -7,8 +7,6 @@ alter table public.moments              enable row level security;
 alter table public.trades               enable row level security;
 alter table public.messages             enable row level security;
 alter table public.device_tokens        enable row level security;
-alter table public.referral_codes       enable row level security;
-alter table public.referral_redemptions enable row level security;
 alter table public.invites              enable row level security;
 alter table public.reports              enable row level security;
 alter table public.app_config           enable row level security;
@@ -168,7 +166,7 @@ revoke update on public.messages from authenticated;
 grant update (read_at) on public.messages to authenticated;
 
 -- ---------------------------------------------------------------------------
--- device_tokens / reports / redemptions: owner-scoped
+-- device_tokens / reports: owner-scoped
 -- ---------------------------------------------------------------------------
 create policy device_tokens_own on public.device_tokens
   for all to authenticated
@@ -176,18 +174,6 @@ create policy device_tokens_own on public.device_tokens
 
 create policy reports_insert on public.reports
   for insert to authenticated with check (reporter_id = auth.uid());
-
-create policy redemptions_own on public.referral_redemptions
-  for select to authenticated using (redeemer_id = auth.uid());
--- INSERT only through redeem_referral_code(), which enforces max/expiry/self.
-
--- ---------------------------------------------------------------------------
--- referral_codes: your own code is readable; partner codes are readable by all
--- so the redeem screen can validate before writing.
--- ---------------------------------------------------------------------------
-create policy referral_codes_read on public.referral_codes
-  for select to authenticated
-  using (owner_id = auth.uid() or kind = 'partner');
 
 -- ---------------------------------------------------------------------------
 -- invites: the inviter manages them. Claiming goes through claim_invite(), by

@@ -30,7 +30,6 @@ export const PHOTOS = {
 export const ART = {
   mascot: require('../../../assets/images/mascot.png'),
   mascotUnlock: require('../../../assets/images/mascot-unlock.png'),
-  mascotHeart: require('../../../assets/images/mascot-heart.png'),
   welcomeHero: require('../../../assets/images/welcome-hero.png'),
   cameraHero: require('../../../assets/images/camera-hero.png'),
   signupKey: require('../../../assets/images/signup-key-hero.png'),

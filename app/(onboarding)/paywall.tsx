@@ -20,10 +20,9 @@ type Plan = 'monthly' | 'yearly';
  * Entitlement will come from RevenueCat, which owns the subscription state
  * machine, so the database deliberately has no `subscriptions` table.
  *
- * Worth flagging: the positioning note's open question 03 argues this screen
- * sits too early, because the growth loop needs a first *trade* before anyone is
- * asked for money. It is built where the mock puts it; moving it is a one-line
- * routing change in `reviews.tsx`.
+ * It sits after the first capture and friend invites, so skipping or paying
+ * never stands between a new user and the growth loop. See README, open
+ * product question 3.
  */
 export default function PaywallScreen() {
   const [plan, setPlan] = useState<Plan>('yearly');
@@ -37,23 +36,11 @@ export default function PaywallScreen() {
           <Button
             label={t('paywall.cta')}
             size="md"
-            onPress={() => router.push('/(onboarding)/share-code')}
+            onPress={() => router.push('/(onboarding)/heard-about')}
           />
-          <View className="flex-row items-center gap-[18px]">
-            <Text variant="bodyXs" className="text-purple-muted">
-              {t('paywall.restore')}
-            </Text>
-            <View className="h-1 w-1 rounded-[2px] bg-swatch-grey" />
-            <Text
-              variant="bodyXs"
-              weight="semibold"
-              className="text-purple-deep"
-              accessibilityRole="link"
-              onPress={() => router.push('/(onboarding)/redeem')}
-            >
-              {t('referral.redeem.cta')}
-            </Text>
-          </View>
+          <Text variant="bodyXs" className="text-purple-muted">
+            {t('paywall.restore')}
+          </Text>
         </View>
       }
       scroll

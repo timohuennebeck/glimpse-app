@@ -118,16 +118,6 @@ export type ThreadRow = {
   unread_count: number;
 };
 
-export type ReferralCode = {
-  code: string;
-  owner_id: string | null;
-  kind: 'personal' | 'partner';
-  max_redemptions: number | null;
-  redemptions: number;
-  expires_at: string | null;
-  created_at: string;
-};
-
 export type Database = {
   public: {
     Tables: {
@@ -159,19 +149,6 @@ export type Database = {
         Row: Message;
         Insert: Pick<Message, 'sender_id' | 'recipient_id'> & Partial<Message>;
         Update: Partial<Pick<Message, 'read_at'>>;
-        Relationships: [];
-      };
-      referral_codes: {
-        Row: ReferralCode;
-        // Minted by the signup trigger, redeemed through an RPC — never written directly.
-        Insert: never;
-        Update: never;
-        Relationships: [];
-      };
-      referral_redemptions: {
-        Row: { id: string; code: string; redeemer_id: string; created_at: string };
-        Insert: never; // through redeem_referral_code()
-        Update: never;
         Relationships: [];
       };
       device_tokens: {
@@ -207,7 +184,6 @@ export type Database = {
         Args: { p_token: string };
         Returns: { inviter_id: string; moment_id: string | null }[];
       };
-      redeem_referral_code: { Args: { p_code: string }; Returns: ReferralCode };
       register_device_token: { Args: { p_token: string; p_platform: 'ios' | 'android' }; Returns: undefined };
     };
   };

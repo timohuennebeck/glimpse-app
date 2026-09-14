@@ -185,30 +185,6 @@ create table public.device_tokens (
 );
 
 -- ---------------------------------------------------------------------------
--- referrals: "share your code" (10b) and "redeem partner code" (10a)
--- ---------------------------------------------------------------------------
-create table public.referral_codes (
-  -- Stored without the hyphen (the UI shows ABC-123); one canonical form so
-  -- ABC-123 and ABC123 cannot be two different keys.
-  code            text primary key check (code ~ '^[A-Z0-9]{6}$'),
-  owner_id        uuid references public.profiles(id) on delete cascade,
-  kind            text not null default 'personal' check (kind in ('personal', 'partner')),
-  max_redemptions int,
-  redemptions     int not null default 0,
-  expires_at      timestamptz,
-  created_at      timestamptz not null default now()
-);
-
-create table public.referral_redemptions (
-  id          uuid primary key default gen_random_uuid(),
-  code        text not null references public.referral_codes(code) on delete cascade,
-  redeemer_id uuid not null references public.profiles(id) on delete cascade,
-  created_at  timestamptz not null default now(),
-  -- A person may only ever redeem one code.
-  unique (redeemer_id)
-);
-
--- ---------------------------------------------------------------------------
 -- invites: deeplink for screen E, before the recipient has an account
 -- ---------------------------------------------------------------------------
 create table public.invites (

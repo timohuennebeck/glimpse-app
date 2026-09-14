@@ -22,8 +22,6 @@ language plpgsql
 security definer
 set search_path = public
 as $$
-declare
-  v_code text;
 begin
   insert into public.profiles (id, display_name, locale)
   values (
@@ -33,33 +31,8 @@ begin
   )
   on conflict (id) do nothing;
 
-  -- Mint the personal share code (screen 10b). Unambiguous alphabet, retried
-  -- on the rare collision.
-  loop
-    v_code := public.random_code(6);
-    begin
-      insert into public.referral_codes (code, owner_id, kind, max_redemptions)
-      values (v_code, new.id, 'personal', 3);
-      exit;
-    exception when unique_violation then
-      -- try another
-    end;
-  end loop;
-
   return new;
 end;
-$$;
-
--- Six characters from an alphabet without 0/O/1/I.
-create or replace function public.random_code(p_len int)
-returns text
-language sql
-volatile
-as $$
-  select string_agg(
-    substr('ABCDEFGHJKLMNPQRSTUVWXYZ23456789', 1 + floor(random() * 32)::int, 1), ''
-  )
-  from generate_series(1, p_len);
 $$;
 
 create trigger on_auth_user_created
@@ -401,53 +374,6 @@ as $$
 $$;
 
 -- ---------------------------------------------------------------------------
--- Referral codes: all limits enforced here, in one place, under a row lock.
--- ---------------------------------------------------------------------------
-create or replace function public.redeem_referral_code(p_code text)
-returns public.referral_codes
-language plpgsql
-volatile
-security definer
-set search_path = public
-as $$
-declare
-  v_code public.referral_codes;
-begin
-  if auth.uid() is null then
-    raise exception 'not_authenticated' using errcode = 'insufficient_privilege';
-  end if;
-
-  select * into v_code
-    from public.referral_codes
-   where code = upper(replace(p_code, '-', ''))
-     for update;
-
-  if v_code.code is null then
-    raise exception 'code_unknown' using errcode = 'no_data_found';
-  end if;
-  if v_code.owner_id = auth.uid() then
-    raise exception 'code_is_own' using errcode = 'check_violation';
-  end if;
-  if v_code.expires_at is not null and v_code.expires_at <= now() then
-    raise exception 'code_expired' using errcode = 'check_violation';
-  end if;
-  if v_code.max_redemptions is not null and v_code.redemptions >= v_code.max_redemptions then
-    raise exception 'code_exhausted' using errcode = 'check_violation';
-  end if;
-
-  -- unique (redeemer_id) turns a second redemption into unique_violation.
-  insert into public.referral_redemptions (code, redeemer_id) values (v_code.code, auth.uid());
-
-  update public.referral_codes
-     set redemptions = redemptions + 1
-   where code = v_code.code
-  returning * into v_code;
-
-  return v_code;
-end;
-$$;
-
--- ---------------------------------------------------------------------------
 -- Push tokens: a phone changing hands re-homes the token to the new account.
 -- ---------------------------------------------------------------------------
 create or replace function public.register_device_token(p_token text, p_platform text)
@@ -474,15 +400,13 @@ revoke execute on function
   public.respond_to_trade(uuid, uuid),
   public.visible_moment_paths(uuid[]),
   public.claim_invite(text),
-  public.redeem_referral_code(text),
   public.register_device_token(text, text),
   public.are_friends(uuid, uuid),
   public.is_blocked(uuid, uuid),
   public.can_see_moment(uuid),
   public.can_see_original(uuid),
   public.storage_object_readable(text),
-  public.moment_shared_between(uuid, uuid, uuid),
-  public.random_code(int)
+  public.moment_shared_between(uuid, uuid, uuid)
 from public, anon;
 
 grant execute on function
@@ -490,7 +414,6 @@ grant execute on function
   public.respond_to_trade(uuid, uuid),
   public.visible_moment_paths(uuid[]),
   public.claim_invite(text),
-  public.redeem_referral_code(text),
   public.register_device_token(text, text),
   public.are_friends(uuid, uuid),
   public.is_blocked(uuid, uuid),

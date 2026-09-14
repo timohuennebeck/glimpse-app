@@ -80,7 +80,7 @@ Feature-based: each feature owns its components, hooks and data access, and
 
 ```
 app/                      expo-router routes — thin, they delegate to features
-  (onboarding)/           the 7-step signup flow, paywall, referrals
+  (onboarding)/           the 7-step signup flow, paywall
   (app)/                  feed, friends, chats
   camera · compose · recipients      the capture → send flow
   moment/ · photo/ · profile/ · chat/ · invite/
@@ -89,7 +89,7 @@ src/
   features/
     moments/              THE trade loop: inbox, composer draft, send, unlock
     feed/ camera/ friends/ chat/ profile/
-    onboarding/ paywall/ referrals/ auth/
+    onboarding/ paywall/ auth/
     widget/               JS ↔ native snapshot bridge
   shared/
     theme/                tokens transcribed from the mock
@@ -158,6 +158,10 @@ Carried over from the positioning note, and worth deciding before more screens:
 2. **Does an unsent trade expire, or unlock itself?** Current answer: unlocks
    after 24h (`trade_auto_unlock_hours`). The schema supports either without a
    migration.
-3. **The paywall sits before the first trade.** If the growth loop is pairs, that
-   is probably backwards — the mock puts it at step 10 and this build follows the
-   mock, but moving it is a one-line routing change in `reviews.tsx`.
+3. **Where does the paywall sit?** Decided: it stays near the end of onboarding.
+   The first capture (`camera` → `first-glimpse`) and friend invites (`friends`)
+   already come before it, and it is skippable, so it does not block the growth
+   loop — while most subscription trials start on day 0. What is weak is that
+   none of the Plus benefits mean anything on day 0, so the follow-up is
+   contextual paywalls once each feature exists: pairs about to leave the 30-day
+   history, tapping month export, choosing a locked widget frame.

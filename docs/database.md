@@ -25,7 +25,6 @@ lock on it.
 | `trades`                                  | **The core.** One initiating moment + one response, with lock state |
 | `messages`                                | 1:1 chat, optionally carrying a moment                              |
 | `device_tokens`                           | Push targets, needed to refresh the widget                          |
-| `referral_codes` / `referral_redemptions` | Share-your-code + partner codes                                     |
 | `invites`                                 | Deeplink for "X sent you a moment" before signup                    |
 | `reports`                                 | Safety queue                                                        |
 
@@ -141,9 +140,6 @@ Every table is `enable row level security` with no permissive default.
 - `invites` — owner-managed; there is no SELECT for anyone else. Claiming is
   `claim_invite(token)`, an atomic update by token, because a row filter cannot
   express "the one row whose token you know".
-- `referral_codes` — minted on signup; redeemed only through
-  `redeem_referral_code()`, which enforces expiry, the redemption cap and
-  not-your-own under a row lock.
 - everything else — owner-scoped. Every RPC is revoked from `anon`.
 
 Blocks are checked in `profiles`, `friendships`, `trades`, `messages` and inside
@@ -158,6 +154,10 @@ Blocks are checked in `profiles`, `friendships`, `trades`, `messages` and inside
   active; the database never mirrors it. If the server ever needs to gate
   something on Plus, add RevenueCat's webhook writing a single `is_plus` flag
   rather than reimplementing their state machine.
+- **Promo and referral codes.** Removed on purpose. A code only unlocked Plus,
+  never access, so it brought no new users; the invite deeplink (`invites`) is
+  the growth loop. Partner deals use App Store / Play offer codes, which
+  RevenueCat already understands, so there is no code table or redeem screen.
 - **Google/Apple auth.** Supabase Auth handles the identity rows itself; the
   app currently only uses email OTP. Turning the provider on is console config
   plus a button that already exists in the UI.
