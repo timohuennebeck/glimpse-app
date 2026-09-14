@@ -3,7 +3,11 @@ import { colors } from '@/shared/theme/colors';
 /** Channel glyphs for screen `12 Where did you hear`, matching the mock's SVGs. */
 const C = colors.purpleMuted;
 
-export function FriendChannelIcon({ size = 26 }: { size?: number }) {
+interface ChannelIconProps {
+  size?: number;
+}
+
+export function FriendChannelIcon({ size = 26 }: ChannelIconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill={C}>
       <Circle cx="9" cy="8" r="3.4" />
@@ -14,7 +18,7 @@ export function FriendChannelIcon({ size = 26 }: { size?: number }) {
   );
 }
 
-export function InstagramChannelIcon({ size = 24 }: { size?: number }) {
+export function InstagramChannelIcon({ size = 24 }: ChannelIconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={C} strokeWidth={2}>
       <Rect x="3" y="3" width="18" height="18" rx="5" />
@@ -24,7 +28,7 @@ export function InstagramChannelIcon({ size = 24 }: { size?: number }) {
   );
 }
 
-export function TiktokChannelIcon({ size = 26 }: { size?: number }) {
+export function TiktokChannelIcon({ size = 26 }: ChannelIconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={C} strokeWidth={2.6} strokeLinecap="round">
       <Path d="M14.2 4.2L5.8 18.8" />
@@ -36,7 +40,7 @@ export function TiktokChannelIcon({ size = 26 }: { size?: number }) {
   );
 }
 
-export function AppStoreChannelIcon({ size = 24 }: { size?: number }) {
+export function AppStoreChannelIcon({ size = 24 }: ChannelIconProps) {
   return (
     <Svg width={size} height={(size * 20) / 26} viewBox="0 0 26 20" fill="none" stroke={C} strokeWidth={1.9} strokeLinejoin="round">
       <Rect x="1" y="1" width="24" height="18" rx="3.5" />
@@ -45,7 +49,7 @@ export function AppStoreChannelIcon({ size = 24 }: { size?: number }) {
   );
 }
 
-export function YoutubeChannelIcon({ size = 24 }: { size?: number }) {
+export function YoutubeChannelIcon({ size = 24 }: ChannelIconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill={C}>
       <Rect x="2" y="5" width="20" height="14" rx="4" />
@@ -54,7 +58,7 @@ export function YoutubeChannelIcon({ size = 24 }: { size?: number }) {
   );
 }
 
-export function SearchChannelIcon({ size = 24 }: { size?: number }) {
+export function SearchChannelIcon({ size = 24 }: ChannelIconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill={C}>
       <Path d="M11 2.5l1.75 5.15L17.9 9.4l-5.15 1.75L11 16.3l-1.75-5.15L4.1 9.4l5.15-1.75z" />
@@ -63,7 +67,7 @@ export function SearchChannelIcon({ size = 24 }: { size?: number }) {
   );
 }
 
-export function OtherChannelIcon({ size = 26 }: { size?: number }) {
+export function OtherChannelIcon({ size = 26 }: ChannelIconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill={C}>
       <Circle cx="6" cy="12" r="2" />

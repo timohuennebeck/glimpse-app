@@ -1,8 +1,9 @@
 /**
- * German is the launch locale (see the positioning note: "Seed narrow —
- * German-speaking first"). The mock's lorem ipsum is replaced here with real
- * copy; the German strings that were already in the mock ("Fortfahren",
- * "Ausstehend", "Empfänger wählen"…) are kept verbatim.
+ * German, kept complete as the second locale. English is active (see
+ * `src/shared/i18n/i18n.ts`); the go-to-market plan is still German-speaking
+ * circles first, so this file is the one that gets switched on then. The mock's
+ * lorem ipsum is replaced with real copy; German strings that were already in
+ * the mock ("Fortfahren", "Ausstehend", "Empfänger wählen"…) are kept verbatim.
  */
 export const de = {
   nav: {
@@ -16,6 +17,14 @@ export const de = {
     back: 'Zurück',
     next: 'Weiter',
     you: 'Du',
+    more: 'Mehr',
+    filter: 'Filter',
+    clear: 'Löschen',
+    profileLink: 'glimpse.app/@du',
+  },
+
+  time: {
+    yesterday: 'Gestern',
   },
 
   onboarding: {
@@ -81,6 +90,8 @@ export const de = {
       emailPlaceholder: 'du@beispiel.de',
       passwordLabel: 'Passwort',
       passwordHint: 'Sicher · mindestens 9 Zeichen',
+      showPassword: 'Passwort anzeigen',
+      hidePassword: 'Passwort verbergen',
       consent: 'Ich akzeptiere die %{terms} und die %{privacy}.',
       cta: 'Konto erstellen',
       hasAccount: 'Schon ein Konto?',
@@ -97,6 +108,7 @@ export const de = {
       inviteTitle: 'Deine Leute sind\nnoch nicht hier',
       inviteBody: 'Schick einen Link. Sobald jemand annimmt, könnt ihr sofort tauschen.',
       inviteCta: 'Freunde einladen',
+      moreCount: '+%{count}',
       dividerShare: 'oder teilen',
       shareLink: 'Link',
       shareCopy: 'Kopieren',
@@ -125,6 +137,21 @@ export const de = {
       skip: 'Später',
       widgetName: 'Glimpse',
       widgetReply: 'Antworten',
+      preview: {
+        weather: 'Wetter',
+        clock: 'Uhr',
+        calendar: 'Kalender',
+        maps: 'Karten',
+        mail: 'Mail',
+        contacts: 'Kontakte',
+        stocks: 'Aktien',
+        photos: 'Fotos',
+        sampleName: 'Mia',
+        sampleMeta: 'Mia · vor 12 Min',
+        sampleTime: '· 14:07',
+        sampleCaption: 'Kurz raus, bevor der Regen kommt',
+        sampleCaptionLong: 'Kurz raus, bevor der Regen kommt. Zeig mir deinen Blick.',
+      },
     },
 
     reviews: {
@@ -207,6 +234,7 @@ export const de = {
       title: 'Hast du einen\nCode bekommen?',
       subtitle: 'Codes von Partnern und Freunden schalten drei Monate Glimpse Plus frei.',
       cta: 'Code einlösen',
+      inputLabel: 'Einladungscode, 6 Zeichen',
       note: 'Kein Code? Du kannst Glimpse\nauch ohne einen nutzen.',
     },
     share: {
@@ -248,6 +276,8 @@ export const de = {
     shutterLabel: 'Auslösen',
     permissionTitle: 'Kamera nicht erlaubt',
     permissionBody: 'Ohne Kamera kannst du nichts zurücktauschen.',
+    permissionSettingsBody: 'Der Kamerazugriff für Glimpse ist aus. Schalte ihn in den Einstellungen ein, um zu tauschen.',
+    openSettings: 'Einstellungen öffnen',
   },
 
   compose: {
@@ -271,6 +301,7 @@ export const de = {
     lockedCta: 'Moment zurückschicken',
     replyPlaceholder: 'Antworten …',
     autoUnlock: 'Entsperrt sich in %{time}',
+    notFound: 'Dieser Moment ist nicht mehr da.',
   },
 
   friends: {
@@ -282,7 +313,7 @@ export const de = {
     sentSection: 'Gesendet · %{count}',
     accept: 'Annehmen',
     pending: 'Ausstehend',
-    sentAgo: 'vor %{time} gesendet',
+    sentAgo: '%{time} gesendet',
     addCta: 'Weitere einladen',
     search: {
       title: 'Freund hinzufügen',
@@ -310,12 +341,19 @@ export const de = {
     inputPlaceholder: 'Nachricht …',
     online: 'Gerade aktiv',
     dayToday: 'Heute',
+    send: 'Senden',
+    attach: 'Foto anhängen',
   },
 
   profile: {
     momentsTitle: 'Eure Momente',
     tradeCta: 'Moment senden',
     pairsEmpty: 'Ihr habt noch nichts getauscht.',
+    memberSince: 'Tauscht seit %{when}',
+  },
+
+  photo: {
+    meta: '%{name} · %{date}',
   },
 
   invite: {

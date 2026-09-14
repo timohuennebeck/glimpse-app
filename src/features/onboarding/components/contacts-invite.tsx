@@ -6,24 +6,32 @@ import { colors } from '@/shared/theme/colors';
 import { radius } from '@/shared/theme/page-structure';
 import { t } from '@/shared/i18n/i18n';
 import { AVATARS } from '@/shared/lib/fixtures';
+interface ContactsInviteProps {
+  onPress?: () => void;
+}
+
+// Illustrative: three faces shown, "+2" more implied. Fixture data, not a count
+// of the user's contacts (contacts import is not built).
+const FACES = [AVATARS.mia, AVATARS.ben, AVATARS.noah];
+const HIDDEN_FACES = 2;
+
 /**
  * The stacked-avatars card from screen `05a` — shown when contacts permission
  * has not been granted, so there is no list to render yet.
  */
-export function ContactsInvite({ onPress }: { onPress?: () => void }) {
-  const faces = [AVATARS.mia, AVATARS.ben, AVATARS.noah];
+export function ContactsInvite({ onPress }: ContactsInviteProps) {
 
   return (
     <View style={styles.card}>
       <View style={styles.stack}>
-        {faces.map((face, i) => (
+        {FACES.map((face, i) => (
           <View key={i} style={i > 0 ? styles.overlap : undefined}>
             <Avatar source={face} size={64} style={styles.face} />
           </View>
         ))}
         <View style={[styles.overlap, styles.more]}>
           <Text variant="rowTitle" color={colors.white}>
-            +2
+            {t('onboarding.friends.moreCount', { count: HIDDEN_FACES })}
           </Text>
         </View>
       </View>

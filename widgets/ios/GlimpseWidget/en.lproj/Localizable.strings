@@ -1,0 +1,9 @@
+/* Widget gallery */
+"widget.name" = "Glimpse";
+"widget.description" = "The frosted moment, until you trade one back.";
+
+/* Medium widget reply button */
+"widget.reply" = "Reply";
+
+/* No moment waiting */
+"widget.empty" = "Send the first moment";

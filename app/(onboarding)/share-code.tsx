@@ -1,4 +1,4 @@
-import { StyleSheet, View } from 'react-native';
+import { Share, StyleSheet, View } from 'react-native';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
@@ -63,6 +63,7 @@ export default function ShareCodeScreen() {
           size="xs"
           icon={<MoreIcon size={14} color={colors.white} />}
           style={styles.action}
+          onPress={() => void Share.share({ message: code })}
         />
       </View>
 
@@ -76,6 +77,7 @@ export default function ShareCodeScreen() {
           variant="bodyXs"
           color={colors.purpleMuted}
           center
+          accessibilityRole="link"
           onPress={() => router.push('/(onboarding)/heard-about')}
         >
           {t('referral.share.later')}

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_name">Glimpse</string>
+    <string name="widget_description">Der verschwommene Moment, bis du zurücktauschst.</string>
+    <string name="widget_empty">Schick den ersten Moment</string>
+    <string name="widget_photo_description">Der Moment einer Freundin oder eines Freundes, verschwommen bis du tauschst</string>
+    <string name="widget_locked_description">Gesperrt</string>
+    <string name="widget_reply_description">Mit einem Moment antworten</string>
+</resources>

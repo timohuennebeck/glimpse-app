@@ -17,6 +17,7 @@ import { LockedMomentCard } from '@/features/feed/components/locked-moment-card'
 import { EmptyState } from '@/features/feed/components/empty-state';
 import { TabScreen } from '@/features/navigation/tab-screen';
 import { AVATARS, demoProfiles, DEMO_USER_ID } from '@/shared/lib/fixtures';
+import { openProfile } from '@/features/profile/open-profile';
 /**
  * Screens `01 Feed` and `01c Feed · leer`.
  *
@@ -61,14 +62,14 @@ export default function FeedScreen() {
         />
 
         <View style={styles.gap12}>
-          <SectionLabel trailing={t('feed.storiesTrailing', { count: pending.length })}>
+          <SectionLabel trailing={pending.length > 0 ? t('feed.storiesTrailing', { count: pending.length }) : undefined}>
             {t('feed.storiesLabel')}
           </SectionLabel>
           <StoryRail
             items={stories}
             placeholders={Math.max(0, 3 - pending.length)}
             placeholderLabel={t('feed.addFriend')}
-            onPressItem={(id) => router.push(`/profile/${id}`)}
+            onPressItem={openProfile}
             onPressPlaceholder={() => router.push('/(app)/friends/search')}
           />
         </View>
@@ -88,8 +89,6 @@ export default function FeedScreen() {
               />
             ))}
 
-            {pending.length > 1 ? <Dots count={pending.length} /> : null}
-
             <SectionHeading title={t('feed.momentsTitle')} />
 
             <View style={styles.grid}>
@@ -98,6 +97,8 @@ export default function FeedScreen() {
                   key={moment.tradeId}
                   style={styles.gridCell}
                   onPress={() => router.push(`/photo/${moment.momentId}`)}
+                  accessibilityRole="imagebutton"
+                  accessibilityLabel={moment.from.name}
                 >
                   <Image source={moment.photo} style={styles.gridImage} contentFit="cover" />
                 </Pressable>
@@ -119,17 +120,6 @@ export default function FeedScreen() {
   );
 }
 
-/** Pagination dots under the trade card stack. */
-function Dots({ count }: { count: number }) {
-  return (
-    <View style={styles.dots}>
-      {Array.from({ length: count }).map((_, i) => (
-        <View key={i} style={[styles.dot, i === 0 && styles.dotActive]} />
-      ))}
-    </View>
-  );
-}
-
 function greetingForNow(): string {
   const hour = new Date().getHours();
   if (hour < 11) return t('feed.greetingMorning');
@@ -145,7 +135,4 @@ const styles = StyleSheet.create({
   // full width and render a portrait photo as a letterbox strip.
   gridCell: { width: '48%' },
   gridImage: { width: '100%', aspectRatio: 4 / 5, borderRadius: radius.thumb },
-  dots: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: -6 },
-  dot: { width: 8, height: 8, borderRadius: radius.pill, backgroundColor: colors.borderStrong },
-  dotActive: { width: 16, backgroundColor: colors.purple },
 });

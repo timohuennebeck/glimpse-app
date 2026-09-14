@@ -1,8 +1,12 @@
 import { StyleSheet, View } from 'react-native';
 import { CheckIcon } from '@/shared/ui/icons';
 import { colors } from '@/shared/theme/colors';
+interface CheckboxProps {
+  checked: boolean;
+}
+
 /** The 28px circular selection control on the recipients screen. */
-export function Checkbox({ checked }: { checked: boolean }) {
+export function Checkbox({ checked }: CheckboxProps) {
   return (
     <View style={[styles.base, checked ? styles.checked : styles.unchecked]}>
       {checked ? <CheckIcon size={13} /> : null}

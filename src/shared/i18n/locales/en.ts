@@ -20,6 +20,14 @@ export const en: Translations = {
     back: 'Back',
     next: 'Next',
     you: 'You',
+    more: 'More',
+    filter: 'Filter',
+    clear: 'Clear',
+    profileLink: 'glimpse.app/@you',
+  },
+
+  time: {
+    yesterday: 'Yesterday',
   },
 
   onboarding: {
@@ -85,6 +93,8 @@ export const en: Translations = {
       emailPlaceholder: 'you@example.com',
       passwordLabel: 'Password',
       passwordHint: 'Strong · at least 9 characters',
+      showPassword: 'Show password',
+      hidePassword: 'Hide password',
       consent: 'I accept the %{terms} and the %{privacy}.',
       cta: 'Create account',
       hasAccount: 'Already have an account?',
@@ -101,6 +111,7 @@ export const en: Translations = {
       inviteTitle: 'Your people\naren’t here yet',
       inviteBody: 'Send a link. The moment someone accepts, you can trade.',
       inviteCta: 'Invite friends',
+      moreCount: '+%{count}',
       dividerShare: 'or share',
       shareLink: 'Link',
       shareCopy: 'Copy',
@@ -129,6 +140,22 @@ export const en: Translations = {
       skip: 'Later',
       widgetName: 'Glimpse',
       widgetReply: 'Reply',
+      // The fake homescreen around the widget preview.
+      preview: {
+        weather: 'Weather',
+        clock: 'Clock',
+        calendar: 'Calendar',
+        maps: 'Maps',
+        mail: 'Mail',
+        contacts: 'Contacts',
+        stocks: 'Stocks',
+        photos: 'Photos',
+        sampleName: 'Mia',
+        sampleMeta: 'Mia · 12 min ago',
+        sampleTime: '· 14:07',
+        sampleCaption: 'Quick step out before the rain',
+        sampleCaptionLong: 'Quick step out before the rain. Show me your view.',
+      },
     },
 
     reviews: {
@@ -211,6 +238,7 @@ export const en: Translations = {
       title: 'Got a code\nfrom someone?',
       subtitle: 'Partner and friend codes unlock three months of Glimpse Plus.',
       cta: 'Redeem code',
+      inputLabel: 'Invite code, 6 characters',
       note: 'No code? You can use Glimpse\nwithout one.',
     },
     share: {
@@ -252,6 +280,8 @@ export const en: Translations = {
     shutterLabel: 'Capture',
     permissionTitle: 'Camera not allowed',
     permissionBody: 'Without the camera you cannot trade anything back.',
+    permissionSettingsBody: 'Camera access is off for Glimpse. Turn it on in Settings to trade.',
+    openSettings: 'Open Settings',
   },
 
   compose: {
@@ -275,6 +305,7 @@ export const en: Translations = {
     lockedCta: 'Send one back',
     replyPlaceholder: 'Reply…',
     autoUnlock: 'Unlocks in %{time}',
+    notFound: 'This moment is no longer here.',
   },
 
   friends: {
@@ -286,7 +317,7 @@ export const en: Translations = {
     sentSection: 'Sent · %{count}',
     accept: 'Accept',
     pending: 'Pending',
-    sentAgo: 'sent %{time} ago',
+    sentAgo: 'sent %{time}',
     addCta: 'Invite more',
     search: {
       title: 'Add friend',
@@ -314,12 +345,19 @@ export const en: Translations = {
     inputPlaceholder: 'Message…',
     online: 'Active now',
     dayToday: 'Today',
+    send: 'Send',
+    attach: 'Attach a photo',
   },
 
   profile: {
     momentsTitle: 'Your moments',
     tradeCta: 'Send a moment',
     pairsEmpty: 'You haven’t traded anything yet.',
+    memberSince: 'Trading since %{when}',
+  },
+
+  photo: {
+    meta: '%{name} · %{date}',
   },
 
   invite: {

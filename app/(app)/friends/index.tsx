@@ -9,13 +9,15 @@ import { Text } from '@/shared/ui/text';
 import { colors } from '@/shared/theme/colors';
 import { avatarSize, radius } from '@/shared/theme/page-structure';
 import { t } from '@/shared/i18n/i18n';
-import { durationSince } from '@/shared/lib/format';
+import { relativeTime } from '@/shared/lib/format';
 import { PersonRow } from '@/features/friends/components/person-row';
 import { Pill } from '@/features/friends/components/pill';
 import { StoryRail } from '@/features/feed/components/story-rail';
 import { ChatsList } from '@/features/chat/components/chats-list';
 import { TabScreen } from '@/features/navigation/tab-screen';
-import { AVATARS, demoFriendRequests, demoSentRequests, demoUnreadCount, DEMO_USER_ID } from '@/shared/lib/fixtures';
+import { AVATARS, demoFriendRequests, demoProfiles, demoSentRequests, demoUnreadCount, DEMO_USER_ID } from '@/shared/lib/fixtures';
+import { respondToFriendRequest } from '@/features/friends/data/friends-api';
+import { openProfile } from '@/features/profile/open-profile';
 type Tab = 'friends' | 'chats';
 
 /**
@@ -25,8 +27,22 @@ type Tab = 'friends' | 'chats';
  */
 export default function FriendsScreen() {
   const [tab, setTab] = useState<Tab>('friends');
+  const [requests, setRequests] = useState(demoFriendRequests);
+  const [error, setError] = useState<string | null>(null);
   // Counts on the toggle, so it says how much is waiting behind each tab.
-  const badges: Record<Tab, number> = { friends: demoFriendRequests.length, chats: demoUnreadCount };
+  const badges: Record<Tab, number> = { friends: requests.length, chats: demoUnreadCount };
+
+  const rail = [
+    { id: DEMO_USER_ID, name: t('common.you'), avatar: AVATARS.self, waiting: true },
+    { id: demoProfiles.mia.id, name: demoProfiles.mia.display_name, avatar: AVATARS.mia, waiting: false },
+  ];
+  const waiting = rail.filter((item) => item.waiting).length;
+
+  function accept(id: string) {
+    respondToFriendRequest(id, 'accepted')
+      .then(() => setRequests((rs) => rs.filter((r) => r.id !== id)))
+      .catch((e: unknown) => setError(e instanceof Error ? e.message : t('errors.generic')));
+  }
 
   return (
     <TabScreen>
@@ -34,7 +50,11 @@ export default function FriendsScreen() {
         <Text variant="screenTitle" color={colors.ink}>
           {t('friends.title')}
         </Text>
-        <GlassButton size={38} onPress={() => router.push('/(app)/friends/search')}>
+        <GlassButton
+          size={38}
+          onPress={() => router.push('/(app)/friends/search')}
+          accessibilityLabel={t('friends.search.title')}
+        >
           <PlusIcon size={18} color={colors.purpleMuted} strokeWidth={2.4} />
         </GlassButton>
       </View>
@@ -44,6 +64,8 @@ export default function FriendsScreen() {
           <Pressable
             key={key}
             onPress={() => setTab(key)}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: tab === key }}
             style={[styles.segmentItem, tab === key && styles.segmentItemActive]}
           >
             <Text
@@ -69,36 +91,40 @@ export default function FriendsScreen() {
       ) : (
         <>
           <View style={styles.section}>
-            <SectionLabel trailing={t('feed.storiesTrailing', { count: 2 })}>
+            <SectionLabel trailing={waiting > 0 ? t('feed.storiesTrailing', { count: waiting }) : undefined}>
               {t('friends.storiesLabel')}
             </SectionLabel>
             <StoryRail
               size={avatarSize.ring}
-              items={[
-                { id: DEMO_USER_ID, name: t('common.you'), avatar: AVATARS.self, waiting: true },
-                { id: 'mia', name: 'Mia', avatar: AVATARS.mia, waiting: false },
-              ]}
+              items={rail}
               placeholders={2}
               placeholderLabel={t('feed.addFriend')}
-              onPressItem={(id) => router.push(`/profile/${id}`)}
+              onPressItem={openProfile}
               onPressPlaceholder={() => router.push('/(app)/friends/search')}
             />
           </View>
 
           <View style={styles.section}>
-            <SectionLabel>{t('friends.requestsSection', { count: demoFriendRequests.length })}</SectionLabel>
+            <SectionLabel>{t('friends.requestsSection', { count: requests.length })}</SectionLabel>
             <View style={styles.list}>
-              {demoFriendRequests.map((r) => (
+              {requests.map((r) => (
                 <PersonRow
                   key={r.id}
                   avatar={r.profile.photo}
                   name={r.profile.display_name}
                   subtitle={t('friends.search.mutual', { count: r.mutual })}
                   verified={r.verified}
-                  trailing={<Pill label={t('friends.accept')} tone={r.verified ? 'filled' : 'outline'} onPress={() => {}} />}
+                  trailing={
+                    <Pill label={t('friends.accept')} tone={r.verified ? 'filled' : 'outline'} onPress={() => accept(r.id)} />
+                  }
                   onPress={() => router.push(`/profile/${r.profile.id}`)}
                 />
               ))}
+              {error ? (
+                <Text variant="meta" color={colors.purpleDeep}>
+                  {error}
+                </Text>
+              ) : null}
             </View>
           </View>
 
@@ -110,7 +136,7 @@ export default function FriendsScreen() {
                   key={r.id}
                   avatar={r.profile.photo}
                   name={r.profile.display_name}
-                  subtitle={t('friends.sentAgo', { time: durationSince(r.sentAt) })}
+                  subtitle={t('friends.sentAgo', { time: relativeTime(r.sentAt) })}
                   subtitleIcon={<ClockIcon size={14} />}
                   dimmed
                   trailing={<Pill label={t('friends.pending')} tone="muted" />}

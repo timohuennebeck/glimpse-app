@@ -14,6 +14,7 @@ import { alpha, colors } from '@/shared/theme/colors';
 import { fontFamily } from '@/shared/theme/fonts';
 import { t } from '@/shared/i18n/i18n';
 import { useComposer } from '@/features/moments/hooks/use-composer';
+import { reloadInbox } from '@/features/moments/hooks/use-inbox';
 import { createMoment, respondToTrade } from '@/features/moments/data/moments-api';
 import { isSupabaseConfigured } from '@/shared/lib/supabase';
 import { PHOTOS } from '@/shared/lib/fixtures';
@@ -52,11 +53,14 @@ export default function ComposeScreen() {
           facing: composer.facing,
         });
         await respondToTrade(tradeId, momentId);
+        void reloadInbox();
       }
       composer.reset();
-      // Land on the now-open pair rather than back on the feed.
+      // Land on the now-open pair rather than back on the feed. `push`, not
+      // `replace`: replacing swapped out the tab root and left the moment's
+      // close button with nothing to go back to.
       router.dismissAll();
-      router.replace(`/moment/${tradeId}`);
+      router.push(`/moment/${tradeId}`);
     } catch (e) {
       // Without this the rejection escaped the press handler and a retry
       // uploaded the photo a second time.
@@ -86,7 +90,7 @@ export default function ComposeScreen() {
         style={[StyleSheet.absoluteFill, { paddingTop: insets.top + 12 }]}
       >
         <View style={styles.topRow}>
-          <GlassButton size={38} onDark onPress={() => router.back()}>
+          <GlassButton size={38} onDark onPress={() => router.back()} accessibilityLabel={t('common.close')}>
             <CloseIcon size={12} color={colors.white} />
           </GlassButton>
           <GlassButton size={38} onDark onPress={() => router.back()} accessibilityLabel={t('compose.retake')}>

@@ -88,9 +88,10 @@ permission is a real part of the product, not a nag. That is why onboarding step
    exactly this shape. It must also **download the moment's signed URL into the
    shared container as `imageFile`** before writing the snapshot — today nothing
    writes that file, so the widget would render a missing image.
-4. **Android drawables.** The layout references `widget_background`,
-   `widget_scrim`, `widget_lock_puck` and `widget_camera_badge`, plus the strings
-   it uses; these still need to be authored.
+4. **Android resources** are in place: `res/values{,-de}/strings.xml` and the
+   four drawables the layout references (`widget_background`, `widget_scrim`,
+   `widget_lock_puck`, `widget_camera_badge`). `glimpse_widget_info.xml` still
+   has to be registered in the manifest by the config plugin.
 5. **Build with EAS.** `eas build --profile development`. Expo Go cannot load a
    widget extension, so the widget is invisible until you install a dev build.
 

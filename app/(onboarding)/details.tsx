@@ -69,7 +69,12 @@ export default function DetailsScreen() {
               autoComplete="new-password"
               style={[styles.inputText, styles.flex]}
             />
-            <Pressable onPress={() => setReveal((r) => !r)} hitSlop={8}>
+            <Pressable
+              onPress={() => setReveal((r) => !r)}
+              hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel={reveal ? t('onboarding.details.hidePassword') : t('onboarding.details.showPassword')}
+            >
               <EyeIcon size={21} />
             </Pressable>
           </View>
@@ -87,7 +92,12 @@ export default function DetailsScreen() {
         </View>
       </View>
 
-      <Pressable style={styles.consent} onPress={() => setConsent((c) => !c)}>
+      <Pressable
+        style={styles.consent}
+        onPress={() => setConsent((c) => !c)}
+        accessibilityRole="checkbox"
+        accessibilityState={{ checked: consent }}
+      >
         <View style={[styles.checkbox, !consent && styles.checkboxOff]}>
           {consent ? <CheckIcon size={14} strokeWidth={2.2} /> : null}
         </View>
@@ -108,7 +118,15 @@ export default function DetailsScreen() {
         />
         <Text variant="subtitle" color={colors.mutedLilac} center>
           {t('onboarding.details.hasAccount')}{' '}
-          <Text variant="subtitle" color={colors.inkBody} style={styles.link}>
+          {/* Until auth is wired this form doubles as sign-in, so the link
+              simply clears the flow above it. */}
+          <Text
+            variant="subtitle"
+            color={colors.inkBody}
+            style={styles.link}
+            accessibilityRole="link"
+            onPress={() => router.dismissTo('/(onboarding)/welcome')}
+          >
             {t('onboarding.details.signIn')}
           </Text>
         </Text>

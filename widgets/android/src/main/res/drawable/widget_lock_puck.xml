@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The lock puck: translucent disc, hairline ring, two pause bars (the brand's lock glyph). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="44dp"
+    android:height="44dp"
+    android:viewportWidth="44"
+    android:viewportHeight="44">
+    <path
+        android:fillColor="#59FFFFFF"
+        android:pathData="M22,22m-21.5,0a21.5,21.5 0 1,0 43,0a21.5,21.5 0 1,0 -43,0" />
+    <path
+        android:strokeColor="#4DFFFFFF"
+        android:strokeWidth="1"
+        android:pathData="M22,22m-21.5,0a21.5,21.5 0 1,0 43,0a21.5,21.5 0 1,0 -43,0" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M15,14h4.5v16H15z M24.5,14H29v16h-4.5z" />
+</vector>

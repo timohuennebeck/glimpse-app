@@ -67,6 +67,7 @@ export default function WelcomeScreen() {
             variant="body"
             color={colors.ink}
             style={styles.link}
+            accessibilityRole="link"
             onPress={() => router.push('/(onboarding)/details')}
           >
             {t('onboarding.welcome.signIn')}
@@ -91,7 +92,8 @@ export default function WelcomeScreen() {
 
 const styles = StyleSheet.create({
   body: { alignItems: 'center' },
-  hero: { width: 348, height: 300, marginTop: 6 },
+  // Fills the content box and scales down on narrow phones instead of overflowing it.
+  hero: { width: '100%', maxWidth: 348, aspectRatio: 348 / 300, marginTop: 6 },
   title: { marginTop: 18 },
   subtitle: { marginTop: 14 },
   footer: { marginTop: 'auto', paddingTop: 32, gap: 22, alignItems: 'center' },

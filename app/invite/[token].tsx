@@ -59,6 +59,7 @@ export default function InviteScreen() {
           variant="buttonSm"
           color={colors.inkSoft}
           center
+          accessibilityRole="link"
           onPress={() => router.replace('/(onboarding)/welcome')}
         >
           {t('invite.secondary')}

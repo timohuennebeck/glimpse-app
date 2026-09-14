@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { ReactNode, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
 import { CheckCircle } from '@/shared/ui/check-circle';
@@ -9,8 +9,18 @@ import { Text } from '@/shared/ui/text';
 import { colors } from '@/shared/theme/colors';
 import { radius, spacing } from '@/shared/theme/page-structure';
 import { t } from '@/shared/i18n/i18n';
+import type { Translations } from '@/shared/i18n/locales/de';
 import { AppStoreChannelIcon, FriendChannelIcon, InstagramChannelIcon, OtherChannelIcon, SearchChannelIcon, TiktokChannelIcon, YoutubeChannelIcon } from '@/features/onboarding/components/channel-icons';
-const OPTIONS = [
+type ChannelKey = keyof Translations['onboarding']['heardAbout']['options'];
+
+interface ChannelOption {
+  key: ChannelKey;
+  icon: ReactNode;
+}
+
+// Typed against the locale, so a renamed key fails to compile instead of
+// rendering "missing translation" in a list.
+const OPTIONS: ChannelOption[] = [
   { key: 'friend', icon: <FriendChannelIcon /> },
   { key: 'instagram', icon: <InstagramChannelIcon /> },
   { key: 'tiktok', icon: <TiktokChannelIcon /> },
@@ -28,7 +38,7 @@ const OPTIONS = [
  * a vanity question.
  */
 export default function HeardAboutScreen() {
-  const [choice, setChoice] = useState<string | null>('tiktok');
+  const [choice, setChoice] = useState<ChannelKey | null>('tiktok');
 
   return (
     <Screen scroll bottomInset={spacing.contentBottom}>

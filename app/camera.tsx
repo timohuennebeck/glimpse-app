@@ -1,8 +1,8 @@
-import { useRef, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { Linking, StyleSheet, View } from 'react-native';
 import { CameraView, CameraType, FlashMode, useCameraPermissions } from 'expo-camera';
 import { LinearGradient } from 'expo-linear-gradient';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from '@/shared/ui/button';
@@ -22,6 +22,9 @@ import { ShutterButton } from '@/features/camera/components/shutter-button';
  * positioning note's "one shot, no retake, no camera roll upload".
  */
 export default function CameraScreen() {
+  // The widget deep-links to `glimpse://camera?trade=<id>`: this capture answers
+  // that frosted moment rather than starting a fresh one.
+  const { trade } = useLocalSearchParams<{ trade?: string }>();
   const [permission, requestPermission] = useCameraPermissions();
   const [facing, setFacing] = useState<CameraType>('back');
   const [flash, setFlash] = useState<FlashMode>('off');
@@ -34,7 +37,21 @@ export default function CameraScreen() {
     router.push('/compose');
   });
 
-  if (!permission?.granted) {
+  useEffect(() => {
+    if (trade) composer.set({ replyToTradeId: trade });
+  }, [trade]); // eslint-disable-line react-hooks/exhaustive-deps -- composer.set is stable
+
+  /** Abandoning the capture drops the draft, so a stale reply target cannot hijack the next fresh one. */
+  function close() {
+    composer.reset();
+    router.back();
+  }
+
+  // `null` means the permission is still being read; a black frame beats a
+  // "not allowed" screen that flashes on every open.
+  if (!permission) return <View style={styles.root} />;
+
+  if (!permission.granted) {
     return (
       <View style={[styles.permission, { paddingTop: insets.top + 24, paddingBottom: insets.bottom + 24 }]}>
         <StatusBar style="light" />
@@ -42,10 +59,15 @@ export default function CameraScreen() {
           {t('camera.permissionTitle')}
         </Text>
         <Text variant="bodySm" color={alpha.onDarkText} center>
-          {t('camera.permissionBody')}
+          {permission.canAskAgain ? t('camera.permissionBody') : t('camera.permissionSettingsBody')}
         </Text>
-        <Button label={t('onboarding.camera.cta')} variant="purple" onPress={requestPermission} />
-        <Button label={t('common.back')} variant="ghost" onPress={() => router.back()} />
+        <Button
+          label={permission.canAskAgain ? t('onboarding.camera.cta') : t('camera.openSettings')}
+          variant="purple"
+          // Once the system stops asking, the only way back in is Settings.
+          onPress={permission.canAskAgain ? requestPermission : () => void Linking.openSettings()}
+        />
+        <Button label={t('common.back')} variant="ghost" onPress={close} />
       </View>
     );
   }
@@ -65,7 +87,7 @@ export default function CameraScreen() {
 
       <View style={[styles.chrome, { paddingTop: insets.top + 12, paddingBottom: insets.bottom + 32 }]}>
         <View style={styles.topRow}>
-          <GlassButton size={32} onDark onPress={() => router.back()} accessibilityLabel={t('common.close')}>
+          <GlassButton size={32} onDark onPress={close} accessibilityLabel={t('common.close')}>
             <CloseIcon size={11} color={colors.white} />
           </GlassButton>
         </View>
@@ -88,6 +110,7 @@ export default function CameraScreen() {
               onDark
               onPress={() => setFlash((f) => (f === 'off' ? 'on' : 'off'))}
               accessibilityLabel={t('camera.flashLabel')}
+              accessibilityState={{ selected: flash === 'on' }}
             >
               <FlashIcon size={22} color={flash === 'on' ? colors.purpleSoft : colors.white} />
             </GlassButton>

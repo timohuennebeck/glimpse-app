@@ -25,20 +25,23 @@ export default function AppLayout() {
 
   return (
     <NativeTabs minimizeBehavior="onScrollDown">
+      {/* `md` names resolve through expo-symbols on Android; `drawable` would
+          need resources shipped in the app package, which the old system
+          `ic_menu_*` names were not. */}
       <NativeTabs.Trigger name="feed">
-        <Icon sf="square.stack" drawable="ic_menu_gallery" />
+        <Icon sf="square.stack" md="photo_library" />
         <Label>{t('nav.feed')}</Label>
         {feedBadge ? <Badge>{feedBadge}</Badge> : null}
       </NativeTabs.Trigger>
 
       <NativeTabs.Trigger name="friends">
-        <Icon sf="person.2" drawable="ic_menu_friendslist" />
+        <Icon sf="person.2" md="group" />
         <Label>{t('nav.friends')}</Label>
         {friendsBadge ? <Badge>{friendsBadge}</Badge> : null}
       </NativeTabs.Trigger>
 
       <NativeTabs.Trigger name="profile">
-        <Icon sf="person.crop.circle" drawable="ic_menu_myplaces" />
+        <Icon sf="person.crop.circle" md="account_circle" />
         <Label>{t('nav.profile')}</Label>
       </NativeTabs.Trigger>
     </NativeTabs>

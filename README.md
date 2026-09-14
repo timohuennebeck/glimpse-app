@@ -70,7 +70,7 @@ src/
   shared/
     theme/                tokens transcribed from the mock
     ui/                   Text, Button, GlassButton, LockedImage, icons…
-    i18n/                 de (active) + en
+    i18n/                 en (active) + de
     lib/                  supabase client, typed schema, formatters, fixtures
 
 supabase/migrations/      schema, functions, RLS, storage, views
@@ -80,7 +80,7 @@ docs/database.md          schema design and rationale
 
 ## Conventions
 
-- **Never a font weight above 600.** Enforced centrally in `src/shared/ui/Text.tsx`.
+- **Never a font weight above 600.** Enforced centrally in `src/shared/ui/text.tsx`.
 - **All copy goes through i18n.** English is the active locale; German is kept
   complete in `de.ts`, since the go-to-market plan is German-speaking circles
   first. Both files are typed as the full `Translations`, so a missing key is a

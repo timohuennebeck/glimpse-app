@@ -19,7 +19,7 @@ export function CtaFooter({ label, onPress, icon, disabled, secondary, onSeconda
     <View style={styles.footer}>
       <Button label={label} onPress={onPress} icon={icon} disabled={disabled} />
       {secondary ? (
-        <Text variant="buttonSm" color={colors.inkSoft} center onPress={onSecondary}>
+        <Text variant="buttonSm" color={colors.inkSoft} center onPress={onSecondary} accessibilityRole="link">
           {secondary}
         </Text>
       ) : null}

@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { AccessibilityRole, AccessibilityState, Pressable, StyleSheet, View } from 'react-native';
 import { Avatar } from '@/shared/ui/avatar';
 import { Text } from '@/shared/ui/text';
 import { VerifiedIcon } from '@/shared/ui/icons';
@@ -18,6 +18,9 @@ export interface PersonRowProps {
   onPress?: () => void;
   /** Optional leading icon rendered inline before the subtitle. */
   subtitleIcon?: ReactNode;
+  /** Set when the row itself is a selection control (recipient checkbox). */
+  accessibilityRole?: AccessibilityRole;
+  accessibilityState?: AccessibilityState;
 }
 
 /**
@@ -34,9 +37,18 @@ export function PersonRow({
   size = avatarSize.row,
   onPress,
   subtitleIcon,
+  accessibilityRole,
+  accessibilityState,
 }: PersonRowProps) {
   return (
-    <Pressable style={styles.row} onPress={onPress} disabled={!onPress}>
+    <Pressable
+      style={styles.row}
+      onPress={onPress}
+      disabled={!onPress}
+      accessibilityRole={accessibilityRole ?? (onPress ? 'button' : undefined)}
+      accessibilityState={accessibilityState}
+      accessibilityLabel={name}
+    >
       <Avatar source={avatar} size={size} dimmed={dimmed} ring="halo" />
       <View style={styles.text}>
         <View style={styles.nameRow}>

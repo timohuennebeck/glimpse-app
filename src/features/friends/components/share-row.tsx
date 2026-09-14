@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { StyleSheet, View, ViewStyle } from 'react-native';
+import { Pressable, StyleSheet, View, ViewStyle } from 'react-native';
 import { Divider } from '@/shared/ui/divider';
 import { LinkIcon } from '@/shared/ui/icons';
 import { Text } from '@/shared/ui/text';
@@ -8,6 +8,8 @@ import { controlHeight, radius } from '@/shared/theme/page-structure';
 export interface ShareAction {
   label: string;
   icon: ReactNode;
+  /** Omitted for actions that are not wired yet; they then render as plain views. */
+  onPress?: () => void;
 }
 
 interface ShareRowProps {
@@ -40,12 +42,19 @@ export function ShareRow({ dividerLabel, link, linkLabel, actions, style }: Shar
         </View>
 
         {actions.map((action) => (
-          <View key={action.label} style={styles.action}>
+          <Pressable
+            key={action.label}
+            style={styles.action}
+            onPress={action.onPress}
+            disabled={!action.onPress}
+            accessibilityRole={action.onPress ? 'button' : undefined}
+            accessibilityLabel={action.label}
+          >
             <View style={styles.circle}>{action.icon}</View>
             <Text variant="captionXs" color={colors.muted}>
               {action.label}
             </Text>
-          </View>
+          </Pressable>
         ))}
       </View>
     </View>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_name">Glimpse</string>
+    <string name="widget_description">The frosted moment, until you trade one back.</string>
+    <string name="widget_empty">Send the first moment</string>
+    <string name="widget_photo_description">A friend\'s moment, frosted until you trade</string>
+    <string name="widget_locked_description">Locked</string>
+    <string name="widget_reply_description">Reply with a moment</string>
+</resources>

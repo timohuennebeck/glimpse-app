@@ -55,7 +55,11 @@ export default function AvatarScreen() {
  *   background-size: 13px 13px
  * React Native has no background-image, so it is drawn as an SVG pattern.
  */
-function DottedDisc({ size }: { size: number }) {
+interface DottedDiscProps {
+  size: number;
+}
+
+function DottedDisc({ size }: DottedDiscProps) {
   const r = size / 2;
   return (
     <Svg width={size} height={size}>

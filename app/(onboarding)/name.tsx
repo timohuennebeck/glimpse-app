@@ -6,7 +6,7 @@ import { ProgressHeader } from '@/shared/ui/progress-header';
 import { Screen } from '@/shared/ui/screen';
 import { Text } from '@/shared/ui/text';
 import { colors } from '@/shared/theme/colors';
-import { fontFamily } from '@/shared/theme/fonts';
+import { fontFamily, type as typeScale } from '@/shared/theme/fonts';
 import { radius, spacing } from '@/shared/theme/page-structure';
 import { t, tList } from '@/shared/i18n/i18n';
 /**
@@ -35,16 +35,22 @@ export default function NameScreen() {
     <Screen scroll bottomInset={spacing.contentBottom}>
       <ProgressHeader step={1} onClose={() => router.back()} />
 
+      {/* The chips are inline Views: a borderRadius on a nested Text is ignored
+          by both platforms, which rendered them as hard-cornered blocks. */}
       <Text variant="headlineChips" color={colors.ink} style={styles.headline}>
         {headlineParts.map((part, i) =>
           part === FRIENDS_SLOT ? (
-            <Text key={i} variant="headlineChips" color={colors.purpleInkAlt} style={styles.chipFilled}>
-              {` ${t('onboarding.name.friendsChip')} `}
-            </Text>
+            <View key={i} style={[styles.chip, styles.chipFilled]}>
+              <Text variant="headlineChips" color={colors.purpleInkAlt} style={styles.chipText}>
+                {t('onboarding.name.friendsChip')}
+              </Text>
+            </View>
           ) : part === NAME_SLOT ? (
-            <Text key={i} variant="headlineChips" color={colors.dashedIdle} style={styles.chipIdle}>
-              {` ${name || t('onboarding.name.placeholderChip')} `}
-            </Text>
+            <View key={i} style={[styles.chip, styles.chipIdle]}>
+              <Text variant="headlineChips" color={colors.dashedIdle} style={styles.chipText}>
+                {name || t('onboarding.name.placeholderChip')}
+              </Text>
+            </View>
           ) : (
             part
           ),
@@ -69,7 +75,13 @@ export default function NameScreen() {
 
       <View style={styles.chips}>
         {suggestions.map((s) => (
-          <Pressable key={s} style={styles.suggestion} onPress={() => setName(s.replace('+ ', ''))}>
+          <Pressable
+            key={s}
+            style={styles.suggestion}
+            onPress={() => setName(s.replace('+ ', ''))}
+            accessibilityRole="button"
+            accessibilityLabel={s.replace('+ ', '')}
+          >
             <Text variant="bodyXs" color={colors.mutedChip}>
               {s}
             </Text>
@@ -88,8 +100,11 @@ export default function NameScreen() {
 
 const styles = StyleSheet.create({
   headline: { marginTop: 34 },
-  chipFilled: { backgroundColor: colors.surfaceVioletChip, borderRadius: radius.tile },
-  chipIdle: { backgroundColor: colors.surfaceViolet, borderRadius: radius.tile },
+  chip: { borderRadius: radius.tile, paddingHorizontal: 10, paddingVertical: 2 },
+  chipFilled: { backgroundColor: colors.surfaceVioletChip },
+  chipIdle: { backgroundColor: colors.surfaceViolet },
+  // Tighter than the headline's loose leading, so the pill hugs the word.
+  chipText: { lineHeight: Math.round(typeScale.headlineChips.fontSize * 1.2) },
   subtitle: { marginTop: 18 },
   input: {
     marginTop: 24,

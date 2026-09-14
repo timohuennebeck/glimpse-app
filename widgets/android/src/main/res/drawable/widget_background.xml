@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Near-black violet tile, matching the iOS containerBackground (#17121C). -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="#FF17121C" />
+    <corners android:radius="28dp" />
+</shape>

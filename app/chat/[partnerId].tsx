@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Avatar } from '@/shared/ui/avatar';
@@ -34,7 +34,7 @@ export default function ChatScreen() {
   return (
     <Screen gutter={0} bottomInset={0}>
       <View style={styles.header}>
-        <GlassButton size={34} onPress={() => router.back()}>
+        <GlassButton size={34} onPress={() => router.back()} accessibilityLabel={t('common.close')}>
           <CloseIcon size={12} />
         </GlassButton>
         <Avatar source={partner.photo} size={40} />
@@ -46,7 +46,7 @@ export default function ChatScreen() {
             {t('chat.online')}
           </Text>
         </View>
-        <GlassButton size={34}>
+        <GlassButton size={34} accessibilityLabel={t('common.more')}>
           <MoreIcon size={17} />
         </GlassButton>
       </View>
@@ -98,13 +98,21 @@ export default function ChatScreen() {
             style={styles.input}
             multiline
           />
+          {/* Sending is not wired (no messages API on the client yet), so the
+              controls are rendered but disabled rather than pretending. */}
           <View style={styles.composerActions}>
             <PlusIcon size={19} color={colors.inkBody} />
             <PaperclipIcon size={19} />
             <View style={styles.flex} />
-            <View style={styles.send}>
+            <Pressable
+              style={styles.send}
+              disabled
+              accessibilityRole="button"
+              accessibilityLabel={t('chat.send')}
+              accessibilityState={{ disabled: true }}
+            >
               <SendIcon size={17} />
-            </View>
+            </Pressable>
           </View>
         </View>
       </KeyboardAvoidingView>

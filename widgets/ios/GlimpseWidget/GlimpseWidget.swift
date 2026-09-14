@@ -76,21 +76,21 @@ struct GlimpseWidgetEntryView: View {
     var body: some View {
         if let moment = entry.snapshot?.moment {
             // Deep link into the camera, not the photo. The rule holds here too.
-            Link(destination: URL(string: "glimpse://camera?trade=\(moment.tradeId)")!) {
-                content(for: moment)
+            let url = URL(string: "glimpse://camera?trade=\(moment.tradeId)")!
+            switch family {
+            case .systemLarge, .systemMedium:
+                // Medium widgets honour tappable regions.
+                Link(destination: url) {
+                    MediumWidgetView(moment: moment, image: entry.image)
+                }
+            default:
+                // A small widget is one tap target; only `.widgetURL` carries
+                // the query string. `Link` here opens the app with no trade id.
+                SmallWidgetView(moment: moment, image: entry.image)
+                    .widgetURL(url)
             }
         } else {
             EmptyStateView()
-        }
-    }
-
-    @ViewBuilder
-    private func content(for moment: MomentSnapshot.Moment) -> some View {
-        switch family {
-        case .systemLarge, .systemMedium:
-            MediumWidgetView(moment: moment, image: entry.image)
-        default:
-            SmallWidgetView(moment: moment, image: entry.image)
         }
     }
 }
@@ -166,7 +166,7 @@ struct MediumWidgetView: View {
 
                 HStack(spacing: 7) {
                     Image(systemName: "camera.fill").font(.system(size: 13))
-                    Text("Antworten").font(.system(size: 13, weight: .semibold))
+                    Text("widget.reply").font(.system(size: 13, weight: .semibold))
                 }
                 .foregroundStyle(.white)
                 .frame(maxWidth: .infinity)
@@ -239,7 +239,7 @@ struct EmptyStateView: View {
             Image(systemName: "camera.fill")
                 .font(.system(size: 22))
                 .foregroundStyle(.white.opacity(0.6))
-            Text("Schick den ersten Moment")
+            Text("widget.empty")
                 .font(.system(size: 12))
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.white.opacity(0.8))
@@ -259,8 +259,8 @@ struct GlimpseWidget: Widget {
                     Color(red: 0.09, green: 0.07, blue: 0.11)
                 }
         }
-        .configurationDisplayName("Glimpse")
-        .description("Der verschwommene Moment, bis du zurücktauschst.")
+        .configurationDisplayName(Text("widget.name"))
+        .description(Text("widget.description"))
         .supportedFamilies([.systemSmall, .systemMedium])
     }
 }

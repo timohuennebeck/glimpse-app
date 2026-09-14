@@ -1,4 +1,5 @@
-import { StyleSheet, View } from 'react-native';
+import { useState } from 'react';
+import { LayoutChangeEvent, StyleSheet, View } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
@@ -14,27 +15,41 @@ interface HomescreenPreviewProps {
   size?: 'small' | 'large';
 }
 
+interface IconCellProps {
+  src: number;
+  label: string;
+}
+
+/** Design width of the homescreen grid: 138 tile + 2×58 icons + 3×22 gaps + 2×20 padding. */
+const GRID_WIDTH = 360;
+
 /**
  * A mock iOS homescreen showing the Glimpse widget in place, used by the widget
  * onboarding step. This is a *picture* of the widget drawn in React Native — the
  * real widget is native code under `widgets/`.
  */
 export function HomescreenPreview({ size = 'small' }: HomescreenPreviewProps) {
+  // The grid is drawn at its design width and scaled down as one piece on
+  // phones narrower than that, so the tiles keep their proportions instead of
+  // overflowing the panel.
+  const [scale, setScale] = useState(1);
+  const onLayout = (e: LayoutChangeEvent) => setScale(Math.min(1, e.nativeEvent.layout.width / GRID_WIDTH));
+
   // An iOS homescreen is a 4-column grid. Laying this out as one wrapping flex
   // row put the 138px widget in the same flow as 58px icons, which is why the
   // tiles collided with each other and with the dock. The grid is now explicit:
   // the 2x2 widget occupies the left two columns of the first two rows.
   const pairs = [
-    [IOS_ICONS.weather, 'Wetter'],
-    [IOS_ICONS.clock, 'Uhr'],
-    [IOS_ICONS.calendar, 'Kalender'],
-    [IOS_ICONS.maps, 'Karten'],
+    [IOS_ICONS.weather, t('onboarding.widget.preview.weather')],
+    [IOS_ICONS.clock, t('onboarding.widget.preview.clock')],
+    [IOS_ICONS.calendar, t('onboarding.widget.preview.calendar')],
+    [IOS_ICONS.maps, t('onboarding.widget.preview.maps')],
   ] as const;
   const lastRow = [
-    [IOS_ICONS.mail, 'Mail'],
-    [IOS_ICONS.contacts, 'Kontakte'],
-    [IOS_ICONS.stock, 'Aktien'],
-    [IOS_ICONS.photos, 'Fotos'],
+    [IOS_ICONS.mail, t('onboarding.widget.preview.mail')],
+    [IOS_ICONS.contacts, t('onboarding.widget.preview.contacts')],
+    [IOS_ICONS.stock, t('onboarding.widget.preview.stocks')],
+    [IOS_ICONS.photos, t('onboarding.widget.preview.photos')],
   ] as const;
 
   return (
@@ -42,6 +57,7 @@ export function HomescreenPreview({ size = 'small' }: HomescreenPreviewProps) {
       colors={[colors.widgetTop, colors.widgetMid, colors.widgetBottom]}
       locations={[0, 0.6, 1]}
       style={styles.phone}
+      onLayout={onLayout}
     >
       <View style={styles.bloom} pointerEvents="none">
         <LinearGradient
@@ -53,7 +69,7 @@ export function HomescreenPreview({ size = 'small' }: HomescreenPreviewProps) {
         />
       </View>
 
-      <View style={styles.grid}>
+      <View style={[styles.grid, { transform: [{ scale }], transformOrigin: 'top' }]}>
         {size === 'small' ? (
           <View style={styles.topRow}>
             <SmallWidget />
@@ -87,7 +103,7 @@ export function HomescreenPreview({ size = 'small' }: HomescreenPreviewProps) {
   );
 }
 
-function IconCell({ src, label }: { src: number; label: string }) {
+function IconCell({ src, label }: IconCellProps) {
   return (
     <View style={styles.iconCell}>
       <Image source={src} style={styles.icon} contentFit="cover" />
@@ -115,10 +131,10 @@ function SmallWidget() {
         <View style={styles.smallFooter}>
           <View style={styles.flex}>
             <Text variant="captionXs" color="rgba(255,255,255,.75)" style={styles.tiny}>
-              Mia · vor 12 Min
+              {t('onboarding.widget.preview.sampleMeta')}
             </Text>
             <Text variant="captionXs" color={colors.white} numberOfLines={2} style={styles.tinyBody}>
-              Kurz raus, bevor der Regen kommt
+              {t('onboarding.widget.preview.sampleCaption')}
             </Text>
           </View>
           <View style={styles.smallCamera}>
@@ -150,14 +166,14 @@ function LargeWidget() {
             <View style={styles.largeSender}>
               <Avatar source={AVATARS.mia} size={20} />
               <Text variant="caption" color={colors.white} style={styles.tinyBold}>
-                Mia
+                {t('onboarding.widget.preview.sampleName')}
               </Text>
               <Text variant="captionXs" color={alpha.onDarkTextFaint}>
-                · 14:07
+                {t('onboarding.widget.preview.sampleTime')}
               </Text>
             </View>
             <Text variant="metaXs" color="rgba(255,255,255,.94)" numberOfLines={3}>
-              Kurz raus, bevor der Regen kommt. Zeig mir deinen Blick.
+              {t('onboarding.widget.preview.sampleCaptionLong')}
             </Text>
           </View>
 

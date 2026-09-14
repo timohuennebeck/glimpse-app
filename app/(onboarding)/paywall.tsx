@@ -107,6 +107,7 @@ export default function PaywallScreen() {
             variant="bodyXs"
             color={colors.purpleDeep}
             style={styles.footerLink}
+            accessibilityRole="link"
             onPress={() => router.push('/(onboarding)/redeem')}
           >
             {t('referral.redeem.cta')}
@@ -128,7 +129,13 @@ interface PlanCardProps {
 
 function PlanCard({ selected, onPress, label, price, note, badge }: PlanCardProps) {
   return (
-    <Pressable style={[styles.plan, selected && styles.planSelected]} onPress={onPress}>
+    <Pressable
+      style={[styles.plan, selected && styles.planSelected]}
+      onPress={onPress}
+      accessibilityRole="radio"
+      accessibilityState={{ selected }}
+      accessibilityLabel={`${label}, ${price} ${note}`}
+    >
       {badge ? (
         <View style={styles.planBadge}>
           <Text variant="caption" color={colors.white} style={styles.planBadgeText}>

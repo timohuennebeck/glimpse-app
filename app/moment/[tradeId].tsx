@@ -8,7 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
 import { Avatar } from '@/shared/ui/avatar';
 import { GlassButton } from '@/shared/ui/glass-button';
-import { CloseIcon, MoreIcon, LockedIcon, CameraIcon } from '@/shared/ui/icons';
+import { CloseIcon, LockedIcon, CameraIcon } from '@/shared/ui/icons';
 import { Text } from '@/shared/ui/text';
 import { alpha, colors } from '@/shared/theme/colors';
 import { fontFamily } from '@/shared/theme/fonts';
@@ -28,7 +28,7 @@ import { markTradeSeen } from '@/features/moments/data/moments-api';
  */
 export default function MomentScreen() {
   const { tradeId } = useLocalSearchParams<{ tradeId: string }>();
-  const { data } = useInbox();
+  const { data, loading } = useInbox();
   const composer = useComposer();
   const insets = useSafeAreaInsets();
 
@@ -38,7 +38,29 @@ export default function MomentScreen() {
     if (moment && !moment.seenAt) void markTradeSeen(moment.tradeId);
   }, [moment]);
 
-  if (!moment) return <View style={styles.root} />;
+  // Before the inbox has loaded (deep link, cold start) there is no moment yet.
+  // The chrome still renders so the screen is never a black box with no way out.
+  if (!moment) {
+    return (
+      <View style={styles.root}>
+        <StatusBar style="light" />
+        <View style={[styles.chrome, { paddingTop: insets.top + 6 }]}>
+          <View style={styles.header}>
+            <View style={styles.headerText}>
+              {!loading ? (
+                <Text variant="bodySm" color={alpha.onDarkText}>
+                  {t('moment.notFound')}
+                </Text>
+              ) : null}
+            </View>
+            <GlassButton size={34} onDark onPress={() => router.back()} accessibilityLabel={t('common.close')}>
+              <CloseIcon size={12} color={colors.white} />
+            </GlassButton>
+          </View>
+        </View>
+      </View>
+    );
+  }
 
   const locked = !moment.isOpen;
   const countdown = timeUntilUnlock(moment.autoUnlockAt);
@@ -70,13 +92,6 @@ export default function MomentScreen() {
       />
 
       <View style={[styles.chrome, { paddingTop: insets.top + 6, paddingBottom: insets.bottom + 10 }]}>
-        {/* Story progress bars */}
-        <View style={styles.progress}>
-          {[0, 1, 2].map((i) => (
-            <View key={i} style={[styles.bar, i === 0 && styles.barActive]} />
-          ))}
-        </View>
-
         <View style={styles.header}>
           <Avatar source={moment.from.avatar ?? ''} size={52} />
           <View style={styles.headerText}>
@@ -87,10 +102,7 @@ export default function MomentScreen() {
               {relativeTime(moment.capturedAt)}
             </Text>
           </View>
-          <GlassButton size={34} onDark>
-            <MoreIcon size={16} color={colors.white} />
-          </GlassButton>
-          <GlassButton size={34} onDark onPress={() => router.back()}>
+          <GlassButton size={34} onDark onPress={() => router.back()} accessibilityLabel={t('common.close')}>
             <CloseIcon size={12} color={colors.white} />
           </GlassButton>
         </View>
@@ -151,9 +163,6 @@ const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.black },
   flex: { flex: 1 },
   chrome: { ...StyleSheet.absoluteFill, paddingHorizontal: 16 },
-  progress: { flexDirection: 'row', gap: 5, paddingHorizontal: 4 },
-  bar: { flex: 1, height: 3, borderRadius: radius.pill, backgroundColor: 'rgba(255,255,255,.32)' },
-  barActive: { backgroundColor: colors.white },
   header: { flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 16 },
   headerText: { flex: 1, minWidth: 0, gap: 2 },
   lockBody: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 16, paddingBottom: 60 },

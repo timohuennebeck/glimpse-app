@@ -6,6 +6,7 @@ import { CameraIcon } from '@/shared/ui/icons';
 import { colors } from '@/shared/theme/colors';
 import { shadow } from '@/shared/theme/page-structure';
 import { t } from '@/shared/i18n/i18n';
+import { useComposer } from '@/features/moments/hooks/use-composer';
 import { TAB_BAR_CLEARANCE } from '@/features/navigation/clearance';
 /**
  * The capture action, floating to the right of the native tab bar.
@@ -19,6 +20,7 @@ import { TAB_BAR_CLEARANCE } from '@/features/navigation/clearance';
  */
 export function CaptureButton() {
   const native = isLiquidGlassAvailable();
+  const composer = useComposer();
 
   return (
     <Pressable
@@ -26,6 +28,8 @@ export function CaptureButton() {
       accessibilityLabel={t('profile.tradeCta')}
       onPress={() => {
         void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        // A fresh moment: drop whatever an abandoned reply left in the draft.
+        composer.reset();
         router.push('/camera');
       }}
       style={({ pressed }) => [styles.button, pressed && styles.pressed]}

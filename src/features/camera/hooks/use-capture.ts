@@ -1,4 +1,4 @@
-import { RefObject, useState } from 'react';
+import { RefObject, useRef } from 'react';
 import type { CameraView } from 'expo-camera';
 import * as Haptics from 'expo-haptics';
 /**
@@ -6,17 +6,19 @@ import * as Haptics from 'expo-haptics';
  * camera and the onboarding practice shot; only what happens with the URI differs.
  */
 export function useCapture(cameraRef: RefObject<CameraView | null>, onCaptured: (uri: string) => void) {
-  const [busy, setBusy] = useState(false);
+  // A ref, not state: two taps before the next render both read stale state
+  // and used to push the compose screen twice.
+  const busy = useRef(false);
 
   return async function capture() {
-    if (busy || !cameraRef.current) return;
-    setBusy(true);
+    if (busy.current || !cameraRef.current) return;
+    busy.current = true;
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     try {
       const photo = await cameraRef.current.takePictureAsync({ quality: 0.85, skipProcessing: true });
       if (photo?.uri) onCaptured(photo.uri);
     } finally {
-      setBusy(false);
+      busy.current = false;
     }
   };
 }

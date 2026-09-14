@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { router } from 'expo-router';
 import { Button } from '@/shared/ui/button';
@@ -19,6 +19,7 @@ const LENGTH = 6;
 export default function RedeemScreen() {
   const [code, setCode] = useState('');
   const [focused, setFocused] = useState(true);
+  const inputRef = useRef<TextInput>(null);
   const complete = code.length === LENGTH;
 
   return (
@@ -35,7 +36,13 @@ export default function RedeemScreen() {
         {t('referral.redeem.subtitle')}
       </Text>
 
-      <Pressable style={styles.boxes} onPress={() => setFocused(true)}>
+      {/* Tapping the boxes must bring the keyboard back, not just restyle the cursor. */}
+      <Pressable
+        style={styles.boxes}
+        onPress={() => inputRef.current?.focus()}
+        accessibilityRole="none"
+        accessibilityLabel={t('referral.redeem.inputLabel')}
+      >
         {Array.from({ length: LENGTH }).map((_, i) => {
           const char = code[i];
           const isCursor = focused && i === code.length;
@@ -53,6 +60,7 @@ export default function RedeemScreen() {
 
       {/* Off-screen: the real input driving the boxes above. */}
       <TextInput
+        ref={inputRef}
         value={code}
         onChangeText={(v) => setCode(v.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, LENGTH))}
         onFocus={() => setFocused(true)}

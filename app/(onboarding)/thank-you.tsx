@@ -42,11 +42,19 @@ export default function ThankYouScreen() {
       </Text>
 
       <View style={styles.footer}>
-        <Button label={t('onboarding.thankYou.variantA.cta')} onPress={() => router.replace('/camera')} />
+        <Button
+          label={t('onboarding.thankYou.variantA.cta')}
+          onPress={() => {
+            // The feed has to be underneath, or closing the camera has nowhere to go.
+            router.replace('/(app)/feed');
+            router.push('/camera');
+          }}
+        />
         <Text
           variant="buttonSm"
           color={colors.inkSoft}
           center
+          accessibilityRole="link"
           onPress={() => router.replace('/(app)/feed')}
         >
           {t('onboarding.thankYou.variantA.skip')}

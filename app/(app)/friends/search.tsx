@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { StyleSheet, TextInput, View, Pressable } from 'react-native';
+import { Share, StyleSheet, TextInput, View, Pressable } from 'react-native';
 import { router } from 'expo-router';
 import { CloseIcon, MoreIcon, QrIcon, SearchIcon } from '@/shared/ui/icons';
 import { GlassButton } from '@/shared/ui/glass-button';
@@ -13,7 +13,7 @@ import { t } from '@/shared/i18n/i18n';
 import { PersonRow } from '@/features/friends/components/person-row';
 import { Pill } from '@/features/friends/components/pill';
 import { ShareRow } from '@/features/friends/components/share-row';
-import { demoOthers } from '@/shared/lib/fixtures';
+import { demoFriendRequests, demoOthers } from '@/shared/lib/fixtures';
 type RequestState = 'add' | 'sent' | 'friends';
 
 /** Screen `D Freund suchen` — search by @username, or share your link. */
@@ -36,7 +36,7 @@ export default function FriendSearchScreen() {
   return (
     <Screen scroll bottomInset={spacing.contentBottom}>
       <View style={styles.headerRow}>
-        <GlassButton size={34} onPress={() => router.back()}>
+        <GlassButton size={34} onPress={() => router.back()} accessibilityLabel={t('common.close')}>
           <CloseIcon size={13} />
         </GlassButton>
         <Text variant="sheetTitle" color={colors.ink}>
@@ -56,7 +56,13 @@ export default function FriendSearchScreen() {
           style={styles.input}
         />
         {query.length > 0 ? (
-          <Pressable onPress={() => setQuery('')} style={styles.clear} hitSlop={8}>
+          <Pressable
+            onPress={() => setQuery('')}
+            style={styles.clear}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel={t('common.clear')}
+          >
             <CloseIcon size={9} color={colors.white} />
           </Pressable>
         ) : null}
@@ -67,14 +73,20 @@ export default function FriendSearchScreen() {
         <View style={styles.list}>
           {results.map((p) => {
             const state = states[p.id] ?? 'add';
+            // Mutual count only where the fixture actually has one; no invented numbers.
+            const mutual = demoFriendRequests.find((r) => r.profile.id === p.id)?.mutual;
+            const detail =
+              state === 'friends'
+                ? t('friends.search.alreadyFriends')
+                : mutual
+                  ? t('friends.search.mutual', { count: mutual })
+                  : null;
             return (
               <PersonRow
                 key={p.id}
                 avatar={p.photo}
                 name={p.display_name}
-                subtitle={`@${p.username} · ${
-                  state === 'friends' ? t('friends.search.alreadyFriends') : t('friends.search.mutual', { count: 4 })
-                }`}
+                subtitle={detail ? `@${p.username} · ${detail}` : `@${p.username}`}
                 verified={state === 'friends'}
                 onPress={() => router.push(`/profile/${p.id}`)}
                 trailing={
@@ -104,11 +116,15 @@ export default function FriendSearchScreen() {
       <ShareRow
         style={styles.share}
         dividerLabel={t('friends.search.dividerShare')}
-        link="glimpse.app/@du"
+        link={t('common.profileLink')}
         linkLabel={t('friends.search.link')}
         actions={[
           { label: t('friends.search.qr'), icon: <QrIcon size={22} /> },
-          { label: t('friends.search.more'), icon: <MoreIcon size={22} /> },
+          {
+            label: t('friends.search.more'),
+            icon: <MoreIcon size={22} />,
+            onPress: () => void Share.share({ message: t('common.profileLink') }),
+          },
         ]}
       />
     </Screen>

@@ -11,6 +11,7 @@ import { colors } from '@/shared/theme/colors';
 import { spacing } from '@/shared/theme/page-structure';
 import { t } from '@/shared/i18n/i18n';
 import { useComposer } from '@/features/moments/hooks/use-composer';
+import { reloadInbox } from '@/features/moments/hooks/use-inbox';
 import { createMoment, sendMoment } from '@/features/moments/data/moments-api';
 import { PersonRow } from '@/features/friends/components/person-row';
 import { Checkbox } from '@/features/friends/components/checkbox';
@@ -31,7 +32,8 @@ const notOnGlimpse = isSupabaseConfigured ? [] : demoOthers.slice(3);
 export default function RecipientsScreen() {
   const composer = useComposer();
   const [friends, setFriends] = useState<FriendSummary[]>([]);
-  const [selected, setSelected] = useState<string[]>([]);
+  // A friend's profile pre-selects them; otherwise start empty.
+  const [selected, setSelected] = useState<string[]>(composer.recipientIds);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -59,6 +61,7 @@ export default function RecipientsScreen() {
           facing: composer.facing,
         });
         await sendMoment(momentId, selected);
+        void reloadInbox();
       }
       composer.reset();
       router.dismissAll();
@@ -80,7 +83,7 @@ export default function RecipientsScreen() {
   return (
     <Screen gutter={0} bottomInset={spacing.contentBottom}>
       <View style={styles.header}>
-        <GlassButton size={38} onPress={() => router.back()}>
+        <GlassButton size={38} onPress={() => router.back()} accessibilityLabel={t('common.close')}>
           <CloseIcon size={12} />
         </GlassButton>
         <Text variant="cardTitleLg" color={colors.ink}>
@@ -104,6 +107,8 @@ export default function RecipientsScreen() {
                 subtitle={f.tagline ?? undefined}
                 size={46}
                 onPress={() => toggle(f.id)}
+                accessibilityRole="checkbox"
+                accessibilityState={{ checked: selected.includes(f.id) }}
                 trailing={<Checkbox checked={selected.includes(f.id)} />}
               />
             ))}

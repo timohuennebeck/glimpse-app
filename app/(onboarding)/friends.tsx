@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Share, StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
+import * as Clipboard from 'expo-clipboard';
 import { CtaFooter } from '@/shared/ui/cta-footer';
 import { CopyIcon, MoreIcon, SearchIcon } from '@/shared/ui/icons';
 import { ProgressHeader } from '@/shared/ui/progress-header';
@@ -91,11 +92,19 @@ export default function OnboardingFriendsScreen() {
       <ShareRow
         style={styles.share}
         dividerLabel={t('onboarding.friends.dividerShare')}
-        link="glimpse.app/@du"
+        link={t('common.profileLink')}
         linkLabel={t('onboarding.friends.shareLink')}
         actions={[
-          { label: t('onboarding.friends.shareCopy'), icon: <CopyIcon size={22} /> },
-          { label: t('onboarding.friends.shareMore'), icon: <MoreIcon size={22} /> },
+          {
+            label: t('onboarding.friends.shareCopy'),
+            icon: <CopyIcon size={22} />,
+            onPress: () => void Clipboard.setStringAsync(t('common.profileLink')),
+          },
+          {
+            label: t('onboarding.friends.shareMore'),
+            icon: <MoreIcon size={22} />,
+            onPress: () => void Share.share({ message: t('common.profileLink') }),
+          },
         ]}
       />
 

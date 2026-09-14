@@ -3,6 +3,7 @@ import { GlassButton } from '@/shared/ui/glass-button';
 import { FilterIcon } from '@/shared/ui/icons';
 import { Text } from '@/shared/ui/text';
 import { colors } from '@/shared/theme/colors';
+import { t } from '@/shared/i18n/i18n';
 interface SectionHeadingProps {
   title: string;
   style?: ViewStyle;
@@ -15,7 +16,7 @@ export function SectionHeading({ title, style }: SectionHeadingProps) {
       <Text variant="section" color={colors.ink}>
         {title}
       </Text>
-      <GlassButton size={36}>
+      <GlassButton size={36} accessibilityLabel={t('common.filter')}>
         <FilterIcon size={20} />
       </GlassButton>
     </View>

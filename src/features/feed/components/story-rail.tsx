@@ -41,7 +41,14 @@ export function StoryRail({
       contentContainerStyle={styles.row}
     >
       {items.map((item) => (
-        <Pressable key={item.id} style={styles.cell} onPress={() => onPressItem?.(item.id)}>
+        <Pressable
+          key={item.id}
+          // Capped so a long name cannot widen the cell past its avatar.
+          style={[styles.cell, { width: size + 14 }]}
+          onPress={() => onPressItem?.(item.id)}
+          accessibilityRole="button"
+          accessibilityLabel={item.name}
+        >
           <Avatar source={item.avatar} size={size} ring={item.waiting ? 'active' : 'idle'} />
           <Text variant="metaXs" color={colors.inkFaint} numberOfLines={1}>
             {item.name}
@@ -50,7 +57,13 @@ export function StoryRail({
       ))}
 
       {Array.from({ length: placeholders }).map((_, i) => (
-        <Pressable key={`ph-${i}`} style={styles.cell} onPress={onPressPlaceholder}>
+        <Pressable
+          key={`ph-${i}`}
+          style={[styles.cell, { width: size + 14 }]}
+          onPress={onPressPlaceholder}
+          accessibilityRole="button"
+          accessibilityLabel={placeholderLabel}
+        >
           <View style={[styles.dashed, { width: size, height: size, borderRadius: size / 2 }]}>
             <Svg width={size * 0.36} height={size * 0.36} viewBox="0 0 20 20" fill="none">
               <Path
@@ -61,7 +74,7 @@ export function StoryRail({
               />
             </Svg>
           </View>
-          <Text variant="metaXs" color={colors.mutedLilac}>
+          <Text variant="metaXs" color={colors.mutedLilac} numberOfLines={1}>
             {placeholderLabel}
           </Text>
         </Pressable>

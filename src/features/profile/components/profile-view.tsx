@@ -46,7 +46,7 @@ export function ProfileView({ profile, subtitle, leading, onPressTrade }: Profil
       <View style={styles.header}>
         {leading}
         <Image source={profile.photo} style={styles.avatar} contentFit="cover" />
-        <GlassButton size={44}>
+        <GlassButton size={44} accessibilityLabel={t('common.more')}>
           <MoreIcon size={20} color={colors.inkSoft} />
         </GlassButton>
       </View>

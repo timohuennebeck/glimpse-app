@@ -26,12 +26,14 @@ export function Text({ variant = 'body', color = colors.inkBody, center, style, 
   }
   const family =
     weight === '400' ? fontFamily.regular : weight === '500' ? fontFamily.medium : fontFamily.semibold;
+  // An explicit family in `style` (the mono referral code) is deliberate and
+  // wins; only the default family is derived from the weight.
+  const explicitFamily = StyleSheet.flatten(style)?.fontFamily;
 
   return (
     <RNText
       {...rest}
-      // The family goes last so it wins over any fontFamily in `style`.
-      style={StyleSheet.flatten([token, { color }, center && styles.center, style, { fontFamily: family }])}
+      style={StyleSheet.flatten([token, { color }, center && styles.center, style, { fontFamily: explicitFamily ?? family }])}
     />
   );
 }

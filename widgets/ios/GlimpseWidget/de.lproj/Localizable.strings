@@ -1,0 +1,9 @@
+/* Widget gallery */
+"widget.name" = "Glimpse";
+"widget.description" = "Der verschwommene Moment, bis du zurücktauschst.";
+
+/* Medium widget reply button */
+"widget.reply" = "Antworten";
+
+/* No moment waiting */
+"widget.empty" = "Schick den ersten Moment";

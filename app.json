@@ -22,10 +22,10 @@
         ]
       },
       "infoPlist": {
-        "NSCameraUsageDescription": "Glimpse braucht die Kamera, damit du einen Moment aufnehmen und zur\u00fccktauschen kannst.",
-        "NSPhotoLibraryAddUsageDescription": "Damit du getauschte Momente in deiner Galerie sichern kannst.",
-        "NSContactsUsageDescription": "Damit Glimpse dir zeigen kann, welche deiner Kontakte schon dabei sind.",
-        "NSMicrophoneUsageDescription": "Nur n\u00f6tig, wenn du sp\u00e4ter kurze Video-Momente aufnimmst."
+        "NSCameraUsageDescription": "Glimpse needs the camera so you can capture a moment and trade it back.",
+        "NSPhotoLibraryAddUsageDescription": "So you can save traded moments to your photo library.",
+        "NSContactsUsageDescription": "So Glimpse can show you which of your contacts are already here.",
+        "NSMicrophoneUsageDescription": "Only needed if you later record short video moments."
       }
     },
     "android": {
@@ -47,7 +47,7 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Glimpse braucht die Kamera, damit du einen Moment aufnehmen und zur\u00fccktauschen kannst."
+          "cameraPermission": "Glimpse needs the camera so you can capture a moment and trade it back."
         }
       ],
       [

@@ -1,45 +1,37 @@
 import { formatDistanceToNowStrict, isToday, isYesterday, format } from 'date-fns';
 import { de, enUS } from 'date-fns/locale';
-import { getLocale } from '@/shared/i18n/i18n';
+import { getLocale, t } from '@/shared/i18n/i18n';
 function dfnsLocale() {
   return getLocale().startsWith('de') ? de : enUS;
 }
 
-/** "vor 12 Min" / "12 min ago" — used on moment cards and the widget. */
+/**
+ * "12 min ago" / "vor 12 Min" — moment cards, the widget, sent requests.
+ * date-fns adds the suffix itself, which is what gets the German dative right
+ * ("vor 2 Tagen", not "vor 2 Tage").
+ */
 export function relativeTime(iso: string): string {
-  const locale = dfnsLocale();
-  return locale === de
-    ? `vor ${formatDistanceToNowStrict(new Date(iso), { locale })}`
-    : `${formatDistanceToNowStrict(new Date(iso), { locale })} ago`;
+  return formatDistanceToNowStrict(new Date(iso), { locale: dfnsLocale(), addSuffix: true });
 }
 
-/** Bare "2 days" / "2 Tage" with no prefix or suffix, for templates that add their own. */
-export function durationSince(iso: string): string {
-  return formatDistanceToNowStrict(new Date(iso), { locale: dfnsLocale() });
-}
-
-/** "9:24" / "Gestern" / "Mo" — the chat-list timestamp rule. */
+/** "9:24" / "Yesterday" / "Mo" — the chat-list timestamp rule. */
 export function threadTime(iso: string): string {
   const d = new Date(iso);
   const locale = dfnsLocale();
   if (isToday(d)) return format(d, 'H:mm', { locale });
-  if (isYesterday(d)) return locale === de ? 'Gestern' : 'Yesterday';
+  if (isYesterday(d)) return t('time.yesterday');
   return format(d, 'EEEEEE', { locale });
 }
 
-/** "Di 9. Sep" — the date caption under a photo pair. */
+/** "Tue 9 Sep" — the date caption under a photo pair. */
 export function pairDate(iso: string): string {
   const locale = dfnsLocale();
-  return locale === de
-    ? format(new Date(iso), 'EEEEEE d. MMM', { locale })
-    : format(new Date(iso), 'EEE d MMM', { locale });
+  return format(new Date(iso), locale === de ? 'EEEEEE d. MMM' : 'EEE d MMM', { locale });
 }
 
-/** "Tauscht seit September 2026" — when this person joined. */
+/** "Trading since September 2026" — when this person joined. */
 export function memberSince(iso: string): string {
-  const locale = dfnsLocale();
-  const when = format(new Date(iso), 'LLLL yyyy', { locale });
-  return locale === de ? `Tauscht seit ${when}` : `Trading since ${when}`;
+  return t('profile.memberSince', { when: format(new Date(iso), 'LLLL yyyy', { locale: dfnsLocale() }) });
 }
 
 /** Remaining time before a frosted moment unlocks itself. */

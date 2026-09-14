@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { AccessibilityState, Pressable, StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
@@ -12,6 +12,7 @@ interface GlassButtonProps {
   /** Frosted-on-photo variant used by the camera and moment viewer. */
   onDark?: boolean;
   accessibilityLabel?: string;
+  accessibilityState?: AccessibilityState;
 }
 
 /**
@@ -34,6 +35,7 @@ export function GlassButton({
   children,
   onDark = false,
   accessibilityLabel,
+  accessibilityState,
 }: GlassButtonProps) {
   const radius = size / 2;
   const native = isLiquidGlassAvailable();
@@ -41,8 +43,11 @@ export function GlassButton({
   return (
     <Pressable
       onPress={onPress}
+      // A control with no handler must not announce itself as a live button.
+      disabled={!onPress}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
+      accessibilityState={{ disabled: !onPress, ...accessibilityState }}
       hitSlop={8}
       style={({ pressed }) => [
         { width: size, height: size, borderRadius: radius, opacity: pressed ? 0.72 : 1 },
