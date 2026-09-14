@@ -6,8 +6,10 @@ import { create } from '@/features/moments/hooks/store';
  */
 export interface Draft {
   uri: string | null;
+  /** Pixel size of the shot, stored on the moment so cards can reserve its aspect ratio. */
+  width: number | null;
+  height: number | null;
   caption: string;
-  facing: 'front' | 'back';
   recipientIds: string[];
   /** Set when the capture is answering a specific frosted moment. */
   replyToTradeId: string | null;
@@ -15,8 +17,9 @@ export interface Draft {
 
 const emptyDraft: Draft = {
   uri: null,
+  width: null,
+  height: null,
   caption: '',
-  facing: 'back',
   recipientIds: [],
   replyToTradeId: null,
 };

@@ -15,13 +15,12 @@
 
 export type FriendshipStatus = 'pending' | 'accepted' | 'declined';
 export type TradeStatus = 'pending' | 'unlocked' | 'expired';
-export type CameraFacing = 'front' | 'back';
 
 export type Profile = {
   id: string;
   username: string | null;
-  display_name: string;
-  avatar_path: string | null;
+  first_name: string;
+  avatar_storage_path: string | null;
   tagline: string | null;
   locale: string;
   heard_about: string | null;
@@ -33,7 +32,7 @@ export type Profile = {
 export type Friendship = {
   id: string;
   requester_id: string;
-  addressee_id: string;
+  recipient_id: string;
   status: FriendshipStatus;
   created_at: string;
   responded_at: string | null;
@@ -42,13 +41,12 @@ export type Friendship = {
 export type Moment = {
   id: string;
   author_id: string;
-  original_path: string;
-  blurred_path: string | null;
+  original_storage_path: string;
+  blurred_storage_path: string | null;
   caption: string | null;
-  facing: CameraFacing;
+  /** Pixel size of the original; null for rows inserted without it. */
   width: number | null;
   height: number | null;
-  captured_at: string;
   created_at: string;
 };
 
@@ -69,7 +67,7 @@ export type Message = {
   id: string;
   sender_id: string;
   recipient_id: string;
-  body: string | null;
+  content: string | null;
   moment_id: string | null;
   trade_id: string | null;
   created_at: string;
@@ -82,10 +80,10 @@ export type InboxRow = {
   from_id: string;
   from_name: string;
   from_username: string | null;
-  from_avatar_path: string | null;
+  from_avatar_storage_path: string | null;
   moment_id: string;
   caption: string | null;
-  captured_at: string;
+  moment_created_at: string;
   status: TradeStatus;
   seen_at: string | null;
   auto_unlock_at: string | null;
@@ -111,7 +109,7 @@ export type PairRow = {
 export type ThreadRow = {
   partner_id: string;
   last_message_id: string;
-  last_body: string | null;
+  last_content: string | null;
   last_moment_id: string | null;
   last_sender_id: string;
   last_at: string;
@@ -129,13 +127,13 @@ export type Database = {
       };
       friendships: {
         Row: Friendship;
-        Insert: Pick<Friendship, 'requester_id' | 'addressee_id'> & Partial<Friendship>;
+        Insert: Pick<Friendship, 'requester_id' | 'recipient_id'> & Partial<Friendship>;
         Update: Partial<Friendship>;
         Relationships: [];
       };
       moments: {
         Row: Moment;
-        Insert: Pick<Moment, 'author_id' | 'original_path'> & Partial<Moment>;
+        Insert: Pick<Moment, 'author_id' | 'original_storage_path'> & Partial<Moment>;
         Update: Partial<Moment>;
         Relationships: [];
       };

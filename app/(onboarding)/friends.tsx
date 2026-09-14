@@ -75,7 +75,7 @@ export default function OnboardingFriendsScreen() {
                 <PersonRow
                   key={p.id}
                   avatar={p.photo}
-                  name={p.display_name}
+                  name={p.first_name}
                   subtitle={p.tagline ?? undefined}
                   trailing={
                     done ? (

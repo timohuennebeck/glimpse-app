@@ -28,8 +28,8 @@ create table public.profiles (
   id                uuid primary key references auth.users(id) on delete cascade,
   username          citext unique
                       check (username ~ '^[a-z0-9_.]{3,20}$'),
-  display_name      text not null default '',
-  avatar_path       text,
+  first_name        text not null default '',
+  avatar_storage_path text,
   tagline           text,
   locale            text not null default 'de',
   -- Onboarding screen 12 ("Wo hast du von Glimpse gehört?").
@@ -39,7 +39,7 @@ create table public.profiles (
   updated_at        timestamptz not null default now()
 );
 
-comment on column public.profiles.avatar_path is
+comment on column public.profiles.avatar_storage_path is
   'Object key inside the public `avatars` bucket, not a URL.';
 
 -- ---------------------------------------------------------------------------
@@ -61,19 +61,19 @@ create type public.friendship_status as enum ('pending', 'accepted', 'declined')
 create table public.friendships (
   id           uuid primary key default gen_random_uuid(),
   requester_id uuid not null references public.profiles(id) on delete cascade,
-  addressee_id uuid not null references public.profiles(id) on delete cascade,
+  recipient_id uuid not null references public.profiles(id) on delete cascade,
   status       public.friendship_status not null default 'pending',
   created_at   timestamptz not null default now(),
   responded_at timestamptz,
-  constraint friendship_not_self check (requester_id <> addressee_id)
+  constraint friendship_not_self check (requester_id <> recipient_id)
 );
 
 -- A pair may only have one relationship row regardless of who asked first.
 create unique index friendships_unique_pair
-  on public.friendships (least(requester_id, addressee_id), greatest(requester_id, addressee_id));
+  on public.friendships (least(requester_id, recipient_id), greatest(requester_id, recipient_id));
 
 create index friendships_requester_idx on public.friendships (requester_id, status);
-create index friendships_addressee_idx on public.friendships (addressee_id, status);
+create index friendships_recipient_idx on public.friendships (recipient_id, status);
 
 -- ---------------------------------------------------------------------------
 -- moments: a single captured photo
@@ -83,28 +83,28 @@ create table public.moments (
   author_id    uuid not null references public.profiles(id) on delete cascade,
   -- Object keys in the private `moments` bucket. Which one a caller may sign
   -- is decided by public.visible_moment_paths() and enforced by storage RLS.
-  original_path text not null,
-  blurred_path  text,
+  original_storage_path text not null,
+  blurred_storage_path  text,
   caption      text check (char_length(caption) <= 280),
-  facing       text not null default 'back' check (facing in ('front', 'back')),
-  width        int,
-  height       int,
-  captured_at  timestamptz not null default now(),
+  -- Pixel size of the original, so a card can reserve the right aspect ratio
+  -- before the image (or its blurred rendition) has loaded.
+  width        int check (width > 0),
+  height       int check (height > 0),
   created_at   timestamptz not null default now(),
   -- A row may only ever name objects under its author's own prefix. Without
   -- this, anyone could insert a row pointing at someone else's photo and the
   -- storage policy would treat "author of a row naming that path" as
   -- permission to sign it.
   constraint moments_original_under_author check (
-    original_path = 'original/' || author_id::text || '/' || split_part(original_path, '/', 3)
-    and split_part(original_path, '/', 3) <> ''
+    original_storage_path = 'original/' || author_id::text || '/' || split_part(original_storage_path, '/', 3)
+    and split_part(original_storage_path, '/', 3) <> ''
   ),
   constraint moments_blurred_under_author check (
-    blurred_path is null
-    or blurred_path = 'blurred/' || author_id::text || '/' || split_part(blurred_path, '/', 3)
+    blurred_storage_path is null
+    or blurred_storage_path = 'blurred/' || author_id::text || '/' || split_part(blurred_storage_path, '/', 3)
   ),
-  constraint moments_original_path_unique unique (original_path),
-  constraint moments_blurred_path_unique unique (blurred_path)
+  constraint moments_original_storage_path_unique unique (original_storage_path),
+  constraint moments_blurred_storage_path_unique unique (blurred_storage_path)
 );
 
 create index moments_author_idx on public.moments (author_id, created_at desc);
@@ -155,13 +155,13 @@ create table public.messages (
   id          uuid primary key default gen_random_uuid(),
   sender_id   uuid not null references public.profiles(id) on delete cascade,
   recipient_id uuid not null references public.profiles(id) on delete cascade,
-  body        text check (char_length(body) <= 2000),
+  content     text check (char_length(content) <= 2000),
   moment_id   uuid references public.moments(id) on delete set null,
   trade_id    uuid references public.trades(id) on delete set null,
   created_at  timestamptz not null default now(),
   read_at     timestamptz,
   constraint message_not_self check (sender_id <> recipient_id),
-  constraint message_has_content check (body is not null or moment_id is not null)
+  constraint message_has_content check (content is not null or moment_id is not null)
 );
 
 -- Thread lookup is "all messages between these two, newest first".
@@ -192,7 +192,7 @@ create table public.invites (
   token       text primary key default encode(gen_random_bytes(16), 'hex'),
   inviter_id  uuid not null references public.profiles(id) on delete cascade,
   moment_id   uuid references public.moments(id) on delete set null,
-  claimed_by  uuid references public.profiles(id) on delete set null,
+  claimer_id  uuid references public.profiles(id) on delete set null,
   claimed_at  timestamptz,
   expires_at  timestamptz not null default (now() + interval '14 days'),
   created_at  timestamptz not null default now()

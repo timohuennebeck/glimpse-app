@@ -35,7 +35,7 @@ create policy moments_delete_own on storage.objects
 -- predicates allow — the original once the trade is open, the blurred copy
 -- before that, nothing at all otherwise.
 -- The check lives in a SECURITY DEFINER function because policy expressions
--- run as the caller, and the caller has no SELECT on moments.*_path.
+-- run as the caller, and the caller has no SELECT on moments.*_storage_path.
 create policy moments_read_allowed_rendition on storage.objects
   for select to authenticated
   using (bucket_id = 'moments' and public.storage_object_readable(name));
@@ -55,13 +55,13 @@ create or replace view public.v_my_friends
 with (security_invoker = true)
 as
 select
-  case when f.requester_id = auth.uid() then f.addressee_id else f.requester_id end as friend_id,
+  case when f.requester_id = auth.uid() then f.recipient_id else f.requester_id end as friend_id,
   f.id as friendship_id,
   f.created_at,
   f.responded_at
 from public.friendships f
 where f.status = 'accepted'
-  and (f.requester_id = auth.uid() or f.addressee_id = auth.uid());
+  and (f.requester_id = auth.uid() or f.recipient_id = auth.uid());
 
 -- ---------------------------------------------------------------------------
 -- v_inbox — what the FEED and the WIDGET read.
@@ -75,12 +75,12 @@ as
 select
   t.id                as trade_id,
   t.initiator_id      as from_id,
-  p.display_name      as from_name,
+  p.first_name        as from_name,
   p.username          as from_username,
-  p.avatar_path       as from_avatar_path,
+  p.avatar_storage_path as from_avatar_storage_path,
   t.initiator_moment_id as moment_id,
   m.caption,
-  m.captured_at,
+  m.created_at        as moment_created_at,
   t.status,
   t.seen_at,
   t.auto_unlock_at,
@@ -130,7 +130,7 @@ with mine as (
 ),
 latest as (
   select distinct on (partner_id)
-    partner_id, id, body, moment_id, sender_id, created_at
+    partner_id, id, content, moment_id, sender_id, created_at
   from mine
   order by partner_id, created_at desc
 ),
@@ -144,7 +144,7 @@ unread as (
 select
   l.partner_id,
   l.id         as last_message_id,
-  l.body       as last_body,
+  l.content    as last_content,
   l.moment_id  as last_moment_id,
   l.sender_id  as last_sender_id,
   l.created_at as last_at,

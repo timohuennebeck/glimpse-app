@@ -46,7 +46,7 @@ create policy user_blocks_own on public.user_blocks
 -- ---------------------------------------------------------------------------
 create policy friendships_read on public.friendships
   for select to authenticated
-  using (requester_id = auth.uid() or addressee_id = auth.uid());
+  using (requester_id = auth.uid() or recipient_id = auth.uid());
 
 -- You may only ever create a request *as yourself*, and not to someone who
 -- blocked you.
@@ -55,7 +55,7 @@ create policy friendships_request on public.friendships
   with check (
     requester_id = auth.uid()
     and status = 'pending'
-    and not public.is_blocked(auth.uid(), addressee_id)
+    and not public.is_blocked(auth.uid(), recipient_id)
   );
 
 -- Only the person who received the request may accept or decline it, and
@@ -63,15 +63,15 @@ create policy friendships_request on public.friendships
 -- them rewrite requester_id and befriend anyone).
 create policy friendships_respond on public.friendships
   for update to authenticated
-  using (addressee_id = auth.uid())
-  with check (addressee_id = auth.uid() and status in ('accepted', 'declined'));
+  using (recipient_id = auth.uid())
+  with check (recipient_id = auth.uid() and status in ('accepted', 'declined'));
 revoke update on public.friendships from authenticated;
 grant update (status) on public.friendships to authenticated;
 
 -- Either party may walk away.
 create policy friendships_delete on public.friendships
   for delete to authenticated
-  using (requester_id = auth.uid() or addressee_id = auth.uid());
+  using (requester_id = auth.uid() or recipient_id = auth.uid());
 
 -- ---------------------------------------------------------------------------
 -- moments
@@ -107,11 +107,11 @@ create policy moments_delete_own on public.moments
 
 -- Column grants: the object paths are not the client's business. They are
 -- resolved by visible_moment_paths() and checked by storage_object_readable().
--- blurred_path is written only by the Edge Function (service role).
+-- blurred_storage_path is written only by the Edge Function (service role).
 revoke select, insert on public.moments from authenticated;
-grant select (id, author_id, caption, facing, width, height, captured_at, created_at)
+grant select (id, author_id, caption, width, height, created_at)
   on public.moments to authenticated;
-grant insert (author_id, original_path, caption, facing, width, height, captured_at)
+grant insert (author_id, original_storage_path, caption, width, height)
   on public.moments to authenticated;
 
 -- ---------------------------------------------------------------------------

@@ -23,10 +23,10 @@ security definer
 set search_path = public
 as $$
 begin
-  insert into public.profiles (id, display_name, locale)
+  insert into public.profiles (id, first_name, locale)
   values (
     new.id,
-    coalesce(new.raw_user_meta_data ->> 'display_name', ''),
+    coalesce(new.raw_user_meta_data ->> 'first_name', ''),
     coalesce(new.raw_user_meta_data ->> 'locale', 'en')
   )
   on conflict (id) do nothing;
@@ -55,8 +55,8 @@ as $$
      and exists (
     select 1 from public.friendships f
     where f.status = 'accepted'
-      and least(f.requester_id, f.addressee_id) = least(a, b)
-      and greatest(f.requester_id, f.addressee_id) = greatest(a, b)
+      and least(f.requester_id, f.recipient_id) = least(a, b)
+      and greatest(f.requester_id, f.recipient_id) = greatest(a, b)
   );
 $$;
 
@@ -85,12 +85,12 @@ as $$
 declare
   cap int := public.config_int('max_friends', 20);
   n_requester int;
-  n_addressee int;
+  n_recipient int;
 begin
-  -- The two parties are fixed for the life of the row. Otherwise an addressee
+  -- The two parties are fixed for the life of the row. Otherwise a recipient
   -- could rewrite requester_id and manufacture a friendship with anyone.
   if tg_op = 'UPDATE'
-     and (new.requester_id, new.addressee_id) is distinct from (old.requester_id, old.addressee_id) then
+     and (new.requester_id, new.recipient_id) is distinct from (old.requester_id, old.recipient_id) then
     raise exception 'friendship_parties_immutable' using errcode = 'check_violation';
   end if;
 
@@ -102,10 +102,10 @@ begin
   -- exactly the cap does not reject itself.
   if new.status = 'accepted' and (tg_op = 'INSERT' or old.status <> 'accepted') then
     select count(*) into n_requester from public.friendships
-      where status = 'accepted' and (requester_id = new.requester_id or addressee_id = new.requester_id);
-    select count(*) into n_addressee from public.friendships
-      where status = 'accepted' and (requester_id = new.addressee_id or addressee_id = new.addressee_id);
-    if n_requester >= cap or n_addressee >= cap then
+      where status = 'accepted' and (requester_id = new.requester_id or recipient_id = new.requester_id);
+    select count(*) into n_recipient from public.friendships
+      where status = 'accepted' and (requester_id = new.recipient_id or recipient_id = new.recipient_id);
+    if n_requester >= cap or n_recipient >= cap then
       raise exception 'friend_cap_reached' using errcode = 'check_violation';
     end if;
   end if;
@@ -302,8 +302,8 @@ set search_path = public
 as $$
   select m.id,
          case
-           when public.can_see_original(m.id) then m.original_path
-           when public.can_see_moment(m.id)   then m.blurred_path
+           when public.can_see_original(m.id) then m.original_storage_path
+           when public.can_see_moment(m.id)   then m.blurred_storage_path
            else null
          end
   from public.moments m
@@ -312,7 +312,7 @@ $$;
 
 -- ---------------------------------------------------------------------------
 -- Storage gate. Evaluated by the RLS policy on storage.objects for the
--- `moments` bucket. SECURITY DEFINER so it may read moments.*_path, which the
+-- `moments` bucket. SECURITY DEFINER so it may read moments.*_storage_path, which the
 -- caller deliberately cannot (see the column grants in 20260913120200_rls).
 -- ---------------------------------------------------------------------------
 create or replace function public.storage_object_readable(p_name text)
@@ -324,13 +324,13 @@ set search_path = public
 as $$
   select exists (
     select 1 from public.moments m
-    where (m.original_path = p_name and public.can_see_original(m.id))
-       or (m.blurred_path  = p_name and public.can_see_moment(m.id))
+    where (m.original_storage_path = p_name and public.can_see_original(m.id))
+       or (m.blurred_storage_path  = p_name and public.can_see_moment(m.id))
   )
   -- Defence in depth: the second path segment must be the row's author.
   and exists (
     select 1 from public.moments m
-    where (m.original_path = p_name or m.blurred_path = p_name)
+    where (m.original_storage_path = p_name or m.blurred_storage_path = p_name)
       and split_part(p_name, '/', 2) = m.author_id::text
   );
 $$;
@@ -364,10 +364,10 @@ security definer
 set search_path = public
 as $$
   update public.invites i
-     set claimed_by = auth.uid(), claimed_at = now()
+     set claimer_id = auth.uid(), claimed_at = now()
    where i.token = p_token
      and auth.uid() is not null
-     and i.claimed_by is null
+     and i.claimer_id is null
      and i.expires_at > now()
      and i.inviter_id <> auth.uid()
   returning i.inviter_id, i.moment_id;

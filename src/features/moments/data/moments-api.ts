@@ -27,7 +27,7 @@ export async function fetchInbox(): Promise<InboxMoment[]> {
   return rows.map((row) =>
     toInboxMoment(
       row,
-      row.from_avatar_path ? publicAvatarUrl(row.from_avatar_path) : null,
+      row.from_avatar_storage_path ? publicAvatarUrl(row.from_avatar_storage_path) : null,
       urls.get(row.moment_id) ?? '',
     ),
   );
@@ -39,7 +39,7 @@ function toInboxMoment(row: InboxRow, avatar: string | number | null, photo: str
     momentId: row.moment_id,
     from: { id: row.from_id, name: row.from_name, username: row.from_username, avatar },
     caption: row.caption,
-    capturedAt: row.captured_at,
+    capturedAt: row.moment_created_at,
     status: row.status,
     isOpen: row.is_open,
     autoUnlockAt: row.auto_unlock_at,
@@ -91,7 +91,9 @@ export function publicAvatarUrl(path: string): string {
 interface CreateMomentArgs {
   localUri: string;
   caption: string | null;
-  facing: 'front' | 'back';
+  /** Pixel size from the camera, so cards can reserve the aspect ratio before the image loads. */
+  width: number | null;
+  height: number | null;
 }
 
 /**
@@ -99,7 +101,7 @@ interface CreateMomentArgs {
  *
  * The blurred rendition is produced server-side by an Edge Function watching
  * the bucket, so a tampered client cannot upload a "blurred" copy that is
- * really the original. Until that function is deployed, `blurred_path` stays
+ * really the original. Until that function is deployed, `blurred_storage_path` stays
  * null and `visible_moment_paths` withholds the moment rather than leaking it.
  */
 export async function createMoment(args: CreateMomentArgs): Promise<string> {
@@ -122,9 +124,10 @@ export async function createMoment(args: CreateMomentArgs): Promise<string> {
     .from('moments')
     .insert({
       author_id: userId,
-      original_path: `original/${objectKey}`,
+      original_storage_path: `original/${objectKey}`,
       caption: args.caption,
-      facing: args.facing,
+      width: args.width,
+      height: args.height,
     })
     .select('id')
     .single();
@@ -211,7 +214,7 @@ export async function fetchMomentPhoto(momentId: string): Promise<MomentPhoto | 
         photo: inbox.photo,
         fromName: inbox.from_name,
         fromAvatar: demoProfiles[inbox.from_id]?.photo ?? null,
-        capturedAt: inbox.captured_at,
+        capturedAt: inbox.moment_created_at,
       };
     }
     for (const pair of demoPairs) {
@@ -223,7 +226,7 @@ export async function fetchMomentPhoto(momentId: string): Promise<MomentPhoto | 
       const author = demoProfiles[side === 'a' ? pair.user_a : pair.user_b];
       return {
         photo: side === 'a' ? pair.leftPhoto : pair.rightPhoto,
-        fromName: author?.display_name ?? '',
+        fromName: author?.first_name ?? '',
         fromAvatar: author?.photo ?? null,
         capturedAt: pair.pair_at,
       };
@@ -234,14 +237,14 @@ export async function fetchMomentPhoto(momentId: string): Promise<MomentPhoto | 
   const sb = requireSupabase();
   const { data: moment, error } = await sb
     .from('moments')
-    .select('id, author_id, captured_at')
+    .select('id, author_id, created_at')
     .eq('id', momentId)
     .maybeSingle();
   if (error) throw error;
   if (!moment) return null;
 
   const [{ data: author }, urls] = await Promise.all([
-    sb.from('profiles').select('display_name, avatar_path').eq('id', moment.author_id).maybeSingle(),
+    sb.from('profiles').select('first_name, avatar_storage_path').eq('id', moment.author_id).maybeSingle(),
     signedMomentUrls([moment.id]),
   ]);
   const photo = urls.get(moment.id);
@@ -249,8 +252,8 @@ export async function fetchMomentPhoto(momentId: string): Promise<MomentPhoto | 
 
   return {
     photo,
-    fromName: author?.display_name ?? '',
-    fromAvatar: author?.avatar_path ? publicAvatarUrl(author.avatar_path) : null,
-    capturedAt: moment.captured_at,
+    fromName: author?.first_name ?? '',
+    fromAvatar: author?.avatar_storage_path ? publicAvatarUrl(author.avatar_storage_path) : null,
+    capturedAt: moment.created_at,
   };
 }

@@ -53,7 +53,7 @@ export default function FeedScreen() {
       <View className="flex-1 gap-4">
         <FeedHeader
           avatar={AVATARS.self}
-          name={demoProfiles[DEMO_USER_ID].display_name}
+          name={demoProfiles[DEMO_USER_ID].first_name}
           subtitle={memberSince(demoProfiles[DEMO_USER_ID].created_at)}
           onPressAdd={() => router.push('/(app)/friends/search')}
           onPressAvatar={() => router.push('/(app)/friends')}

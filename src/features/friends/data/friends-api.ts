@@ -30,22 +30,22 @@ export async function fetchFriends(): Promise<FriendSummary[]> {
 
   const { data: profiles, error: profileError } = await sb
     .from('profiles')
-    .select('id, display_name, username, tagline, avatar_path')
+    .select('id, first_name, username, tagline, avatar_storage_path')
     .in('id', ids);
   if (profileError) throw profileError;
 
-  return (profiles ?? []).map((p) => toFriend(p, p.avatar_path ? publicAvatarUrl(p.avatar_path) : null));
+  return (profiles ?? []).map((p) => toFriend(p, p.avatar_storage_path ? publicAvatarUrl(p.avatar_storage_path) : null));
 }
 
 function toFriend(
-  p: Pick<Profile, 'id' | 'display_name' | 'username' | 'tagline'>,
+  p: Pick<Profile, 'id' | 'first_name' | 'username' | 'tagline'>,
   avatar: string | number | null,
 ): FriendSummary {
-  return { id: p.id, name: p.display_name, username: p.username, tagline: p.tagline, avatar };
+  return { id: p.id, name: p.first_name, username: p.username, tagline: p.tagline, avatar };
 }
 
 /**
- * Answer an incoming request. `status` is the only column the addressee may
+ * Answer an incoming request. `status` is the only column the recipient may
  * write (see the column grant in the RLS migration); the friend cap trigger
  * runs on the way in.
  */

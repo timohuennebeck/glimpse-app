@@ -37,7 +37,7 @@ export default function ChatScreen() {
         <Avatar source={partner.photo} size={40} />
         <View className="flex-1 gap-px">
           <Text variant="rowTitle" className="text-ink">
-            {partner.display_name}
+            {partner.first_name}
           </Text>
           <Text variant="metaXs" className="text-muted-lilac">
             {t('chat.online')}
@@ -77,7 +77,7 @@ export default function ChatScreen() {
                       contentFit="cover"
                     />
                   ) : null}
-                  {message.body ? (
+                  {message.content ? (
                     <View
                       className={cn(
                         'max-w-[264px] rounded-[22px] px-4 py-3',
@@ -85,7 +85,7 @@ export default function ChatScreen() {
                       )}
                     >
                       <Text variant="bodyXs" className={mine ? 'text-white' : 'text-ink-body'}>
-                        {message.body}
+                        {message.content}
                       </Text>
                     </View>
                   ) : null}

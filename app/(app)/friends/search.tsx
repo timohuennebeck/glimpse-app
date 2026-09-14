@@ -29,7 +29,7 @@ export default function FriendSearchScreen() {
   const results = demoOthers.filter(
     (p) =>
       query.length === 0 ||
-      p.display_name.toLowerCase().includes(needle) ||
+      p.first_name.toLowerCase().includes(needle) ||
       (p.username ?? '').includes(needle),
   );
 
@@ -90,7 +90,7 @@ export default function FriendSearchScreen() {
               <PersonRow
                 key={p.id}
                 avatar={p.photo}
-                name={p.display_name}
+                name={p.first_name}
                 subtitle={detail ? `@${p.username} · ${detail}` : `@${p.username}`}
                 verified={state === 'friends'}
                 onPress={() => router.push(`/profile/${p.id}`)}

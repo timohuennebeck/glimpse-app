@@ -48,7 +48,7 @@ export function ProfileView({ profile, subtitle, leading, onPressTrade }: Profil
 
       <View className="mt-3.5 items-center gap-1">
         <Text variant="title" className="text-ink">
-          {profile.display_name}
+          {profile.first_name}
         </Text>
         <Text variant="body" className="text-muted-grey">
           {subtitle}

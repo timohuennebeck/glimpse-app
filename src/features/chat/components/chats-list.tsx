@@ -49,17 +49,17 @@ export function ChatsList() {
 
                 <View className="min-w-0 flex-1 gap-[3px]">
                   <Text variant="rowTitleSm" className="text-ink" numberOfLines={1}>
-                    {partner.display_name}
+                    {partner.first_name}
                   </Text>
                   <View className="min-w-0 flex-row items-center gap-1.5">
-                    {thread.last_moment_id && !thread.last_body ? <CameraBadgeIcon size={14} /> : null}
+                    {thread.last_moment_id && !thread.last_content ? <CameraBadgeIcon size={14} /> : null}
                     <Text
                       variant="meta"
                       weight={isUnread ? 'semibold' : undefined}
                       className={cn('flex-1', isUnread ? 'text-ink-body' : 'text-muted-violet')}
                       numberOfLines={1}
                     >
-                      {(fromMe ? t('chat.youPrefix') : '') + (thread.last_body ?? t('chat.sentPhoto'))}
+                      {(fromMe ? t('chat.youPrefix') : '') + (thread.last_content ?? t('chat.sentPhoto'))}
                     </Text>
                   </View>
                 </View>

@@ -106,11 +106,11 @@ One row per _directed_ request, with a uniqueness guard so A→B and B→A canno
 exist:
 
 ```sql
-unique (least(requester_id, addressee_id), greatest(requester_id, addressee_id))
+unique (least(requester_id, recipient_id), greatest(requester_id, recipient_id))
 ```
 
 `status` is `pending | accepted | declined`. Screen `08 Freunde` reads this three
-ways: accepted list, incoming `pending` (where I am the addressee → "Anfragen"),
+ways: accepted list, incoming `pending` (where I am the recipient → "Anfragen"),
 outgoing `pending` (where I am the requester → "Gesendet").
 
 The positioning note says to **cut large friend lists**. There is a
@@ -126,7 +126,7 @@ Every table is `enable row level security` with no permissive default.
 - `profiles` — readable by anyone signed in (needed for search by `@username`);
   writable only by the owner.
 - `friendships` — visible to either party; insertable only as the requester;
-  the addressee alone may move `pending → accepted/declined`, and `status` is the
+  the recipient alone may move `pending → accepted/declined`, and `status` is the
   only column they may write. A trigger also refuses to change the two parties.
 - `moments` — the author always; a recipient only via a `trades` row that names
   the moment.

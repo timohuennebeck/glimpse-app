@@ -32,10 +32,10 @@ export default function CameraScreen() {
   const composer = useComposer();
   const insets = useSafeAreaInsets();
 
-  const capture = useCapture(cameraRef, (uri) => {
+  const capture = useCapture(cameraRef, ({ uri, width, height }) => {
     // A widget deep link names the trade in the URL; the in-app path set it
     // on the draft before opening the camera.
-    composer.set({ uri, facing, replyToTradeId: trade ?? composer.replyToTradeId });
+    composer.set({ uri, width, height, replyToTradeId: trade ?? composer.replyToTradeId });
     router.push('/compose');
   });
 

@@ -36,7 +36,8 @@ export default function ComposeScreen() {
       const momentId = await createMoment({
         localUri: composer.uri,
         caption: caption || null,
-        facing: composer.facing,
+        width: composer.width,
+        height: composer.height,
       });
       await respondToTrade(tradeId, momentId);
     },

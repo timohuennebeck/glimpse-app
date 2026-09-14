@@ -43,7 +43,7 @@ export default function FriendsScreen() {
 
   const rail = [
     { id: DEMO_USER_ID, name: t('common.you'), avatar: AVATARS.self, waiting: true },
-    { id: demoProfiles.mia.id, name: demoProfiles.mia.display_name, avatar: AVATARS.mia, waiting: false },
+    { id: demoProfiles.mia.id, name: demoProfiles.mia.first_name, avatar: AVATARS.mia, waiting: false },
   ];
   const waiting = rail.filter((item) => item.waiting).length;
 
@@ -122,7 +122,7 @@ export default function FriendsScreen() {
                 <PersonRow
                   key={r.id}
                   avatar={r.profile.photo}
-                  name={r.profile.display_name}
+                  name={r.profile.first_name}
                   subtitle={t('friends.search.mutual', { count: r.mutual })}
                   verified={r.verified}
                   trailing={
@@ -150,7 +150,7 @@ export default function FriendsScreen() {
                 <PersonRow
                   key={r.id}
                   avatar={r.profile.photo}
-                  name={r.profile.display_name}
+                  name={r.profile.first_name}
                   subtitle={t('friends.sentAgo', { time: relativeTime(r.sentAt) })}
                   subtitleIcon={<Clock size={14} color={colors.placeholderSoft} strokeWidth={2} />}
                   dimmed

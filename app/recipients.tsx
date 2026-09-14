@@ -45,7 +45,8 @@ export default function RecipientsScreen() {
       const momentId = await createMoment({
         localUri: composer.uri,
         caption: composer.caption || null,
-        facing: composer.facing,
+        width: composer.width,
+        height: composer.height,
       });
       await sendMoment(momentId, selected);
     },
@@ -112,7 +113,7 @@ export default function RecipientsScreen() {
                 <PersonRow
                   key={p.id}
                   avatar={p.photo}
-                  name={p.display_name}
+                  name={p.first_name}
                   subtitle={p.tagline ?? undefined}
                   size={46}
                   dimmed

@@ -35,9 +35,9 @@ export default function FirstGlimpseScreen() {
 
   const granted = permission?.granted ?? false;
 
-  const capture = useCapture(cameraRef, (uri) => {
+  const capture = useCapture(cameraRef, ({ uri, width, height }) => {
     setShot(uri);
-    composer.set({ uri, facing });
+    composer.set({ uri, width, height });
   });
 
   function next() {
