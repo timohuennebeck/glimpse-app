@@ -11,35 +11,34 @@ values
   ('avatars', 'avatars', true, 4 * 1024 * 1024, array['image/jpeg', 'image/png', 'image/webp'])
 on conflict (id) do nothing;
 
--- A user may only write under their own prefix: `{user_id}/...`
+-- A user may only write originals under their own prefix:
+-- `original/{user_id}/...`. The `blurred/` prefix belongs to the Edge
+-- Function (service role); clients never write there.
 create policy moments_upload_own on storage.objects
   for insert to authenticated
   with check (
     bucket_id = 'moments'
-    and (storage.foldername(name))[1] = auth.uid()::text
+    and (storage.foldername(name))[1] = 'original'
+    and (storage.foldername(name))[2] = auth.uid()::text
   );
 
 create policy moments_delete_own on storage.objects
   for delete to authenticated
   using (
     bucket_id = 'moments'
-    and (storage.foldername(name))[1] = auth.uid()::text
+    and (storage.foldername(name))[1] = 'original'
+    and (storage.foldername(name))[2] = auth.uid()::text
   );
 
 -- Reading is what makes the lock real. The Storage API consults this policy
 -- before creating a signed URL, so a client can only ever sign a path these
 -- predicates allow — the original once the trade is open, the blurred copy
 -- before that, nothing at all otherwise.
+-- The check lives in a SECURITY DEFINER function because policy expressions
+-- run as the caller, and the caller has no SELECT on moments.*_path.
 create policy moments_read_allowed_rendition on storage.objects
   for select to authenticated
-  using (
-    bucket_id = 'moments'
-    and exists (
-      select 1 from public.moments m
-      where (m.original_path = storage.objects.name and public.can_see_original(m.id))
-         or (m.blurred_path  = storage.objects.name and public.can_see_moment(m.id))
-    )
-  );
+  using (bucket_id = 'moments' and public.storage_object_readable(name));
 
 create policy avatars_write_own on storage.objects
   for all to authenticated
@@ -107,7 +106,9 @@ select
   t.initiator_moment_id,
   t.responder_moment_id,
   t.unlocked_at,
-  coalesce(t.unlocked_at, t.created_at)::date as pair_date,
+  -- timestamptz, not date: a bare date parses as UTC midnight on the client
+  -- and shows the previous day west of Greenwich.
+  coalesce(t.unlocked_at, t.created_at) as pair_at,
   t.created_at
 from public.trades t
 where t.responder_moment_id is not null
@@ -120,22 +121,33 @@ order by t.created_at desc;
 create or replace view public.v_threads
 with (security_invoker = true)
 as
-select distinct on (partner_id)
-  partner_id,
-  id as last_message_id,
-  body as last_body,
-  moment_id as last_moment_id,
-  sender_id as last_sender_id,
-  created_at as last_at,
-  (select count(*) from public.messages m2
-     where m2.recipient_id = auth.uid()
-       and m2.sender_id = x.partner_id
-       and m2.read_at is null) as unread_count
-from (
+with mine as (
   select
     m.*,
     case when m.sender_id = auth.uid() then m.recipient_id else m.sender_id end as partner_id
   from public.messages m
   where m.sender_id = auth.uid() or m.recipient_id = auth.uid()
-) x
-order by partner_id, created_at desc;
+),
+latest as (
+  select distinct on (partner_id)
+    partner_id, id, body, moment_id, sender_id, created_at
+  from mine
+  order by partner_id, created_at desc
+),
+-- Counted once per partner, not once per message.
+unread as (
+  select sender_id as partner_id, count(*) as unread_count
+  from public.messages
+  where recipient_id = auth.uid() and read_at is null
+  group by sender_id
+)
+select
+  l.partner_id,
+  l.id         as last_message_id,
+  l.body       as last_body,
+  l.moment_id  as last_moment_id,
+  l.sender_id  as last_sender_id,
+  l.created_at as last_at,
+  coalesce(u.unread_count, 0) as unread_count
+from latest l
+left join unread u using (partner_id);

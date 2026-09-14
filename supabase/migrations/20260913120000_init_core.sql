@@ -90,7 +90,21 @@ create table public.moments (
   width        int,
   height       int,
   captured_at  timestamptz not null default now(),
-  created_at   timestamptz not null default now()
+  created_at   timestamptz not null default now(),
+  -- A row may only ever name objects under its author's own prefix. Without
+  -- this, anyone could insert a row pointing at someone else's photo and the
+  -- storage policy would treat "author of a row naming that path" as
+  -- permission to sign it.
+  constraint moments_original_under_author check (
+    original_path = 'original/' || author_id::text || '/' || split_part(original_path, '/', 3)
+    and split_part(original_path, '/', 3) <> ''
+  ),
+  constraint moments_blurred_under_author check (
+    blurred_path is null
+    or blurred_path = 'blurred/' || author_id::text || '/' || split_part(blurred_path, '/', 3)
+  ),
+  constraint moments_original_path_unique unique (original_path),
+  constraint moments_blurred_path_unique unique (blurred_path)
 );
 
 create index moments_author_idx on public.moments (author_id, created_at desc);
@@ -104,8 +118,10 @@ create table public.trades (
   id                  uuid primary key default gen_random_uuid(),
   initiator_id        uuid not null references public.profiles(id) on delete cascade,
   responder_id        uuid not null references public.profiles(id) on delete cascade,
-  initiator_moment_id uuid not null references public.moments(id) on delete cascade,
-  responder_moment_id uuid references public.moments(id) on delete set null,
+  -- RESTRICT: a party deleting their half after the unlock must not leave the
+  -- other party's original open with nothing traded for it.
+  initiator_moment_id uuid not null references public.moments(id) on delete restrict,
+  responder_moment_id uuid references public.moments(id) on delete restrict,
   status              public.trade_status not null default 'pending',
   -- The soft escape from the positioning note.
   auto_unlock_at      timestamptz,
@@ -114,7 +130,7 @@ create table public.trades (
   seen_at             timestamptz,
   created_at          timestamptz not null default now(),
   constraint trade_not_self check (initiator_id <> responder_id),
-  -- An unlocked trade must have both halves, unless it unlocked on the timer.
+  -- An unlocked trade always carries the time it unlocked.
   constraint trade_unlocked_has_time check (status <> 'unlocked' or unlocked_at is not null)
 );
 
@@ -122,6 +138,12 @@ create index trades_responder_pending_idx
   on public.trades (responder_id, status, created_at desc);
 create index trades_initiator_idx
   on public.trades (initiator_id, created_at desc);
+-- One lock per (photo, recipient): sending twice must not create two.
+create unique index trades_moment_recipient_uq
+  on public.trades (initiator_moment_id, responder_id);
+-- The policies and can_see_* predicates look trades up by moment.
+create index trades_initiator_moment_idx on public.trades (initiator_moment_id);
+create index trades_responder_moment_idx on public.trades (responder_moment_id);
 -- Profile grid (screen 07b) reads completed pairs between two people by date.
 create index trades_pair_idx
   on public.trades (least(initiator_id, responder_id), greatest(initiator_id, responder_id), created_at desc);
@@ -147,6 +169,8 @@ create index messages_pair_idx
   on public.messages (least(sender_id, recipient_id), greatest(sender_id, recipient_id), created_at desc);
 create index messages_unread_idx
   on public.messages (recipient_id, read_at) where read_at is null;
+create index messages_sender_idx on public.messages (sender_id, created_at desc);
+create index messages_recipient_idx on public.messages (recipient_id, created_at desc);
 
 -- ---------------------------------------------------------------------------
 -- device_tokens: push targets (used to tell the app to refresh its widget)
@@ -164,7 +188,9 @@ create table public.device_tokens (
 -- referrals: "share your code" (10b) and "redeem partner code" (10a)
 -- ---------------------------------------------------------------------------
 create table public.referral_codes (
-  code            text primary key check (code ~ '^[A-Z0-9]{3}-?[A-Z0-9]{3}$'),
+  -- Stored without the hyphen (the UI shows ABC-123); one canonical form so
+  -- ABC-123 and ABC123 cannot be two different keys.
+  code            text primary key check (code ~ '^[A-Z0-9]{6}$'),
   owner_id        uuid references public.profiles(id) on delete cascade,
   kind            text not null default 'personal' check (kind in ('personal', 'partner')),
   max_redemptions int,
@@ -186,7 +212,8 @@ create table public.referral_redemptions (
 -- invites: deeplink for screen E, before the recipient has an account
 -- ---------------------------------------------------------------------------
 create table public.invites (
-  token       text primary key default encode(gen_random_bytes(9), 'base64'),
+  -- hex: base64 emits '/' and '+', which break deep links.
+  token       text primary key default encode(gen_random_bytes(16), 'hex'),
   inviter_id  uuid not null references public.profiles(id) on delete cascade,
   moment_id   uuid references public.moments(id) on delete set null,
   claimed_by  uuid references public.profiles(id) on delete set null,

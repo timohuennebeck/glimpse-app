@@ -33,6 +33,8 @@ create policy profiles_update_own on public.profiles
   using (id = auth.uid()) with check (id = auth.uid());
 
 -- INSERT is handled by the on_auth_user_created trigger, not by clients.
+-- Known low: heard_about / locale / onboarding_done_at are readable by any
+-- signed-in user. Split into a public view before there is data worth hiding.
 
 -- ---------------------------------------------------------------------------
 -- user_blocks
@@ -58,11 +60,15 @@ create policy friendships_request on public.friendships
     and not public.is_blocked(auth.uid(), addressee_id)
   );
 
--- Only the person who received the request may accept or decline it.
+-- Only the person who received the request may accept or decline it, and
+-- `status` is the only column they may touch (a row policy alone would let
+-- them rewrite requester_id and befriend anyone).
 create policy friendships_respond on public.friendships
   for update to authenticated
   using (addressee_id = auth.uid())
   with check (addressee_id = auth.uid() and status in ('accepted', 'declined'));
+revoke update on public.friendships from authenticated;
+grant update (status) on public.friendships to authenticated;
 
 -- Either party may walk away.
 create policy friendships_delete on public.friendships
@@ -89,8 +95,26 @@ create policy moments_read on public.moments
 create policy moments_insert_own on public.moments
   for insert to authenticated with check (author_id = auth.uid());
 
+-- Once a photo is in a trade it stays: deleting your half after the unlock
+-- would leave the other person's original open with nothing traded for it.
 create policy moments_delete_own on public.moments
-  for delete to authenticated using (author_id = auth.uid());
+  for delete to authenticated
+  using (
+    author_id = auth.uid()
+    and not exists (
+      select 1 from public.trades t
+      where t.initiator_moment_id = moments.id or t.responder_moment_id = moments.id
+    )
+  );
+
+-- Column grants: the object paths are not the client's business. They are
+-- resolved by visible_moment_paths() and checked by storage_object_readable().
+-- blurred_path is written only by the Edge Function (service role).
+revoke select, insert on public.moments from authenticated;
+grant select (id, author_id, caption, facing, width, height, captured_at, created_at)
+  on public.moments to authenticated;
+grant insert (author_id, original_path, caption, facing, width, height, captured_at)
+  on public.moments to authenticated;
 
 -- ---------------------------------------------------------------------------
 -- trades
@@ -100,13 +124,20 @@ create policy moments_delete_own on public.moments
 -- ---------------------------------------------------------------------------
 create policy trades_read on public.trades
   for select to authenticated
-  using (initiator_id = auth.uid() or responder_id = auth.uid());
+  using (
+    (initiator_id = auth.uid() or responder_id = auth.uid())
+    and not public.is_blocked(initiator_id, responder_id)
+  );
 
--- The one field a client may set directly: marking the frosted card as seen.
+-- The one column a client may set directly: marking the frosted card as seen.
+-- The row policy alone would let the responder set status or auto_unlock_at
+-- and open the lock themselves.
 create policy trades_mark_seen on public.trades
   for update to authenticated
   using (responder_id = auth.uid())
   with check (responder_id = auth.uid());
+revoke update on public.trades from authenticated;
+grant update (seen_at) on public.trades to authenticated;
 
 -- ---------------------------------------------------------------------------
 -- messages
@@ -124,12 +155,17 @@ create policy messages_send on public.messages
     sender_id = auth.uid()
     and public.are_friends(auth.uid(), recipient_id)
     and not public.is_blocked(auth.uid(), recipient_id)
+    -- A photo in chat must be one the two of you actually traded.
+    and (moment_id is null or public.moment_shared_between(moment_id, auth.uid(), recipient_id))
   );
 
--- Only to stamp read_at on messages addressed to you.
+-- Only to stamp read_at on messages addressed to you — and only that column,
+-- or a recipient could rewrite the sender's words.
 create policy messages_mark_read on public.messages
   for update to authenticated
   using (recipient_id = auth.uid()) with check (recipient_id = auth.uid());
+revoke update on public.messages from authenticated;
+grant update (read_at) on public.messages to authenticated;
 
 -- ---------------------------------------------------------------------------
 -- device_tokens / reports / redemptions: owner-scoped
@@ -143,9 +179,7 @@ create policy reports_insert on public.reports
 
 create policy redemptions_own on public.referral_redemptions
   for select to authenticated using (redeemer_id = auth.uid());
-
-create policy redemptions_insert on public.referral_redemptions
-  for insert to authenticated with check (redeemer_id = auth.uid());
+-- INSERT only through redeem_referral_code(), which enforces max/expiry/self.
 
 -- ---------------------------------------------------------------------------
 -- referral_codes: your own code is readable; partner codes are readable by all
@@ -156,13 +190,11 @@ create policy referral_codes_read on public.referral_codes
   using (owner_id = auth.uid() or kind = 'partner');
 
 -- ---------------------------------------------------------------------------
--- invites: the inviter manages them; the claimer needs to read one by token.
--- Token is high-entropy and acts as the capability.
+-- invites: the inviter manages them. Claiming goes through claim_invite(), by
+-- token — there is deliberately no SELECT for anyone else, because a row
+-- filter cannot express "only the row whose token you already know" and
+-- would let every user list every live token.
 -- ---------------------------------------------------------------------------
 create policy invites_owner on public.invites
   for all to authenticated
   using (inviter_id = auth.uid()) with check (inviter_id = auth.uid());
-
-create policy invites_claim_read on public.invites
-  for select to authenticated
-  using (expires_at > now());

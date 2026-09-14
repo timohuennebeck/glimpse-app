@@ -85,7 +85,9 @@ permission is a real part of the product, not a nag. That is why onboarding step
 3. **Write the native module** `GlimpseWidget` exposing `writeSnapshot(json)` and
    `reloadWidget()` — on iOS calling `WidgetCenter.shared.reloadAllTimelines()`,
    on Android `AppWidgetManager.updateAppWidget`. The TS side already expects
-   exactly this shape.
+   exactly this shape. It must also **download the moment's signed URL into the
+   shared container as `imageFile`** before writing the snapshot — today nothing
+   writes that file, so the widget would render a missing image.
 4. **Android drawables.** The layout references `widget_background`,
    `widget_scrim`, `widget_lock_puck` and `widget_camera_badge`, plus the strings
    it uses; these still need to be authored.

@@ -102,7 +102,8 @@ export type PairRow = {
   initiator_moment_id: string;
   responder_moment_id: string;
   unlocked_at: string | null;
-  pair_date: string;
+  /** timestamptz — the date the pair is filed under, formatted client-side. */
+  pair_at: string;
   created_at: string;
 };
 
@@ -162,19 +163,20 @@ export type Database = {
       };
       referral_codes: {
         Row: ReferralCode;
-        Insert: Partial<ReferralCode> & { code: string };
-        Update: Partial<ReferralCode>;
+        // Minted by the signup trigger, redeemed through an RPC — never written directly.
+        Insert: never;
+        Update: never;
         Relationships: [];
       };
       referral_redemptions: {
         Row: { id: string; code: string; redeemer_id: string; created_at: string };
-        Insert: { code: string; redeemer_id: string };
+        Insert: never; // through redeem_referral_code()
         Update: never;
         Relationships: [];
       };
       device_tokens: {
         Row: { id: string; user_id: string; token: string; platform: 'ios' | 'android'; created_at: string };
-        Insert: { user_id: string; token: string; platform: 'ios' | 'android' };
+        Insert: never; // through register_device_token(), which re-homes a token
         Update: never;
         Relationships: [];
       };
@@ -201,7 +203,12 @@ export type Database = {
         Args: { p_moment_ids: string[] };
         Returns: { moment_id: string; path: string | null }[];
       };
-      are_friends: { Args: { a: string; b: string }; Returns: boolean };
+      claim_invite: {
+        Args: { p_token: string };
+        Returns: { inviter_id: string; moment_id: string | null }[];
+      };
+      redeem_referral_code: { Args: { p_code: string }; Returns: ReferralCode };
+      register_device_token: { Args: { p_token: string; p_platform: 'ios' | 'android' }; Returns: undefined };
     };
   };
 };

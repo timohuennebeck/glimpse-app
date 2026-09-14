@@ -160,14 +160,18 @@ export async function respondToTrade(tradeId: string, momentId: string) {
 export async function markTradeSeen(tradeId: string) {
   if (!isSupabaseConfigured) return;
   const sb = requireSupabase();
-  await sb.from('trades').update({ seen_at: new Date().toISOString() }).eq('id', tradeId);
+  await sb
+    .from('trades')
+    .update({ seen_at: new Date().toISOString() })
+    .eq('id', tradeId)
+    .is('seen_at', null);
 }
 
 export async function fetchPairs(withUserId: string): Promise<MomentPair[]> {
   if (!isSupabaseConfigured) {
     return demoPairs.map((p) => ({
       tradeId: p.trade_id,
-      date: p.pair_date,
+      date: p.pair_at,
       leftMomentId: p.initiator_moment_id,
       rightMomentId: p.responder_moment_id,
       left: p.leftPhoto,
@@ -188,7 +192,7 @@ export async function fetchPairs(withUserId: string): Promise<MomentPair[]> {
 
   return pairs.map((p) => ({
     tradeId: p.trade_id,
-    date: p.pair_date,
+    date: p.pair_at,
     leftMomentId: p.initiator_moment_id,
     rightMomentId: p.responder_moment_id,
     left: urls.get(p.initiator_moment_id) ?? '',
@@ -216,12 +220,14 @@ export async function fetchMomentPhoto(momentId: string): Promise<MomentPhoto | 
     for (const pair of demoPairs) {
       const side = pair.initiator_moment_id === momentId ? 'a' : pair.responder_moment_id === momentId ? 'b' : null;
       if (!side) continue;
+      // Fixture convention: user_a is the initiator of every demo pair. The
+      // real branch below uses the moment's author_id instead.
       const author = demoProfiles[side === 'a' ? pair.user_a : pair.user_b];
       return {
         photo: side === 'a' ? pair.leftPhoto : pair.rightPhoto,
         fromName: author?.display_name ?? '',
         fromAvatar: author?.photo ?? null,
-        capturedAt: pair.pair_date,
+        capturedAt: pair.pair_at,
       };
     }
     return null;

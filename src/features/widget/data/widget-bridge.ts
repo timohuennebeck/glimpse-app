@@ -37,7 +37,8 @@ function nativeModule(): GlimpseWidgetModule | null {
 }
 
 /**
- * Push the newest frosted moment to the homescreen.
+ * Push the oldest unanswered moment to the homescreen — the person who has
+ * waited longest is the one looking back at you.
  *
  * Call this after any change to the inbox — a new moment arriving, or a trade
  * unlocking — and from the silent-push handler so the widget stays honest even
@@ -59,6 +60,8 @@ export async function publishSnapshot(inbox: InboxMoment[]): Promise<void> {
           fromName: next.from.name,
           caption: next.caption,
           capturedAt: next.capturedAt,
+          // Written by the native module's download step (widgets/README.md);
+          // the JS side only names the file.
           imageFile: `${next.momentId}.jpg`,
           locked: true,
         }

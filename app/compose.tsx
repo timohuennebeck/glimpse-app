@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
 import { Button } from '@/shared/ui/button';
 import { GlassButton } from '@/shared/ui/glass-button';
+import { Text } from '@/shared/ui/text';
 import { CloseIcon, RetakeIcon, PencilIcon } from '@/shared/ui/icons';
 import { alpha, colors } from '@/shared/theme/colors';
 import { fontFamily } from '@/shared/theme/fonts';
@@ -25,6 +26,7 @@ export default function ComposeScreen() {
   const insets = useSafeAreaInsets();
   const [caption, setCaption] = useState(composer.caption);
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   /**
    * Two exits. Answering a frosted moment is the unlock itself — the recipient
@@ -41,6 +43,7 @@ export default function ComposeScreen() {
     }
 
     setBusy(true);
+    setError(null);
     try {
       if (isSupabaseConfigured && composer.uri) {
         const momentId = await createMoment({
@@ -54,6 +57,10 @@ export default function ComposeScreen() {
       // Land on the now-open pair rather than back on the feed.
       router.dismissAll();
       router.replace(`/moment/${tradeId}`);
+    } catch (e) {
+      // Without this the rejection escaped the press handler and a retry
+      // uploaded the photo a second time.
+      setError(e instanceof Error ? e.message : t('errors.generic'));
     } finally {
       setBusy(false);
     }
@@ -92,6 +99,11 @@ export default function ComposeScreen() {
         {/* Frosted action bar, matching `rgba(18,16,24,.62)` + blur(22px). */}
         <BlurView intensity={40} tint="dark" style={styles.bar}>
           <View style={[styles.barInner, { paddingBottom: insets.bottom + 22 }]}>
+            {error ? (
+              <Text variant="meta" color={alpha.onDarkText} style={styles.error}>
+                {error}
+              </Text>
+            ) : null}
             <View style={styles.captionRow}>
               <PencilIcon size={15} />
               <TextInput
@@ -129,6 +141,7 @@ const styles = StyleSheet.create({
   spacer: { flex: 1 },
   bar: { borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,.14)', overflow: 'hidden' },
   barInner: { paddingHorizontal: 22, paddingTop: 22, gap: 18 },
+  error: { paddingHorizontal: 6 },
   captionRow: { flexDirection: 'row', alignItems: 'center', gap: 9, paddingHorizontal: 6 },
   captionInput: {
     flex: 1,

@@ -22,16 +22,44 @@ language plpgsql
 security definer
 set search_path = public
 as $$
+declare
+  v_code text;
 begin
   insert into public.profiles (id, display_name, locale)
   values (
     new.id,
     coalesce(new.raw_user_meta_data ->> 'display_name', ''),
-    coalesce(new.raw_user_meta_data ->> 'locale', 'de')
+    coalesce(new.raw_user_meta_data ->> 'locale', 'en')
   )
   on conflict (id) do nothing;
+
+  -- Mint the personal share code (screen 10b). Unambiguous alphabet, retried
+  -- on the rare collision.
+  loop
+    v_code := public.random_code(6);
+    begin
+      insert into public.referral_codes (code, owner_id, kind, max_redemptions)
+      values (v_code, new.id, 'personal', 3);
+      exit;
+    exception when unique_violation then
+      -- try another
+    end;
+  end loop;
+
   return new;
 end;
+$$;
+
+-- Six characters from an alphabet without 0/O/1/I.
+create or replace function public.random_code(p_len int)
+returns text
+language sql
+volatile
+as $$
+  select string_agg(
+    substr('ABCDEFGHJKLMNPQRSTUVWXYZ23456789', 1 + floor(random() * 32)::int, 1), ''
+  )
+  from generate_series(1, p_len);
 $$;
 
 create trigger on_auth_user_created
@@ -48,7 +76,10 @@ stable
 security definer
 set search_path = public
 as $$
-  select exists (
+  -- A user may only ask about pairs they are part of; the service role
+  -- (no JWT) may ask about anyone. Otherwise this is a friend-graph oracle.
+  select (auth.uid() is null or auth.uid() in (a, b))
+     and exists (
     select 1 from public.friendships f
     where f.status = 'accepted'
       and least(f.requester_id, f.addressee_id) = least(a, b)
@@ -63,7 +94,8 @@ stable
 security definer
 set search_path = public
 as $$
-  select exists (
+  select (auth.uid() is null or auth.uid() in (a, b))
+     and exists (
     select 1 from public.user_blocks
     where (blocker_id = a and blocked_id = b)
        or (blocker_id = b and blocked_id = a)
@@ -82,26 +114,35 @@ declare
   n_requester int;
   n_addressee int;
 begin
-  if new.status <> 'accepted' then
-    return new;
+  -- The two parties are fixed for the life of the row. Otherwise an addressee
+  -- could rewrite requester_id and manufacture a friendship with anyone.
+  if tg_op = 'UPDATE'
+     and (new.requester_id, new.addressee_id) is distinct from (old.requester_id, old.addressee_id) then
+    raise exception 'friendship_parties_immutable' using errcode = 'check_violation';
   end if;
 
-  select count(*) into n_requester from public.friendships
-    where status = 'accepted' and (requester_id = new.requester_id or addressee_id = new.requester_id);
-  select count(*) into n_addressee from public.friendships
-    where status = 'accepted' and (requester_id = new.addressee_id or addressee_id = new.addressee_id);
-
-  if n_requester >= cap or n_addressee >= cap then
-    raise exception 'friend_cap_reached' using errcode = 'check_violation';
+  if new.status in ('accepted', 'declined') and (tg_op = 'INSERT' or old.status is distinct from new.status) then
+    new.responded_at := coalesce(new.responded_at, now());
   end if;
 
-  new.responded_at := coalesce(new.responded_at, now());
+  -- Only count when a row BECOMES accepted, so re-saving an accepted row at
+  -- exactly the cap does not reject itself.
+  if new.status = 'accepted' and (tg_op = 'INSERT' or old.status <> 'accepted') then
+    select count(*) into n_requester from public.friendships
+      where status = 'accepted' and (requester_id = new.requester_id or addressee_id = new.requester_id);
+    select count(*) into n_addressee from public.friendships
+      where status = 'accepted' and (requester_id = new.addressee_id or addressee_id = new.addressee_id);
+    if n_requester >= cap or n_addressee >= cap then
+      raise exception 'friend_cap_reached' using errcode = 'check_violation';
+    end if;
+  end if;
+
   return new;
 end;
 $$;
 
 create trigger friendships_cap
-  before insert or update of status on public.friendships
+  before insert or update on public.friendships
   for each row execute function public.enforce_friend_cap();
 
 -- ---------------------------------------------------------------------------
@@ -122,14 +163,17 @@ declare
   v_hours int := public.config_int('trade_auto_unlock_hours', 24);
   v_recipient uuid;
 begin
-  select author_id into v_author from public.moments where id = p_moment_id;
+  if auth.uid() is null then
+    raise exception 'not_authenticated' using errcode = 'insufficient_privilege';
+  end if;
 
+  select author_id into v_author from public.moments where id = p_moment_id;
   if v_author is null or v_author <> auth.uid() then
     raise exception 'not_moment_author' using errcode = 'insufficient_privilege';
   end if;
 
-  foreach v_recipient in array p_recipient_ids loop
-    if not public.are_friends(v_author, v_recipient) then
+  foreach v_recipient in array (select array_agg(distinct r) from unnest(p_recipient_ids) r) loop
+    if not public.are_friends(v_author, v_recipient) or public.is_blocked(v_author, v_recipient) then
       raise exception 'not_friends' using errcode = 'insufficient_privilege';
     end if;
 
@@ -140,6 +184,8 @@ begin
       values (
         v_author, v_recipient, p_moment_id, now() + make_interval(hours => v_hours)
       )
+      -- A second send of the same photo to the same person is a no-op.
+      on conflict (initiator_moment_id, responder_id) do nothing
       returning *;
   end loop;
 end;
@@ -161,6 +207,10 @@ declare
   v_trade public.trades;
   v_author uuid;
 begin
+  if auth.uid() is null then
+    raise exception 'not_authenticated' using errcode = 'insufficient_privilege';
+  end if;
+
   select * into v_trade from public.trades where id = p_trade_id for update;
 
   if v_trade.id is null then
@@ -176,6 +226,10 @@ begin
     raise exception 'trade_already_answered' using errcode = 'unique_violation';
   end if;
 
+  if v_trade.status = 'expired' then
+    raise exception 'trade_expired' using errcode = 'check_violation';
+  end if;
+
   select author_id into v_author from public.moments where id = p_moment_id;
   if v_author is distinct from auth.uid() then
     raise exception 'not_moment_author' using errcode = 'insufficient_privilege';
@@ -184,7 +238,8 @@ begin
   update public.trades
      set responder_moment_id = p_moment_id,
          status = 'unlocked',
-         unlocked_at = now()
+         -- If the timer already opened it, keep that moment as the unlock time.
+         unlocked_at = coalesce(unlocked_at, now())
    where id = p_trade_id
   returning * into v_trade;
 
@@ -198,10 +253,12 @@ $$;
 create or replace function public.trade_is_open(t public.trades)
 returns boolean
 language sql
-immutable
+stable  -- calls now(); IMMUTABLE would let a plan freeze the answer
 as $$
   select t.status = 'unlocked'
-      or (t.auto_unlock_at is not null and now() >= t.auto_unlock_at);
+      or (t.status = 'pending'
+          and t.auto_unlock_at is not null
+          and now() >= t.auto_unlock_at);
 $$;
 
 -- ---------------------------------------------------------------------------
@@ -279,6 +336,169 @@ as $$
   from public.moments m
   where m.id = any (p_moment_ids);
 $$;
+
+-- ---------------------------------------------------------------------------
+-- Storage gate. Evaluated by the RLS policy on storage.objects for the
+-- `moments` bucket. SECURITY DEFINER so it may read moments.*_path, which the
+-- caller deliberately cannot (see the column grants in 20260913120200_rls).
+-- ---------------------------------------------------------------------------
+create or replace function public.storage_object_readable(p_name text)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.moments m
+    where (m.original_path = p_name and public.can_see_original(m.id))
+       or (m.blurred_path  = p_name and public.can_see_moment(m.id))
+  )
+  -- Defence in depth: the second path segment must be the row's author.
+  and exists (
+    select 1 from public.moments m
+    where (m.original_path = p_name or m.blurred_path = p_name)
+      and split_part(p_name, '/', 2) = m.author_id::text
+  );
+$$;
+
+-- Is this moment part of a trade between exactly these two people? Used to
+-- validate a photo attached to a chat message.
+create or replace function public.moment_shared_between(p_moment_id uuid, a uuid, b uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.trades t
+    where (t.initiator_moment_id = p_moment_id or t.responder_moment_id = p_moment_id)
+      and least(t.initiator_id, t.responder_id) = least(a, b)
+      and greatest(t.initiator_id, t.responder_id) = greatest(a, b)
+  );
+$$;
+
+-- ---------------------------------------------------------------------------
+-- Invites: the token is the capability, so it is never listable. Claiming is
+-- an atomic UPDATE by token.
+-- ---------------------------------------------------------------------------
+create or replace function public.claim_invite(p_token text)
+returns table (inviter_id uuid, moment_id uuid)
+language sql
+volatile
+security definer
+set search_path = public
+as $$
+  update public.invites i
+     set claimed_by = auth.uid(), claimed_at = now()
+   where i.token = p_token
+     and auth.uid() is not null
+     and i.claimed_by is null
+     and i.expires_at > now()
+     and i.inviter_id <> auth.uid()
+  returning i.inviter_id, i.moment_id;
+$$;
+
+-- ---------------------------------------------------------------------------
+-- Referral codes: all limits enforced here, in one place, under a row lock.
+-- ---------------------------------------------------------------------------
+create or replace function public.redeem_referral_code(p_code text)
+returns public.referral_codes
+language plpgsql
+volatile
+security definer
+set search_path = public
+as $$
+declare
+  v_code public.referral_codes;
+begin
+  if auth.uid() is null then
+    raise exception 'not_authenticated' using errcode = 'insufficient_privilege';
+  end if;
+
+  select * into v_code
+    from public.referral_codes
+   where code = upper(replace(p_code, '-', ''))
+     for update;
+
+  if v_code.code is null then
+    raise exception 'code_unknown' using errcode = 'no_data_found';
+  end if;
+  if v_code.owner_id = auth.uid() then
+    raise exception 'code_is_own' using errcode = 'check_violation';
+  end if;
+  if v_code.expires_at is not null and v_code.expires_at <= now() then
+    raise exception 'code_expired' using errcode = 'check_violation';
+  end if;
+  if v_code.max_redemptions is not null and v_code.redemptions >= v_code.max_redemptions then
+    raise exception 'code_exhausted' using errcode = 'check_violation';
+  end if;
+
+  -- unique (redeemer_id) turns a second redemption into unique_violation.
+  insert into public.referral_redemptions (code, redeemer_id) values (v_code.code, auth.uid());
+
+  update public.referral_codes
+     set redemptions = redemptions + 1
+   where code = v_code.code
+  returning * into v_code;
+
+  return v_code;
+end;
+$$;
+
+-- ---------------------------------------------------------------------------
+-- Push tokens: a phone changing hands re-homes the token to the new account.
+-- ---------------------------------------------------------------------------
+create or replace function public.register_device_token(p_token text, p_platform text)
+returns void
+language sql
+volatile
+security definer
+set search_path = public
+as $$
+  insert into public.device_tokens (user_id, token, platform)
+  select auth.uid(), p_token, p_platform
+  where auth.uid() is not null
+  on conflict (token) do update
+    set user_id = excluded.user_id, platform = excluded.platform;
+$$;
+
+-- ---------------------------------------------------------------------------
+-- Function grants. Supabase grants EXECUTE to public/anon by default; the
+-- RPCs are for signed-in users only. The predicates stay executable by
+-- authenticated because the RLS policies call them.
+-- ---------------------------------------------------------------------------
+revoke execute on function
+  public.send_moment(uuid, uuid[]),
+  public.respond_to_trade(uuid, uuid),
+  public.visible_moment_paths(uuid[]),
+  public.claim_invite(text),
+  public.redeem_referral_code(text),
+  public.register_device_token(text, text),
+  public.are_friends(uuid, uuid),
+  public.is_blocked(uuid, uuid),
+  public.can_see_moment(uuid),
+  public.can_see_original(uuid),
+  public.storage_object_readable(text),
+  public.moment_shared_between(uuid, uuid, uuid),
+  public.random_code(int)
+from public, anon;
+
+grant execute on function
+  public.send_moment(uuid, uuid[]),
+  public.respond_to_trade(uuid, uuid),
+  public.visible_moment_paths(uuid[]),
+  public.claim_invite(text),
+  public.redeem_referral_code(text),
+  public.register_device_token(text, text),
+  public.are_friends(uuid, uuid),
+  public.is_blocked(uuid, uuid),
+  public.can_see_moment(uuid),
+  public.can_see_original(uuid),
+  public.storage_object_readable(text),
+  public.moment_shared_between(uuid, uuid, uuid)
+to authenticated;
 
 -- ---------------------------------------------------------------------------
 -- updated_at housekeeping

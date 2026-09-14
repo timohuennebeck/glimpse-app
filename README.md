@@ -97,7 +97,7 @@ docs/database.md          schema design and rationale
 | Google / Apple sign-in | Designed and rendered; no provider wired. Supabase console config + `signInWithOAuth`. |
 | Payments | The paywall is real UI; nothing charges. Entitlement will come from **RevenueCat**, so there is no `subscriptions` table by design. |
 | The widget itself | Both native UIs are written; the target, config plugin and native module need a Mac + Xcode. See `widgets/README.md`. |
-| Blurred renditions | Until the Edge Function that generates `blurred/` is deployed, a locked moment is **withheld** (renders as a neutral frosted tile) rather than shown. Nothing leaks, but the feed is empty of locked photos — see `docs/database.md` §3. |
+| Blurred renditions | Until the Edge Function that generates `blurred/` is deployed, a locked moment is **withheld** (renders as a neutral frosted tile) rather than shown. Nothing leaks, but locked photos are missing from the feed — see `docs/database.md` §3. |
 | Contacts import | The permission-granted and permission-denied states both render; no contacts are read. |
 
 ## Known issues
