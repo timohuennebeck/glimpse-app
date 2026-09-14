@@ -1,4 +1,4 @@
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 import { router } from 'expo-router';
 import { spacing } from '@/shared/theme/page-structure';
 import { memberSince } from '@/shared/lib/format';
@@ -15,11 +15,9 @@ export default function OwnProfileScreen() {
         profile={me}
         subtitle={memberSince(me.created_at)}
         // Balances the "more" button on the right so the avatar stays centred.
-        leading={<View style={styles.spacer} />}
+        leading={<View className="w-11" />}
         onPressTrade={() => router.push('/camera')}
       />
     </TabScreen>
   );
 }
-
-const styles = StyleSheet.create({ spacer: { width: 44 } });

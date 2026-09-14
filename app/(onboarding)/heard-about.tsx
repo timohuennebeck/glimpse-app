@@ -1,13 +1,12 @@
 import { ReactNode, useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { router } from 'expo-router';
+import { cn } from '@/shared/lib/cn';
 import { CheckCircle } from '@/shared/ui/check-circle';
 import { CloseRow } from '@/shared/ui/close-row';
 import { CtaFooter } from '@/shared/ui/cta-footer';
 import { Screen } from '@/shared/ui/screen';
 import { Text } from '@/shared/ui/text';
-import { colors } from '@/shared/theme/colors';
-import { radius } from '@/shared/theme/page-structure';
 import { t } from '@/shared/i18n/i18n';
 import type { Translations } from '@/shared/i18n/locales/de';
 import {
@@ -63,30 +62,33 @@ export default function HeardAboutScreen() {
     >
       <CloseRow onPress={() => router.back()} />
 
-      <Text variant="display" color={colors.ink} style={styles.title}>
+      <Text variant="display" className="mt-[26px] text-ink">
         {t('onboarding.heardAbout.title')}
       </Text>
-      <Text variant="bodySm" color={colors.purpleMuted} style={styles.subtitle}>
+      <Text variant="bodySm" className="mt-2.5 text-purple-muted">
         {t('onboarding.heardAbout.subtitle')}
       </Text>
 
-      <View style={styles.list}>
+      <View className="mt-[22px] gap-2">
         {OPTIONS.map((option) => {
           const selected = choice === option.key;
           return (
             <Pressable
               key={option.key}
-              style={[styles.row, selected && styles.rowSelected]}
+              className={cn(
+                // Constant border width: swapping 1.6 -> 2 on selection would
+                // change the row's height and shift every row below it.
+                'h-[60px] flex-row items-center gap-3.5 rounded-thumb-sm border-2 pl-3 pr-[18px]',
+                selected ? 'border-purple bg-surface-violet-tint' : 'border-border bg-white',
+              )}
               onPress={() => setChoice(option.key)}
               accessibilityRole="radio"
               accessibilityState={{ selected }}
             >
-              <View style={styles.iconCircle}>{option.icon}</View>
-              <Text
-                variant="body"
-                color={colors.inkBody}
-                style={[styles.label, selected && styles.labelSelected]}
-              >
+              <View className="h-12 w-12 items-center justify-center rounded-full bg-surface-violet-deep">
+                {option.icon}
+              </View>
+              <Text variant="body" weight={selected ? 'semibold' : 'medium'} className="flex-1 text-ink-body">
                 {t(`onboarding.heardAbout.options.${option.key}`)}
               </Text>
               <CheckCircle checked={selected} />
@@ -97,34 +99,3 @@ export default function HeardAboutScreen() {
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  title: { marginTop: 26 },
-  subtitle: { marginTop: 10 },
-  list: { marginTop: 22, gap: 8 },
-  row: {
-    height: 60,
-    borderRadius: radius.thumbSm,
-    // Constant width: swapping 1.6 -> 2 on selection would change the row's
-    // height and shift every row below it.
-    borderWidth: 2,
-    borderColor: colors.border,
-    backgroundColor: colors.white,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 14,
-    paddingLeft: 12,
-    paddingRight: 18,
-  },
-  rowSelected: { borderColor: colors.purple, backgroundColor: colors.surfaceVioletTint },
-  iconCircle: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: colors.surfaceVioletDeep,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  label: { flex: 1, fontWeight: '500' },
-  labelSelected: { fontWeight: '600' },
-});

@@ -1,4 +1,4 @@
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 import { router } from 'expo-router';
 import { Avatar } from '@/shared/ui/avatar';
 import { Button } from '@/shared/ui/button';
@@ -29,7 +29,7 @@ export default function InviteScreen() {
   return (
     <Screen
       footer={
-        <View style={styles.footer}>
+        <View className="items-center gap-5">
           <Button
             label={t('invite.cta')}
             size="lg"
@@ -38,8 +38,7 @@ export default function InviteScreen() {
           />
           <Text
             variant="buttonSm"
-            color={colors.inkSoft}
-            center
+            className="text-center text-ink-soft"
             accessibilityRole="link"
             onPress={() => router.replace('/(onboarding)/welcome')}
           >
@@ -51,19 +50,24 @@ export default function InviteScreen() {
     >
       <CloseRow onPress={() => router.back()} />
 
-      <View style={styles.intro}>
+      <View className="mt-[26px] items-center gap-3.5">
         <Avatar source={AVATARS.mia} size={76} ring="halo" />
-        <Text variant="headlineSm" color={colors.ink} center>
+        <Text variant="headlineSm" className="text-center text-ink">
           {t('invite.title', { name: 'Mia' })}
         </Text>
-        <Text variant="bodySm" color={colors.muted} center style={styles.body}>
+        <Text variant="bodySm" className="max-w-[280px] text-center text-muted">
           {t('invite.body')}
         </Text>
       </View>
 
-      <LockedImage source={PHOTOS.momentOpen} radius={radius.lg} puckSize={62} style={styles.preview}>
-        <View style={styles.previewMeta}>
-          <Text variant="meta" color="rgba(255,255,255,.78)">
+      <LockedImage
+        source={PHOTOS.momentOpen}
+        radius={radius.lg}
+        puckSize={62}
+        className="mt-6 aspect-[4/5] w-full"
+      >
+        <View className="absolute bottom-[18px] left-[18px] right-[18px] gap-1">
+          <Text variant="meta" className="text-[rgba(255,255,255,.78)]">
             {relativeTime(sentAt)}
           </Text>
         </View>
@@ -71,11 +75,3 @@ export default function InviteScreen() {
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  intro: { alignItems: 'center', gap: 14, marginTop: 26 },
-  body: { maxWidth: 280 },
-  preview: { width: '100%', aspectRatio: 4 / 5, marginTop: 24 },
-  previewMeta: { position: 'absolute', left: 18, right: 18, bottom: 18, gap: 4 },
-  footer: { gap: 20, alignItems: 'center' },
-});

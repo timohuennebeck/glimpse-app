@@ -1,12 +1,13 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
+import { Search } from 'lucide-react-native';
 import { Avatar } from '@/shared/ui/avatar';
-import { CameraBadgeIcon, SearchIcon } from '@/shared/ui/icons';
+import { CameraBadgeIcon } from '@/shared/ui/icons';
 import { SectionLabel } from '@/shared/ui/section-label';
 import { Text } from '@/shared/ui/text';
+import { cn } from '@/shared/lib/cn';
 import { colors } from '@/shared/theme/colors';
-import { controlHeight, radius } from '@/shared/theme/page-structure';
 import { t } from '@/shared/i18n/i18n';
 import { threadTime } from '@/shared/lib/format';
 import { demoThreads, demoProfiles, demoUnreadCount, DEMO_USER_ID } from '@/shared/lib/fixtures';
@@ -20,19 +21,19 @@ import { demoThreads, demoProfiles, demoUnreadCount, DEMO_USER_ID } from '@/shar
 export function ChatsList() {
   return (
     <View>
-      <View style={styles.search}>
-        <SearchIcon size={16} color={colors.mutedCool} strokeWidth={1.8} />
-        <Text variant="bodyXs" color={colors.placeholder}>
+      <View className="mt-[18px] h-field-xs flex-row items-center gap-2.5 rounded-pill bg-surface-lilac px-4">
+        <Search size={16} color={colors.mutedCool} strokeWidth={1.8} />
+        <Text variant="bodyXs" className="text-placeholder">
           {t('chat.searchPlaceholder')}
         </Text>
       </View>
 
-      <View style={styles.section}>
+      <View className="mt-6 gap-3.5">
         <SectionLabel trailing={t('chat.unreadTrailing', { count: demoUnreadCount })}>
           {t('chat.unreadSection')}
         </SectionLabel>
 
-        <View style={styles.list}>
+        <View className="gap-[18px]">
           {demoThreads.map((thread) => {
             const partner = demoProfiles[thread.partner_id];
             const isUnread = thread.unread_count > 0;
@@ -41,40 +42,44 @@ export function ChatsList() {
             return (
               <Pressable
                 key={thread.last_message_id}
-                style={styles.row}
+                className="flex-row items-center gap-[13px]"
                 onPress={() => router.push(`/chat/${thread.partner_id}`)}
               >
                 <Avatar source={partner.photo} size={52} ring={isUnread ? 'active' : 'none'} />
 
-                <View style={styles.rowText}>
-                  <Text variant="rowTitleSm" color={colors.ink} numberOfLines={1}>
+                <View className="min-w-0 flex-1 gap-[3px]">
+                  <Text variant="rowTitleSm" className="text-ink" numberOfLines={1}>
                     {partner.display_name}
                   </Text>
-                  <View style={styles.preview}>
+                  <View className="min-w-0 flex-row items-center gap-1.5">
                     {thread.last_moment_id && !thread.last_body ? <CameraBadgeIcon size={14} /> : null}
                     <Text
                       variant="meta"
-                      color={isUnread ? colors.inkBody : colors.mutedViolet}
+                      weight={isUnread ? 'semibold' : undefined}
+                      className={cn('flex-1', isUnread ? 'text-ink-body' : 'text-muted-violet')}
                       numberOfLines={1}
-                      style={[styles.flex, isUnread && styles.unreadText]}
                     >
                       {(fromMe ? t('chat.youPrefix') : '') + (thread.last_body ?? t('chat.sentPhoto'))}
                     </Text>
                   </View>
                 </View>
 
-                <View style={styles.rowTrailing}>
+                <View className="flex-row items-center gap-2.5">
                   {thread.photo ? (
-                    <Image source={thread.photo} style={styles.thumb} contentFit="cover" />
+                    <Image
+                      source={thread.photo}
+                      className="h-[50px] w-[38px] rounded-tile border-[1.5px] border-border-chip"
+                      contentFit="cover"
+                    />
                   ) : null}
                   {isUnread ? (
-                    <View style={styles.badge}>
-                      <Text variant="caption" color={colors.white} style={styles.badgeText}>
+                    <View className="h-[22px] min-w-[22px] items-center justify-center rounded-pill bg-purple px-[7px]">
+                      <Text variant="caption" weight="semibold" className="text-white">
                         {String(thread.unread_count)}
                       </Text>
                     </View>
                   ) : (
-                    <Text variant="caption" color={colors.mutedLilac}>
+                    <Text variant="caption" className="text-muted-lilac">
                       {threadTime(thread.last_at)}
                     </Text>
                   )}
@@ -87,41 +92,3 @@ export function ChatsList() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  flex: { flex: 1 },
-  search: {
-    marginTop: 18,
-    height: controlHeight.fieldXs,
-    borderRadius: radius.pill,
-    backgroundColor: colors.surfaceLilac,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    paddingHorizontal: 16,
-  },
-  section: { marginTop: 24, gap: 14 },
-  list: { gap: 18 },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 13 },
-  rowText: { flex: 1, minWidth: 0, gap: 3 },
-  preview: { flexDirection: 'row', alignItems: 'center', gap: 6, minWidth: 0 },
-  unreadText: { fontWeight: '600' },
-  rowTrailing: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  thumb: {
-    width: 38,
-    height: 50,
-    borderRadius: radius.tile,
-    borderWidth: 1.5,
-    borderColor: colors.borderChip,
-  },
-  badge: {
-    minWidth: 22,
-    height: 22,
-    borderRadius: radius.pill,
-    backgroundColor: colors.purple,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 7,
-  },
-  badgeText: { fontWeight: '600' },
-});

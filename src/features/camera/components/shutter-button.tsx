@@ -1,5 +1,4 @@
-import { Pressable, StyleSheet, View } from 'react-native';
-import { colors } from '@/shared/theme/colors';
+import { Pressable, View } from 'react-native';
 import { t } from '@/shared/i18n/i18n';
 interface ShutterButtonProps {
   onPress: () => void;
@@ -12,23 +11,9 @@ export function ShutterButton({ onPress }: ShutterButtonProps) {
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={t('camera.shutterLabel')}
-      style={({ pressed }) => [styles.shutter, pressed && styles.pressed]}
+      className="h-[84px] w-[84px] items-center justify-center rounded-[42px] border-[5px] border-white active:opacity-70"
     >
-      <View style={styles.inner} />
+      <View className="h-[66px] w-[66px] rounded-[33px] bg-white" />
     </Pressable>
   );
 }
-
-const styles = StyleSheet.create({
-  shutter: {
-    width: 84,
-    height: 84,
-    borderRadius: 42,
-    borderWidth: 5,
-    borderColor: colors.white,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  pressed: { opacity: 0.7 },
-  inner: { width: 66, height: 66, borderRadius: 33, backgroundColor: colors.white },
-});

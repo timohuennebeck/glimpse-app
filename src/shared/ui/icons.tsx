@@ -1,35 +1,13 @@
 import Svg, { Circle, Ellipse, Path, Rect, G } from 'react-native-svg';
-import {
-  X,
-  Plus,
-  Check,
-  Search,
-  MoreHorizontal,
-  SlidersHorizontal,
-  SwitchCamera,
-  Zap,
-  RotateCcw,
-  Star,
-  Clock,
-  Link2,
-  QrCode,
-  Copy,
-  Mail,
-  Eye,
-  ArrowUp,
-  Paperclip,
-} from 'lucide-react-native';
 import { colors } from '@/shared/theme/colors';
 /**
- * Icon set.
+ * Brand marks only. Generic glyphs are used straight from `lucide-react-native`
+ * at the call site (`<X size={12} color={colors.white} strokeWidth={2.2} />`);
+ * wrapping each one in a component added a file of indirection for nothing.
  *
- * Generic glyphs come from lucide — a consistent 24px grid at a 2px stroke,
- * which is the same family of shapes the mock was drawing by hand and far more
- * consistent than 20 bespoke SVGs.
- *
- * The brand-specific marks stay hand-drawn below, because no library has them:
- * the camera with its punched-out lens, the two-bar lock puck, and the verified
- * rosette are all transcribed from the original Claude Design mock.
+ * What stays hand-drawn is what no library has: the camera with its punched-out
+ * lens, the two-bar lock puck, the verified rosette, the Google mark and the
+ * review laurel, all transcribed from the original Claude Design mock.
  */
 export interface IconProps {
   size?: number;
@@ -52,75 +30,12 @@ export function CameraIcon({
   );
 }
 
-export function CloseIcon({ size = 12, color = colors.inkFaint }: IconProps) {
-  return <X size={size} color={color} strokeWidth={2.2} />;
-}
-
-export function PlusIcon({
-  size = 19,
-  color = '#1b1b1f',
-  strokeWidth = 2,
-}: IconProps & { strokeWidth?: number }) {
-  return <Plus size={size} color={color} strokeWidth={strokeWidth} />;
-}
-
-export function CheckIcon({
-  size = 13,
-  color = colors.white,
-  strokeWidth = 2.6,
-}: IconProps & { strokeWidth?: number }) {
-  return <Check size={size} color={color} strokeWidth={strokeWidth} />;
-}
-
 /** The frosted "locked" glyph — two bars, same as a pause button. */
 export function LockedIcon({ size = 22, color = colors.white }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24">
       <Rect x="7.2" y="5.5" width="3.8" height="13" rx="1.9" fill={color} />
       <Rect x="13" y="5.5" width="3.8" height="13" rx="1.9" fill={color} />
-    </Svg>
-  );
-}
-
-export function SearchIcon({
-  size = 19,
-  color = colors.mutedViolet,
-  strokeWidth = 2,
-}: IconProps & { strokeWidth?: number }) {
-  return <Search size={size} color={color} strokeWidth={strokeWidth} />;
-}
-
-export function MoreIcon({ size = 19, color = colors.inkFaint }: IconProps) {
-  return <MoreHorizontal size={size} color={color} strokeWidth={2.4} />;
-}
-
-/** Mixer / filter glyph used beside "Deine Momente". */
-export function FilterIcon({ size = 20, color = colors.inkFaint }: IconProps) {
-  return <SlidersHorizontal size={size} color={color} strokeWidth={1.9} />;
-}
-
-export function FlipCameraIcon({ size = 22, color = colors.white }: IconProps) {
-  return <SwitchCamera size={size} color={color} strokeWidth={2} />;
-}
-
-export function FlashIcon({ size = 22, color = colors.white }: IconProps) {
-  return <Zap size={size} color={color} strokeWidth={2} />;
-}
-
-export function RetakeIcon({ size = 17, color = colors.white }: IconProps) {
-  return <RotateCcw size={size} color={color} strokeWidth={1.9} />;
-}
-
-export function PencilIcon({ size = 15, color = 'rgba(255,255,255,.82)' }: IconProps) {
-  return (
-    <Svg width={size} height={size} viewBox="0 0 20 20" fill="none">
-      <Path
-        d="M13.6 3.4l3 3L7.4 15.6 3.6 16.4l.8-3.8z"
-        stroke={color}
-        strokeWidth={1.8}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
     </Svg>
   );
 }
@@ -144,34 +59,6 @@ export function VerifiedIcon({ size = 15 }: IconProps) {
   );
 }
 
-export function StarIcon({ size = 16, color = colors.purple }: IconProps) {
-  return <Star size={size} color={color} fill={color} strokeWidth={0} />;
-}
-
-export function ClockIcon({ size = 14, color = colors.placeholderSoft }: IconProps) {
-  return <Clock size={size} color={color} strokeWidth={2} />;
-}
-
-export function LinkIcon({ size = 16, color = colors.mutedLilac }: IconProps) {
-  return <Link2 size={size} color={color} strokeWidth={2} />;
-}
-
-export function QrIcon({ size = 22, color = colors.inkFaint }: IconProps) {
-  return <QrCode size={size} color={color} strokeWidth={2} />;
-}
-
-export function CopyIcon({ size = 22, color = colors.inkFaint }: IconProps) {
-  return <Copy size={size} color={color} strokeWidth={2} />;
-}
-
-export function MailIcon({
-  size = 26,
-  color = colors.white,
-  strokeWidth = 1.9,
-}: IconProps & { strokeWidth?: number }) {
-  return <Mail size={size} color={color} strokeWidth={strokeWidth} />;
-}
-
 export function GoogleIcon({ size = 24 }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24">
@@ -190,18 +77,6 @@ export function GoogleIcon({ size = 24 }: IconProps) {
       />
     </Svg>
   );
-}
-
-export function EyeIcon({ size = 21, color = colors.muted }: IconProps) {
-  return <Eye size={size} color={color} strokeWidth={1.6} />;
-}
-
-export function SendIcon({ size = 17, color = colors.white }: IconProps) {
-  return <ArrowUp size={size} color={color} strokeWidth={2.4} />;
-}
-
-export function PaperclipIcon({ size = 19, color = colors.inkBody }: IconProps) {
-  return <Paperclip size={size} color={color} strokeWidth={1.8} />;
 }
 
 /** Small filled camera used as a chat-row affordance. */

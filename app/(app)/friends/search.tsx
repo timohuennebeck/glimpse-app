@@ -1,14 +1,14 @@
 import { useState } from 'react';
-import { Share, StyleSheet, TextInput, View, Pressable } from 'react-native';
+import { Share, TextInput, View, Pressable } from 'react-native';
 import { router } from 'expo-router';
-import { CloseIcon, MoreIcon, QrIcon, SearchIcon } from '@/shared/ui/icons';
+import { MoreHorizontal, QrCode, Search, X } from 'lucide-react-native';
 import { GlassButton } from '@/shared/ui/glass-button';
 import { Screen } from '@/shared/ui/screen';
 import { SectionLabel } from '@/shared/ui/section-label';
 import { Text } from '@/shared/ui/text';
+import { cn } from '@/shared/lib/cn';
 import { colors } from '@/shared/theme/colors';
-import { controlHeight, radius, spacing } from '@/shared/theme/page-structure';
-import { fontFamily } from '@/shared/theme/fonts';
+import { spacing } from '@/shared/theme/page-structure';
 import { t } from '@/shared/i18n/i18n';
 import { PersonRow } from '@/features/friends/components/person-row';
 import { Pill } from '@/features/friends/components/pill';
@@ -35,17 +35,22 @@ export default function FriendSearchScreen() {
 
   return (
     <Screen scroll bottomInset={spacing.contentBottom}>
-      <View style={styles.headerRow}>
+      <View className="h-10 flex-row items-center gap-3">
         <GlassButton size={34} onPress={() => router.back()} accessibilityLabel={t('common.close')}>
-          <CloseIcon size={13} />
+          <X size={13} color={colors.inkFaint} strokeWidth={2.2} />
         </GlassButton>
-        <Text variant="sheetTitle" color={colors.ink}>
+        <Text variant="sheetTitle" className="text-ink">
           {t('friends.search.title')}
         </Text>
       </View>
 
-      <View style={[styles.field, query.length > 0 && styles.fieldActive]}>
-        <SearchIcon size={19} />
+      <View
+        className={cn(
+          'mt-5 h-field flex-row items-center gap-2.5 rounded-pill border-[1.5px] border-transparent bg-surface-lilac-alt px-[18px]',
+          query.length > 0 && 'border-purple',
+        )}
+      >
+        <Search size={19} color={colors.mutedViolet} strokeWidth={2} />
         <TextInput
           value={query}
           onChangeText={setQuery}
@@ -53,24 +58,24 @@ export default function FriendSearchScreen() {
           placeholderTextColor={colors.mutedCool}
           autoCapitalize="none"
           autoCorrect={false}
-          style={styles.input}
+          className="flex-1 p-0 font-sans text-[16.5px] text-ink"
         />
         {query.length > 0 ? (
           <Pressable
             onPress={() => setQuery('')}
-            style={styles.clear}
+            className="h-[22px] w-[22px] items-center justify-center rounded-[11px] bg-dot-idle-soft"
             hitSlop={8}
             accessibilityRole="button"
             accessibilityLabel={t('common.clear')}
           >
-            <CloseIcon size={9} color={colors.white} />
+            <X size={9} color={colors.white} strokeWidth={2.2} />
           </Pressable>
         ) : null}
       </View>
 
-      <View style={styles.section}>
+      <View className="mt-[26px] gap-3.5">
         <SectionLabel>{t('friends.search.resultsSection', { count: results.length })}</SectionLabel>
-        <View style={styles.list}>
+        <View className="gap-[18px]">
           {results.map((p) => {
             const state = states[p.id] ?? 'add';
             // Mutual count only where the fixture actually has one; no invented numbers.
@@ -106,7 +111,7 @@ export default function FriendSearchScreen() {
             );
           })}
           {results.length === 0 ? (
-            <Text variant="bodySm" color={colors.mutedLilac}>
+            <Text variant="bodySm" className="text-muted-lilac">
               {t('friends.search.empty')}
             </Text>
           ) : null}
@@ -114,15 +119,18 @@ export default function FriendSearchScreen() {
       </View>
 
       <ShareRow
-        style={styles.share}
+        className="mt-[30px]"
         dividerLabel={t('friends.search.dividerShare')}
         link={t('common.profileLink')}
         linkLabel={t('friends.search.link')}
         actions={[
-          { label: t('friends.search.qr'), icon: <QrIcon size={22} /> },
+          {
+            label: t('friends.search.qr'),
+            icon: <QrCode size={22} color={colors.inkFaint} strokeWidth={2} />,
+          },
           {
             label: t('friends.search.more'),
-            icon: <MoreIcon size={22} />,
+            icon: <MoreHorizontal size={22} color={colors.inkFaint} strokeWidth={2.4} />,
             onPress: () => void Share.share({ message: t('common.profileLink') }),
           },
         ]}
@@ -130,32 +138,3 @@ export default function FriendSearchScreen() {
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  headerRow: { flexDirection: 'row', alignItems: 'center', gap: 12, height: 40 },
-  field: {
-    marginTop: 20,
-    height: controlHeight.field,
-    borderRadius: radius.pill,
-    backgroundColor: colors.surfaceLilacAlt,
-    borderWidth: 1.5,
-    borderColor: 'transparent',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    paddingHorizontal: 18,
-  },
-  fieldActive: { borderColor: colors.purple },
-  input: { flex: 1, fontSize: 16.5, color: colors.ink, fontFamily: fontFamily.regular, padding: 0 },
-  clear: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    backgroundColor: colors.dotIdleSoft,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  section: { marginTop: 26, gap: 14 },
-  list: { gap: 18 },
-  share: { marginTop: 30 },
-});

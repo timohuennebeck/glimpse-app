@@ -1,12 +1,11 @@
 import { useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
+import { Plus } from 'lucide-react-native';
 import Svg, { Circle, Defs, Pattern } from 'react-native-svg';
-import { PlusIcon } from '@/shared/ui/icons';
 import { Text } from '@/shared/ui/text';
 import { colors } from '@/shared/theme/colors';
-import { radius } from '@/shared/theme/page-structure';
 import { t } from '@/shared/i18n/i18n';
 import { OnboardingScreen } from '@/features/onboarding/components/onboarding-screen';
 /**
@@ -29,19 +28,23 @@ export default function AvatarScreen() {
       secondary={t('onboarding.avatar.skip')}
       onSecondary={() => router.push('/(onboarding)/signup')}
     >
-      <View style={styles.stage}>
-        <Pressable style={styles.avatarWrap} onPress={() => setPhoto(null)}>
+      <View className="mt-[22px] h-[276px] items-center justify-center gap-5 rounded-lg bg-surface-violet-deep">
+        <Pressable className="h-[164px] w-[164px]" onPress={() => setPhoto(null)}>
           {photo ? (
-            <Image source={{ uri: photo }} style={styles.avatar} contentFit="cover" />
+            <Image
+              source={{ uri: photo }}
+              className="h-[164px] w-[164px] rounded-[82px]"
+              contentFit="cover"
+            />
           ) : (
             <DottedDisc size={164} />
           )}
-          <View style={styles.badge}>
-            <PlusIcon size={20} color={colors.white} strokeWidth={2.6} />
+          <View className="absolute bottom-2 right-0.5 h-11 w-11 items-center justify-center rounded-[22px] border-[3px] border-surface-violet-deep bg-purple">
+            <Plus size={20} color={colors.white} strokeWidth={2.6} />
           </View>
         </Pressable>
 
-        <Text variant="body" color={colors.inkFaint}>
+        <Text variant="body" className="text-ink-faint">
           {t('onboarding.avatar.pick')}
         </Text>
       </View>
@@ -78,30 +81,3 @@ function DottedDisc({ size }: DottedDiscProps) {
     </Svg>
   );
 }
-
-const styles = StyleSheet.create({
-  stage: {
-    marginTop: 22,
-    backgroundColor: colors.surfaceVioletDeep,
-    borderRadius: radius.lg,
-    height: 276,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 20,
-  },
-  avatarWrap: { width: 164, height: 164 },
-  avatar: { width: 164, height: 164, borderRadius: 82 },
-  badge: {
-    position: 'absolute',
-    right: 2,
-    bottom: 8,
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: colors.purple,
-    borderWidth: 3,
-    borderColor: colors.surfaceVioletDeep,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});

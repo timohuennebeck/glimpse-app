@@ -1,10 +1,11 @@
 import { ReactNode } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
+import { MoreHorizontal } from 'lucide-react-native';
 import { Button } from '@/shared/ui/button';
-import { CameraIcon, MoreIcon } from '@/shared/ui/icons';
+import { CameraIcon } from '@/shared/ui/icons';
 import { GlassButton } from '@/shared/ui/glass-button';
 import { SectionHeading } from '@/shared/ui/section-heading';
 import { Text } from '@/shared/ui/text';
@@ -33,19 +34,23 @@ export function ProfileView({ profile, subtitle, leading, onPressTrade }: Profil
 
   return (
     <>
-      <View style={styles.header}>
+      <View className="flex-row items-start justify-between">
         {leading}
-        <Image source={profile.photo} style={styles.avatar} contentFit="cover" />
+        <Image
+          source={profile.photo}
+          className="-mt-1 h-[104px] w-[104px] rounded-[52px] border-[3px] border-white"
+          contentFit="cover"
+        />
         <GlassButton size={44} accessibilityLabel={t('common.more')}>
-          <MoreIcon size={20} color={colors.inkSoft} />
+          <MoreHorizontal size={20} color={colors.inkSoft} strokeWidth={2.4} />
         </GlassButton>
       </View>
 
-      <View style={styles.identity}>
-        <Text variant="title" color={colors.ink}>
+      <View className="mt-3.5 items-center gap-1">
+        <Text variant="title" className="text-ink">
           {profile.display_name}
         </Text>
-        <Text variant="body" color={colors.mutedGrey}>
+        <Text variant="body" className="text-muted-grey">
           {subtitle}
         </Text>
       </View>
@@ -53,36 +58,20 @@ export function ProfileView({ profile, subtitle, leading, onPressTrade }: Profil
       <Button
         label={t('profile.tradeCta')}
         size="md"
-        style={styles.cta}
+        className="mt-4"
         icon={<CameraIcon size={22} lensColor={colors.ink} />}
         onPress={onPressTrade}
       />
 
-      <SectionHeading title={t('profile.momentsTitle')} style={styles.sectionRow} />
+      <SectionHeading title={t('profile.momentsTitle')} className="mb-3.5 mt-4" />
 
       {pairs.length > 0 ? (
         <PairGrid pairs={pairs} onPressPhoto={(momentId) => router.push(`/photo/${momentId}`)} />
       ) : (
-        <Text variant="bodySm" color={colors.mutedLilac} center style={styles.empty}>
+        <Text variant="bodySm" className="mt-8 text-center text-muted-lilac">
           {t('profile.pairsEmpty')}
         </Text>
       )}
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  header: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' },
-  avatar: {
-    width: 104,
-    height: 104,
-    borderRadius: 52,
-    marginTop: -4,
-    borderWidth: 3,
-    borderColor: colors.white,
-  },
-  identity: { alignItems: 'center', gap: 4, marginTop: 14 },
-  cta: { marginTop: 16 },
-  sectionRow: { marginTop: 16, marginBottom: 14 },
-  empty: { marginTop: 32 },
-});

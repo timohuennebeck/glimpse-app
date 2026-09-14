@@ -1,8 +1,7 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { Image } from 'expo-image';
 import { BLUR, LockedImage } from '@/shared/ui/locked-image';
 import { Text } from '@/shared/ui/text';
-import { colors } from '@/shared/theme/colors';
 import { radius } from '@/shared/theme/page-structure';
 import { pairDate } from '@/shared/lib/format';
 import type { MomentPair } from '@/features/moments/interfaces';
@@ -19,14 +18,14 @@ interface PairGridProps {
  */
 export function PairGrid({ pairs, onPressPhoto }: PairGridProps) {
   return (
-    <View style={styles.list}>
+    <View className="gap-4">
       {chunk(pairs, 2).map((row, i) => (
-        <View key={i} style={styles.row}>
+        <View key={i} className="flex-row gap-3">
           {row.map((pair) => (
             <Pair key={pair.tradeId} pair={pair} onPressPhoto={onPressPhoto} />
           ))}
           {/* Keep a lone trailing pair at half width instead of stretching it. */}
-          {row.length === 1 ? <View style={styles.flex} /> : null}
+          {row.length === 1 ? <View className="flex-1" /> : null}
         </View>
       ))}
     </View>
@@ -38,30 +37,31 @@ interface PairProps {
   onPressPhoto?: (momentId: string) => void;
 }
 
+/** Both tiles of a pair share the 111px height. */
 function Pair({ pair, onPressPhoto }: PairProps) {
   return (
-    <View style={styles.pair}>
-      <View style={styles.pairImages}>
-        <Pressable style={styles.flex} onPress={() => onPressPhoto?.(pair.leftMomentId)}>
+    <View className="flex-1 gap-2">
+      <View className="flex-row gap-[5px]">
+        <Pressable className="flex-1" onPress={() => onPressPhoto?.(pair.leftMomentId)}>
           {pair.locked ? (
             <LockedImage
               source={pair.left}
               radius={radius.tile}
               blur={BLUR.tile}
               puckSize={38}
-              style={styles.locked}
+              className="h-[111px]"
             />
           ) : (
-            <Image source={pair.left} style={styles.photo} contentFit="cover" />
+            <Image source={pair.left} className="h-[111px] w-full rounded-tile" contentFit="cover" />
           )}
         </Pressable>
 
-        <Pressable style={styles.flex} onPress={() => onPressPhoto?.(pair.rightMomentId)}>
-          <Image source={pair.right} style={styles.photo} contentFit="cover" />
+        <Pressable className="flex-1" onPress={() => onPressPhoto?.(pair.rightMomentId)}>
+          <Image source={pair.right} className="h-[111px] w-full rounded-tile" contentFit="cover" />
         </Pressable>
       </View>
 
-      <Text variant="metaSm" color={colors.mutedGrey} center>
+      <Text variant="metaSm" className="text-center text-muted-grey">
         {pairDate(pair.date)}
       </Text>
     </View>
@@ -73,15 +73,3 @@ function chunk<T>(items: T[], size: number): T[][] {
   for (let i = 0; i < items.length; i += size) out.push(items.slice(i, i + size));
   return out;
 }
-
-const TILE_HEIGHT = 111;
-
-const styles = StyleSheet.create({
-  flex: { flex: 1 },
-  list: { gap: 16 },
-  row: { flexDirection: 'row', gap: 12 },
-  pair: { flex: 1, gap: 8 },
-  pairImages: { flexDirection: 'row', gap: 5 },
-  locked: { height: TILE_HEIGHT },
-  photo: { width: '100%', height: TILE_HEIGHT, borderRadius: radius.tile },
-});

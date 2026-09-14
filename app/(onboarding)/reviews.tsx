@@ -1,5 +1,6 @@
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 import { router } from 'expo-router';
+import { cn } from '@/shared/lib/cn';
 import { Avatar } from '@/shared/ui/avatar';
 import { CloseRow } from '@/shared/ui/close-row';
 import { CtaFooter } from '@/shared/ui/cta-footer';
@@ -7,8 +8,6 @@ import { LaurelIcon, VerifiedIcon } from '@/shared/ui/icons';
 import { Screen } from '@/shared/ui/screen';
 import { StarRow } from '@/shared/ui/star-row';
 import { Text } from '@/shared/ui/text';
-import { colors } from '@/shared/theme/colors';
-import { radius } from '@/shared/theme/page-structure';
 import { t, tList } from '@/shared/i18n/i18n';
 import { AVATARS } from '@/shared/lib/fixtures';
 interface Review {
@@ -32,118 +31,71 @@ export default function ReviewsScreen() {
     >
       <CloseRow onPress={() => router.back()} />
 
-      <Text variant="display" color={colors.ink} style={styles.title}>
+      <Text variant="display" className="mt-5 text-ink">
         {t('onboarding.reviews.title')}
       </Text>
-      <Text variant="body" color={colors.mutedViolet} style={styles.subtitle}>
+      <Text variant="body" className="mt-3 text-muted-violet">
         {t('onboarding.reviews.subtitle')}
       </Text>
 
-      <View style={styles.ratingRow}>
+      <View className="mb-3 mt-[22px] flex-row items-center justify-center gap-2.5">
         <LaurelIcon size={42} />
-        <View style={styles.ratingCenter}>
+        <View className="items-center gap-1">
           <StarRow size={21} />
-          <Text variant="bodyXs" color={colors.ink} style={styles.ratingText}>
+          <Text variant="bodyXs" weight="semibold" className="text-ink">
             {t('onboarding.reviews.rating')}
           </Text>
-          <Text variant="metaXs" color={colors.mutedLilac}>
+          <Text variant="metaXs" className="text-muted-lilac">
             {t('onboarding.reviews.ratingMeta')}
           </Text>
         </View>
         <LaurelIcon size={42} flip />
       </View>
 
-      <View style={styles.list}>
+      <View className="mt-2.5 gap-2">
         {reviews.map((review, i) => (
-          <View key={review.name} style={styles.card}>
-            <View style={styles.cardHeader}>
+          <View key={review.name} className="gap-1.5 rounded-card-sm bg-surface-lilac px-3.5 py-2.5">
+            <View className="flex-row items-center gap-3">
               <Avatar source={faces[i % faces.length]} size={48} ring="idle" />
-              <View style={styles.cardText}>
-                <View style={styles.cardTitleRow}>
-                  <Text variant="cardTitle" color={colors.ink}>
+              <View className="min-w-0 flex-1 gap-0.5">
+                <View className="flex-row items-center justify-between gap-2">
+                  <Text variant="cardTitle" className="text-ink">
                     {review.name}
                   </Text>
-                  <View style={styles.verifiedChip}>
+                  <View className="flex-row items-center gap-[5px] rounded-pill bg-surface-violet-chip px-[9px] py-[3px]">
                     <VerifiedIcon size={15} />
-                    <Text variant="captionXs" color={colors.purpleMuted}>
+                    <Text variant="captionXs" className="text-purple-muted">
                       {t('onboarding.reviews.verified')}
                     </Text>
                   </View>
                 </View>
-                <Text variant="metaXs" color={colors.mutedLilac}>
+                <Text variant="metaXs" className="text-muted-lilac">
                   {review.since}
                 </Text>
-                <View style={styles.cardStars}>
+                <View className="flex-row items-center gap-2">
                   <StarRow size={13} />
-                  <Text variant="metaSm" color={colors.inkBody} style={styles.ratingText}>
+                  <Text variant="metaSm" weight="semibold" className="text-ink-body">
                     {review.score}
                   </Text>
                 </View>
               </View>
             </View>
-            <Text variant="metaSm" color={colors.inkSoft} style={styles.quote}>
+            {/* 13.5 * 1.3 */}
+            <Text variant="metaSm" className="leading-[17.55px] text-ink-soft">
               {review.quote}
             </Text>
           </View>
         ))}
       </View>
 
-      <View style={styles.dots}>
-        <View style={styles.dot} />
-        <View style={[styles.dot, styles.dotActive]} />
-        <View style={styles.dot} />
+      <View className="mt-3 flex-row items-center justify-center gap-2">
+        {[false, true, false].map((active, i) => (
+          <View
+            key={i}
+            className={cn('h-[7px] w-[7px] rounded-[4px] bg-dot-idle', active && 'w-3.5 bg-purple')}
+          />
+        ))}
       </View>
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  title: { marginTop: 20 },
-  subtitle: { marginTop: 12 },
-  ratingRow: {
-    marginTop: 22,
-    marginBottom: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 10,
-  },
-  ratingCenter: { alignItems: 'center', gap: 4 },
-  ratingText: { fontWeight: '600' },
-  list: { marginTop: 10, gap: 8 },
-  card: {
-    backgroundColor: colors.surfaceLilac,
-    borderRadius: radius.cardSm,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    gap: 6,
-  },
-  cardHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  cardText: { flex: 1, minWidth: 0, gap: 2 },
-  cardTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 8,
-  },
-  verifiedChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    backgroundColor: colors.surfaceVioletChip,
-    borderRadius: radius.pill,
-    paddingHorizontal: 9,
-    paddingVertical: 3,
-  },
-  cardStars: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  quote: { lineHeight: 13.5 * 1.3 },
-  dots: {
-    marginTop: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-  },
-  dot: { width: 7, height: 7, borderRadius: 4, backgroundColor: colors.dotIdle },
-  dotActive: { width: 14, backgroundColor: colors.purple },
-});

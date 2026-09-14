@@ -1,9 +1,7 @@
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 import { Button } from '@/shared/ui/button';
 import { Avatar } from '@/shared/ui/avatar';
 import { Text } from '@/shared/ui/text';
-import { colors } from '@/shared/theme/colors';
-import { radius } from '@/shared/theme/page-structure';
 import { t } from '@/shared/i18n/i18n';
 import { AVATARS } from '@/shared/lib/fixtures';
 interface ContactsInviteProps {
@@ -21,24 +19,25 @@ const HIDDEN_FACES = 2;
  */
 export function ContactsInvite({ onPress }: ContactsInviteProps) {
   return (
-    <View style={styles.card}>
-      <View style={styles.stack}>
+    <View className="mt-[22px] items-center gap-4 rounded-lg bg-surface-violet-deep px-5 pb-[22px] pt-[26px]">
+      <View className="flex-row items-center">
         {FACES.map((face, i) => (
-          <View key={i} style={i > 0 ? styles.overlap : undefined}>
-            <Avatar source={face} size={64} style={styles.face} />
+          <View key={i} className={i > 0 ? '-ml-4' : undefined}>
+            <Avatar source={face} size={64} className="rounded-[32px] border-[3px] border-white" />
           </View>
         ))}
-        <View style={[styles.overlap, styles.more]}>
-          <Text variant="rowTitle" color={colors.white}>
+        <View className="-ml-4 h-16 w-16 items-center justify-center rounded-[32px] border-[3px] border-white bg-purple">
+          <Text variant="rowTitle" className="text-white">
             {t('onboarding.friends.moreCount', { count: HIDDEN_FACES })}
           </Text>
         </View>
       </View>
 
-      <Text variant="cardTitleLg" color={colors.ink} center>
+      <Text variant="cardTitleLg" className="text-center text-ink">
         {t('onboarding.friends.inviteTitle')}
       </Text>
-      <Text variant="subtitle" color={colors.purpleMuted} center style={styles.body}>
+      {/* 14.5 * 1.4 */}
+      <Text variant="subtitle" className="text-center leading-[20.3px] text-purple-muted">
         {t('onboarding.friends.inviteBody')}
       </Text>
 
@@ -47,36 +46,8 @@ export function ContactsInvite({ onPress }: ContactsInviteProps) {
         variant="purple"
         size="sm"
         onPress={onPress}
-        style={styles.cta}
+        className="w-full"
       />
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  card: {
-    marginTop: 22,
-    backgroundColor: colors.surfaceVioletDeep,
-    borderRadius: radius.lg,
-    paddingHorizontal: 20,
-    paddingTop: 26,
-    paddingBottom: 22,
-    alignItems: 'center',
-    gap: 16,
-  },
-  stack: { flexDirection: 'row', alignItems: 'center' },
-  overlap: { marginLeft: -16 },
-  face: { borderWidth: 3, borderColor: colors.white, borderRadius: 32 },
-  more: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: colors.purple,
-    borderWidth: 3,
-    borderColor: colors.white,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  body: { lineHeight: 14.5 * 1.4 },
-  cta: { width: '100%' },
-});

@@ -1,9 +1,7 @@
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 import { Image } from 'expo-image';
 import { Button } from '@/shared/ui/button';
 import { Text } from '@/shared/ui/text';
-import { colors } from '@/shared/theme/colors';
-import { radius } from '@/shared/theme/page-structure';
 import { ART } from '@/shared/lib/fixtures';
 interface EmptyStateProps {
   title: string;
@@ -16,32 +14,16 @@ interface EmptyStateProps {
 /** Dashed "nothing here yet" card with the mascot (empty feed, recipients). */
 export function EmptyState({ title, body, cta, onPress, artSize = 132 }: EmptyStateProps) {
   return (
-    <View style={styles.card}>
+    <View className="items-center gap-3.5 rounded-card border-[1.5px] border-dashed border-border-strong bg-surface px-5 pb-[22px] pt-[26px]">
+      {/* The art size is a prop, so it stays a style. */}
       <Image source={ART.mascotUnlock} style={{ width: artSize, height: artSize }} contentFit="contain" />
-      <Text variant="cardTitleLg" color={colors.ink} center>
+      <Text variant="cardTitleLg" className="text-center text-ink">
         {title}
       </Text>
-      <Text variant="bodyXs" color={colors.muted} center style={styles.body}>
+      <Text variant="bodyXs" className="max-w-[270px] text-center text-muted">
         {body}
       </Text>
-      <Button label={cta} variant="purple" size="sm" onPress={onPress} style={styles.cta} />
+      <Button label={cta} variant="purple" size="sm" onPress={onPress} className="mt-0.5 w-full" />
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  card: {
-    borderRadius: radius.card,
-    paddingHorizontal: 20,
-    paddingTop: 26,
-    paddingBottom: 22,
-    alignItems: 'center',
-    gap: 14,
-    borderWidth: 1.5,
-    borderStyle: 'dashed',
-    borderColor: colors.borderStrong,
-    backgroundColor: colors.surface,
-  },
-  body: { maxWidth: 270 },
-  cta: { width: '100%', marginTop: 2 },
-});

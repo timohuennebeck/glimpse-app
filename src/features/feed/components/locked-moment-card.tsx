@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { Avatar } from '@/shared/ui/avatar';
 import { Button } from '@/shared/ui/button';
 import { CameraIcon } from '@/shared/ui/icons';
@@ -25,30 +25,34 @@ export function LockedMomentCard({ moment, onPressTrade, onPressCard }: LockedMo
   const countdown = timeUntilUnlock(moment.autoUnlockAt);
 
   return (
-    <View style={styles.card}>
-      <Pressable style={styles.header} onPress={onPressCard}>
+    <View className="gap-[13px] rounded-card border-[1.5px] border-border-faint bg-surface p-3.5">
+      <Pressable className="flex-row items-center gap-[11px]" onPress={onPressCard}>
         <Avatar source={moment.from.avatar ?? ''} size={46} ring="halo" />
-        <View style={styles.headerText}>
-          <Text variant="cardTitle" color={colors.inkStrong}>
+        <View className="min-w-0 flex-1">
+          <Text variant="cardTitle" className="text-ink-strong">
             {moment.from.name}
           </Text>
-          <Text variant="meta" color={colors.mutedGrey}>
+          <Text variant="meta" className="text-muted-grey">
             {relativeTime(moment.capturedAt)}
           </Text>
         </View>
-        <View style={styles.badge}>
-          <Text variant="metaSm" color={colors.purpleInk} style={styles.badgeText}>
+        <View className="rounded-pill bg-surface-violet-deep px-3 py-1.5">
+          <Text variant="metaSm" weight="semibold" className="text-purple-ink">
             {t('feed.lockedBadge')}
           </Text>
         </View>
       </Pressable>
 
       <Pressable onPress={onPressCard}>
-        <LockedImage source={moment.photo} radius={radius.thumbSm} style={styles.image} />
+        {/*
+          The mock drew this 16:10, but a moment is a phone photo — always portrait.
+          4:5 keeps the card from eating the whole screen the way 3:4 or 9:16 would.
+        */}
+        <LockedImage source={moment.photo} radius={radius.thumbSm} className="aspect-[4/5] w-full" />
       </Pressable>
 
       {moment.caption ? (
-        <Text variant="bodySm" color={colors.inkSoft} numberOfLines={2}>
+        <Text variant="bodySm" className="text-ink-soft" numberOfLines={2}>
           {moment.caption}
         </Text>
       ) : null}
@@ -61,33 +65,10 @@ export function LockedMomentCard({ moment, onPressTrade, onPressCard }: LockedMo
       />
 
       {countdown ? (
-        <Text variant="caption" color={colors.mutedLilac} center>
+        <Text variant="caption" className="text-center text-muted-lilac">
           {t('feed.unlockHint', { time: countdown })}
         </Text>
       ) : null}
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  card: {
-    borderWidth: 1.5,
-    borderColor: colors.borderFaint,
-    borderRadius: radius.card,
-    padding: 14,
-    backgroundColor: colors.surface,
-    gap: 13,
-  },
-  header: { flexDirection: 'row', alignItems: 'center', gap: 11 },
-  headerText: { flex: 1, minWidth: 0 },
-  badge: {
-    backgroundColor: colors.surfaceVioletDeep,
-    borderRadius: radius.pill,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-  },
-  badgeText: { fontWeight: '600' },
-  // The mock drew this 16:10, but a moment is a phone photo — always portrait.
-  // 4:5 keeps the card from eating the whole screen the way 3:4 or 9:16 would.
-  image: { width: '100%', aspectRatio: 4 / 5 },
-});

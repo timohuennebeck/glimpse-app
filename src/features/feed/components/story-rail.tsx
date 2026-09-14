@@ -1,4 +1,4 @@
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { Avatar } from '@/shared/ui/avatar';
 import { Text } from '@/shared/ui/text';
@@ -34,19 +34,27 @@ export function StoryRail({
   onPressItem,
   onPressPlaceholder,
 }: StoryRailProps) {
+  // The cell width follows the `size` prop, so it stays a style.
+  const cell = { width: size + 14 };
+
   return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerClassName="flex-row gap-[18px] pr-5"
+    >
       {items.map((item) => (
         <Pressable
           key={item.id}
           // Capped so a long name cannot widen the cell past its avatar.
-          style={[styles.cell, { width: size + 14 }]}
+          className="items-center gap-[7px]"
+          style={cell}
           onPress={() => onPressItem?.(item.id)}
           accessibilityRole="button"
           accessibilityLabel={item.name}
         >
           <Avatar source={item.avatar} size={size} ring={item.waiting ? 'active' : 'idle'} />
-          <Text variant="metaXs" color={colors.inkFaint} numberOfLines={1}>
+          <Text variant="metaXs" className="text-ink-faint" numberOfLines={1}>
             {item.name}
           </Text>
         </Pressable>
@@ -55,17 +63,21 @@ export function StoryRail({
       {Array.from({ length: placeholders }).map((_, i) => (
         <Pressable
           key={`ph-${i}`}
-          style={[styles.cell, { width: size + 14 }]}
+          className="items-center gap-[7px]"
+          style={cell}
           onPress={onPressPlaceholder}
           accessibilityRole="button"
           accessibilityLabel={placeholderLabel}
         >
-          <View style={[styles.dashed, { width: size, height: size, borderRadius: size / 2 }]}>
+          <View
+            className="items-center justify-center border-2 border-dashed border-border-dashed"
+            style={{ width: size, height: size, borderRadius: size / 2 }}
+          >
             <Svg width={size * 0.36} height={size * 0.36} viewBox="0 0 20 20" fill="none">
               <Path d="M10 4v12M4 10h12" stroke={colors.dashedIdle} strokeWidth={2.2} strokeLinecap="round" />
             </Svg>
           </View>
-          <Text variant="metaXs" color={colors.mutedLilac} numberOfLines={1}>
+          <Text variant="metaXs" className="text-muted-lilac" numberOfLines={1}>
             {placeholderLabel}
           </Text>
         </Pressable>
@@ -73,15 +85,3 @@ export function StoryRail({
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  row: { flexDirection: 'row', gap: 18, paddingRight: 20 },
-  cell: { alignItems: 'center', gap: 7 },
-  dashed: {
-    borderWidth: 2,
-    borderStyle: 'dashed',
-    borderColor: colors.borderDashed,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});

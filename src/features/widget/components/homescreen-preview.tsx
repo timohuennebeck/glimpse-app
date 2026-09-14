@@ -1,13 +1,12 @@
 import { useState } from 'react';
-import { LayoutChangeEvent, StyleSheet, View } from 'react-native';
+import { LayoutChangeEvent, TextStyle, View } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import { Avatar } from '@/shared/ui/avatar';
 import { CameraIcon, LockedIcon } from '@/shared/ui/icons';
 import { Text } from '@/shared/ui/text';
-import { alpha, colors } from '@/shared/theme/colors';
-import { radius } from '@/shared/theme/page-structure';
+import { colors } from '@/shared/theme/colors';
 import { t } from '@/shared/i18n/i18n';
 import { IOS_ICONS, PHOTOS, AVATARS } from '@/shared/lib/fixtures';
 interface HomescreenPreviewProps {
@@ -22,6 +21,9 @@ interface IconCellProps {
 
 /** Design width of the homescreen grid: 138 tile + 2×58 icons + 3×22 gaps + 2×20 padding. */
 const GRID_WIDTH = 360;
+
+/** Text shadows have no NativeWind utility, so the icon labels keep this as a style. */
+const LABEL_SHADOW: TextStyle = { textShadowColor: 'rgba(0,0,0,.5)', textShadowRadius: 2 };
 
 /**
  * A mock iOS homescreen showing the Glimpse widget in place, used by the widget
@@ -55,29 +57,33 @@ export function HomescreenPreview({ size = 'small' }: HomescreenPreviewProps) {
     <LinearGradient
       colors={[colors.widgetTop, colors.widgetMid, colors.widgetBottom]}
       locations={[0, 0.6, 1]}
-      style={styles.phone}
+      className="mt-5 h-[360px] overflow-hidden rounded-lg"
       onLayout={onLayout}
     >
-      <View style={styles.bloom} pointerEvents="none">
+      <View className="absolute left-0 right-0 top-0 h-[55%]" pointerEvents="none">
         <LinearGradient
           colors={['rgba(139,92,246,.34)', 'rgba(139,92,246,.10)', 'rgba(139,92,246,0)']}
           locations={[0, 0.55, 1]}
           start={{ x: 0.15, y: 0 }}
           end={{ x: 0.75, y: 1 }}
-          style={StyleSheet.absoluteFill}
+          className="absolute inset-0"
         />
       </View>
 
-      <View style={[styles.grid, { transform: [{ scale }], transformOrigin: 'top' }]}>
+      {/* The scale is measured at runtime and `transformOrigin` has no utility, so both stay a style. */}
+      <View
+        className="items-center gap-3.5 px-5 pt-[18px]"
+        style={{ transform: [{ scale }], transformOrigin: 'top' }}
+      >
         {size === 'small' ? (
-          <View style={styles.topRow}>
+          <View className="flex-row items-start gap-[22px]">
             <SmallWidget />
             {/* Two columns of two icons filling the rest of the first two rows. */}
-            <View style={styles.iconCol}>
+            <View className="gap-3.5">
               <IconCell src={pairs[0][0]} label={pairs[0][1]} />
               <IconCell src={pairs[2][0]} label={pairs[2][1]} />
             </View>
-            <View style={styles.iconCol}>
+            <View className="gap-3.5">
               <IconCell src={pairs[1][0]} label={pairs[1][1]} />
               <IconCell src={pairs[3][0]} label={pairs[3][1]} />
             </View>
@@ -86,16 +92,20 @@ export function HomescreenPreview({ size = 'small' }: HomescreenPreviewProps) {
           <LargeWidget />
         )}
 
-        <View style={styles.iconRow}>
+        <View className="flex-row gap-[22px]">
           {lastRow.map(([src, label]) => (
             <IconCell key={label} src={src} label={label} />
           ))}
         </View>
       </View>
 
-      <BlurView intensity={30} tint="dark" style={styles.dock}>
+      <BlurView
+        intensity={30}
+        tint="dark"
+        className="absolute bottom-3.5 left-3.5 right-3.5 h-20 flex-row items-center justify-center gap-[22px] overflow-hidden rounded-lg border border-[rgba(255,255,255,.18)]"
+      >
         {[IOS_ICONS.phone, IOS_ICONS.safari, IOS_ICONS.photos, IOS_ICONS.camera].map((src, i) => (
-          <Image key={i} source={src} style={styles.dockIcon} contentFit="cover" />
+          <Image key={i} source={src} className="h-14 w-14 rounded-[13px]" contentFit="cover" />
         ))}
       </BlurView>
     </LinearGradient>
@@ -104,9 +114,14 @@ export function HomescreenPreview({ size = 'small' }: HomescreenPreviewProps) {
 
 function IconCell({ src, label }: IconCellProps) {
   return (
-    <View style={styles.iconCell}>
-      <Image source={src} style={styles.icon} contentFit="cover" />
-      <Text variant="captionXs" color="rgba(255,255,255,.92)" numberOfLines={1} style={styles.iconLabel}>
+    <View className="w-[58px] items-center gap-[5px]">
+      <Image source={src} className="h-[58px] w-[58px] rounded-[13px]" contentFit="cover" />
+      <Text
+        variant="captionXs"
+        className="text-[rgba(255,255,255,.92)]"
+        numberOfLines={1}
+        style={LABEL_SHADOW}
+      >
         {label}
       </Text>
     </View>
@@ -116,32 +131,32 @@ function IconCell({ src, label }: IconCellProps) {
 /** 2x2: the frosted photo fills the tile, caption and camera button overlaid. */
 function SmallWidget() {
   return (
-    <View style={styles.smallCell}>
-      <View style={styles.smallTile}>
-        <Image source={PHOTOS.widgetCard} style={StyleSheet.absoluteFill} contentFit="cover" blurRadius={3} />
+    <View className="w-[138px] gap-[5px]">
+      <View className="h-[138px] w-[138px] overflow-hidden rounded-[28px]">
+        <Image source={PHOTOS.widgetCard} className="absolute inset-0" contentFit="cover" blurRadius={3} />
         <LinearGradient
           colors={['rgba(0,0,0,0)', 'rgba(0,0,0,.78)']}
           locations={[0.38, 1]}
-          style={StyleSheet.absoluteFill}
+          className="absolute inset-0"
         />
-        <View style={styles.smallPuck}>
+        <View className="absolute left-1/2 top-[35%] -ml-[22px] h-11 w-11 items-center justify-center rounded-[22px] border border-[rgba(255,255,255,.3)] bg-on-dark-fill">
           <LockedIcon size={17} />
         </View>
-        <View style={styles.smallFooter}>
-          <View style={styles.flex}>
-            <Text variant="captionXs" color="rgba(255,255,255,.75)" style={styles.tiny}>
+        <View className="absolute bottom-2 left-[9px] right-[9px] flex-row items-end gap-[7px]">
+          <View className="min-w-0 flex-1">
+            <Text variant="captionXs" className="text-[9px] text-[rgba(255,255,255,.75)]">
               {t('onboarding.widget.preview.sampleMeta')}
             </Text>
-            <Text variant="captionXs" color={colors.white} numberOfLines={2} style={styles.tinyBody}>
+            <Text variant="captionXs" className="text-[11px] leading-[13px] text-white" numberOfLines={2}>
               {t('onboarding.widget.preview.sampleCaption')}
             </Text>
           </View>
-          <View style={styles.smallCamera}>
+          <View className="h-[27px] w-[27px] items-center justify-center rounded-[13.5px] bg-purple">
             <CameraIcon size={13} lensColor={colors.purple} />
           </View>
         </View>
       </View>
-      <Text variant="captionXs" color="rgba(255,255,255,.92)" center style={styles.iconLabel}>
+      <Text variant="captionXs" className="text-center text-[rgba(255,255,255,.92)]" style={LABEL_SHADOW}>
         {t('onboarding.widget.widgetName')}
       </Text>
     </View>
@@ -151,155 +166,42 @@ function SmallWidget() {
 /** 4x2: frosted photo on the left, sender + caption + reply button on the right. */
 function LargeWidget() {
   return (
-    <View style={styles.largeCell}>
-      <View style={styles.largeTile}>
-        <View style={styles.largeImage}>
-          <Image
-            source={PHOTOS.widgetCard}
-            style={StyleSheet.absoluteFill}
-            contentFit="cover"
-            blurRadius={4}
-          />
-          <View style={styles.largePuck}>
+    <View className="w-[298px] gap-[5px]">
+      <View className="h-[140px] w-[298px] flex-row gap-3 rounded-[28px] border border-[rgba(167,139,250,.3)] bg-widget-card p-[11px]">
+        <View className="w-[118px] overflow-hidden rounded-input">
+          <Image source={PHOTOS.widgetCard} className="absolute inset-0" contentFit="cover" blurRadius={4} />
+          <View className="absolute left-1/2 top-1/2 -ml-5 -mt-5 h-10 w-10 items-center justify-center rounded-[20px] border border-[rgba(255,255,255,.3)] bg-on-dark-fill">
             <LockedIcon size={16} />
           </View>
         </View>
 
-        <View style={styles.largeBody}>
-          <View style={styles.largeHeader}>
-            <View style={styles.largeSender}>
+        <View className="min-w-0 flex-1 justify-between">
+          <View className="gap-1">
+            <View className="flex-row items-center gap-1.5">
               <Avatar source={AVATARS.mia} size={20} />
-              <Text variant="caption" color={colors.white} style={styles.tinyBold}>
+              <Text variant="caption" weight="semibold" className="text-white">
                 {t('onboarding.widget.preview.sampleName')}
               </Text>
-              <Text variant="captionXs" color={alpha.onDarkTextFaint}>
+              <Text variant="captionXs" className="text-on-dark-text-faint">
                 {t('onboarding.widget.preview.sampleTime')}
               </Text>
             </View>
-            <Text variant="metaXs" color="rgba(255,255,255,.94)" numberOfLines={3}>
+            <Text variant="metaXs" className="text-[rgba(255,255,255,.94)]" numberOfLines={3}>
               {t('onboarding.widget.preview.sampleCaptionLong')}
             </Text>
           </View>
 
-          <View style={styles.largeButton}>
+          <View className="h-[34px] flex-row items-center justify-center gap-[7px] rounded-pill bg-purple">
             <CameraIcon size={15} lensColor={colors.purple} />
-            <Text variant="metaXs" color={colors.white} style={styles.tinyBold}>
+            <Text variant="metaXs" weight="semibold" className="text-white">
               {t('onboarding.widget.widgetReply')}
             </Text>
           </View>
         </View>
       </View>
-      <Text variant="captionXs" color="rgba(255,255,255,.92)" center style={styles.iconLabel}>
+      <Text variant="captionXs" className="text-center text-[rgba(255,255,255,.92)]" style={LABEL_SHADOW}>
         {t('onboarding.widget.widgetName')}
       </Text>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  flex: { flex: 1, minWidth: 0 },
-  phone: { marginTop: 20, height: 360, borderRadius: radius.lg, overflow: 'hidden' },
-  bloom: { position: 'absolute', left: 0, right: 0, top: 0, height: '55%' },
-  grid: { paddingHorizontal: 20, paddingTop: 18, gap: 14, alignItems: 'center' },
-  topRow: { flexDirection: 'row', gap: 22, alignItems: 'flex-start' },
-  iconCol: { gap: 14 },
-  iconRow: { flexDirection: 'row', gap: 22 },
-  iconCell: { alignItems: 'center', gap: 5, width: 58 },
-  icon: { width: 58, height: 58, borderRadius: 13 },
-  iconLabel: { textShadowColor: 'rgba(0,0,0,.5)', textShadowRadius: 2 },
-  tiny: { fontSize: 9 },
-  tinyBody: { fontSize: 11, lineHeight: 13 },
-  tinyBold: { fontWeight: '600' },
-
-  smallCell: { width: 138, gap: 5 },
-  smallTile: { width: 138, height: 138, borderRadius: 28, overflow: 'hidden' },
-  smallPuck: {
-    position: 'absolute',
-    top: '35%',
-    left: '50%',
-    marginLeft: -22,
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: alpha.onDarkFill,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,.3)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  smallFooter: {
-    position: 'absolute',
-    left: 9,
-    right: 9,
-    bottom: 8,
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    gap: 7,
-  },
-  smallCamera: {
-    width: 27,
-    height: 27,
-    borderRadius: 13.5,
-    backgroundColor: colors.purple,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
-  largeCell: { width: 298, gap: 5 },
-  largeTile: {
-    width: 298,
-    height: 140,
-    borderRadius: 28,
-    backgroundColor: colors.widgetCard,
-    borderWidth: 1,
-    borderColor: 'rgba(167,139,250,.3)',
-    flexDirection: 'row',
-    padding: 11,
-    gap: 12,
-  },
-  largeImage: { width: 118, borderRadius: radius.input, overflow: 'hidden' },
-  largePuck: {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    marginTop: -20,
-    marginLeft: -20,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: alpha.onDarkFill,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,.3)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  largeBody: { flex: 1, minWidth: 0, justifyContent: 'space-between' },
-  largeHeader: { gap: 4 },
-  largeSender: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  largeButton: {
-    height: 34,
-    borderRadius: radius.pill,
-    backgroundColor: colors.purple,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 7,
-  },
-
-  dock: {
-    position: 'absolute',
-    left: 14,
-    right: 14,
-    bottom: 14,
-    height: 80,
-    borderRadius: radius.lg,
-    overflow: 'hidden',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 22,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,.18)',
-  },
-  dockIcon: { width: 56, height: 56, borderRadius: 13 },
-});

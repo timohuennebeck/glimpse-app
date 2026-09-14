@@ -1,18 +1,17 @@
 import { useEffect, useMemo } from 'react';
-import { StyleSheet, View, TextInput, Pressable } from 'react-native';
+import { View, TextInput, Pressable } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
+import { X } from 'lucide-react-native';
 import { Avatar } from '@/shared/ui/avatar';
 import { GlassButton } from '@/shared/ui/glass-button';
-import { CloseIcon, LockedIcon, CameraIcon } from '@/shared/ui/icons';
+import { LockedIcon, CameraIcon } from '@/shared/ui/icons';
 import { Text } from '@/shared/ui/text';
 import { alpha, colors } from '@/shared/theme/colors';
-import { fontFamily } from '@/shared/theme/fonts';
-import { radius } from '@/shared/theme/page-structure';
 import { BLUR } from '@/shared/ui/locked-image';
 import { t } from '@/shared/i18n/i18n';
 import { relativeTime, timeUntilUnlock } from '@/shared/lib/format';
@@ -58,13 +57,14 @@ export default function MomentScreen() {
   // The chrome still renders so the screen is never a black box with no way out.
   if (!moment) {
     return (
-      <View style={styles.root}>
+      <View className="flex-1 bg-black">
         <StatusBar style="light" />
-        <View style={[styles.chrome, { paddingTop: insets.top + 6 }]}>
-          <View style={styles.header}>
-            <View style={styles.headerText}>
+        {/* Safe-area insets are runtime values, so they stay as style. */}
+        <View className="absolute inset-0 px-4" style={{ paddingTop: insets.top + 6 }}>
+          <View className="mt-4 flex-row items-center gap-3">
+            <View className="min-w-0 flex-1 gap-0.5">
               {!loading ? (
-                <Text variant="bodySm" color={alpha.onDarkText}>
+                <Text variant="bodySm" className="text-on-dark-text">
                   {t('moment.notFound')}
                 </Text>
               ) : null}
@@ -75,7 +75,7 @@ export default function MomentScreen() {
               onPress={() => router.back()}
               accessibilityLabel={t('common.close')}
             >
-              <CloseIcon size={12} color={colors.white} />
+              <X size={12} color={colors.white} strokeWidth={2.2} />
             </GlassButton>
           </View>
         </View>
@@ -92,12 +92,12 @@ export default function MomentScreen() {
   };
 
   return (
-    <View style={styles.root}>
+    <View className="flex-1 bg-black">
       <StatusBar style="light" />
 
       <Image
         source={moment.photo}
-        style={StyleSheet.absoluteFill}
+        className="absolute inset-0"
         contentFit="cover"
         blurRadius={locked ? BLUR.full : 0}
       />
@@ -108,48 +108,52 @@ export default function MomentScreen() {
             : ['rgba(0,0,0,.62)', 'rgba(0,0,0,0)', 'rgba(0,0,0,0)', 'rgba(0,0,0,.78)']
         }
         locations={[0, 0.24, 0.46, 1]}
-        style={StyleSheet.absoluteFill}
+        className="absolute inset-0"
         pointerEvents="none"
       />
 
-      <View style={[styles.chrome, { paddingTop: insets.top + 6, paddingBottom: insets.bottom + 10 }]}>
-        <View style={styles.header}>
+      {/* Safe-area insets are runtime values, so they stay as style. */}
+      <View
+        className="absolute inset-0 px-4"
+        style={{ paddingTop: insets.top + 6, paddingBottom: insets.bottom + 10 }}
+      >
+        <View className="mt-4 flex-row items-center gap-3">
           <Avatar source={moment.from.avatar ?? ''} size={52} />
-          <View style={styles.headerText}>
-            <Text variant="rowTitle" color={colors.white}>
+          <View className="min-w-0 flex-1 gap-0.5">
+            <Text variant="rowTitle" className="text-white">
               {moment.from.name}
             </Text>
-            <Text variant="metaXs" color={alpha.onDarkTextSoft}>
+            <Text variant="metaXs" className="text-on-dark-text-soft">
               {relativeTime(moment.capturedAt)}
             </Text>
           </View>
           <GlassButton size={34} onDark onPress={() => router.back()} accessibilityLabel={t('common.close')}>
-            <CloseIcon size={12} color={colors.white} />
+            <X size={12} color={colors.white} strokeWidth={2.2} />
           </GlassButton>
         </View>
 
         {locked ? (
-          <View style={styles.lockBody}>
-            <View style={styles.lockPuck}>
+          <View className="flex-1 items-center justify-center gap-4 pb-[60px]">
+            <View className="h-[72px] w-[72px] items-center justify-center rounded-[36px] border border-[rgba(255,255,255,.28)] bg-on-dark-fill">
               <LockedIcon size={28} />
             </View>
-            <Text variant="cardTitleLg" color={colors.white} center>
+            <Text variant="cardTitleLg" className="text-center text-white">
               {t('moment.lockedTitle')}
             </Text>
-            <Text variant="bodyXs" color={alpha.onDarkText} center style={styles.lockCopy}>
+            <Text variant="bodyXs" className="max-w-[250px] text-center text-on-dark-text">
               {t('moment.lockedBody', { name: moment.from.name })}
             </Text>
             {countdown ? (
-              <Text variant="caption" color={alpha.onDarkTextFaint} center>
+              <Text variant="caption" className="text-center text-on-dark-text-faint">
                 {t('moment.autoUnlock', { time: countdown })}
               </Text>
             ) : null}
           </View>
         ) : (
           <>
-            <View style={styles.flex} />
+            <View className="flex-1" />
             {moment.caption ? (
-              <Text variant="bodyLg" color={colors.white} style={styles.caption}>
+              <Text variant="bodyLg" className="mb-4 px-1 text-white">
                 {moment.caption}
               </Text>
             ) : null}
@@ -157,12 +161,16 @@ export default function MomentScreen() {
         )}
 
         {/* Reply bar. The camera button is the primary action in both states. */}
-        <View style={styles.replyRow}>
-          <BlurView intensity={30} tint="dark" style={styles.replyField}>
+        <View className="flex-row items-center gap-2.5 px-1">
+          <BlurView
+            intensity={30}
+            tint="dark"
+            className="h-[52px] flex-1 justify-center overflow-hidden rounded-pill border border-on-dark-border px-5"
+          >
             <TextInput
               placeholder={t('moment.replyPlaceholder')}
               placeholderTextColor={alpha.onDarkTextSoft}
-              style={styles.replyInput}
+              className="p-0 font-sans text-[15.5px] text-white"
               editable={!locked}
             />
           </BlurView>
@@ -170,7 +178,7 @@ export default function MomentScreen() {
             onPress={tradeBack}
             accessibilityRole="button"
             accessibilityLabel={t('moment.lockedCta')}
-            style={({ pressed }) => [styles.cameraButton, pressed && styles.pressed]}
+            className="h-[52px] w-[52px] items-center justify-center rounded-[26px] bg-purple active:opacity-85"
           >
             <CameraIcon size={22} lensColor={colors.purple} />
           </Pressable>
@@ -179,45 +187,3 @@ export default function MomentScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.black },
-  flex: { flex: 1 },
-  chrome: { ...StyleSheet.absoluteFill, paddingHorizontal: 16 },
-  header: { flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 16 },
-  headerText: { flex: 1, minWidth: 0, gap: 2 },
-  lockBody: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 16, paddingBottom: 60 },
-  lockPuck: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: alpha.onDarkFill,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,.28)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  lockCopy: { maxWidth: 250 },
-  caption: { paddingHorizontal: 4, marginBottom: 16 },
-  replyRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 4 },
-  replyField: {
-    flex: 1,
-    height: 52,
-    borderRadius: radius.pill,
-    overflow: 'hidden',
-    justifyContent: 'center',
-    paddingHorizontal: 20,
-    borderWidth: 1,
-    borderColor: alpha.onDarkBorder,
-  },
-  replyInput: { fontSize: 15.5, color: colors.white, fontFamily: fontFamily.regular, padding: 0 },
-  cameraButton: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: colors.purple,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  pressed: { opacity: 0.85 },
-});

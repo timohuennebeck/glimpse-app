@@ -1,10 +1,9 @@
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 import { router } from 'expo-router';
 import { useCameraPermissions } from 'expo-camera';
 import { CameraIcon } from '@/shared/ui/icons';
 import { Text } from '@/shared/ui/text';
 import { colors } from '@/shared/theme/colors';
-import { radius } from '@/shared/theme/page-structure';
 import { t } from '@/shared/i18n/i18n';
 import { HeroPanel } from '@/features/onboarding/components/hero-panel';
 import { OnboardingScreen } from '@/features/onboarding/components/onboarding-screen';
@@ -29,37 +28,20 @@ export default function CameraIntroScreen() {
       secondary={t('onboarding.camera.later')}
       onSecondary={() => router.push('/(onboarding)/first-glimpse')}
     >
-      <HeroPanel source={ART.cameraHero} imageStyle={styles.heroImage} style={styles.hero} />
+      <HeroPanel source={ART.cameraHero} className="mt-[22px]" imageClassName="h-[240px] w-[318px]" />
 
-      <View style={styles.badgeRow}>
-        <View style={styles.badge}>
-          <View style={styles.dot} />
-          <Text variant="bodyXs" color={colors.inkFaint}>
+      <View className="mt-[22px] items-center">
+        <View className="flex-row items-center gap-2 rounded-pill bg-surface-violet-deep px-[18px] py-[9px]">
+          <View className="h-2 w-2 rounded-full bg-purple" />
+          <Text variant="bodyXs" className="text-ink-faint">
             {t('onboarding.camera.badge')}
           </Text>
         </View>
       </View>
 
-      <Text variant="body" color={colors.inkFaint} center style={styles.note}>
+      <Text variant="body" className="mt-3.5 text-center text-ink-faint">
         {t('onboarding.camera.note')}
       </Text>
     </OnboardingScreen>
   );
 }
-
-const styles = StyleSheet.create({
-  hero: { marginTop: 22 },
-  heroImage: { width: 318, height: 240 },
-  badgeRow: { marginTop: 22, alignItems: 'center' },
-  badge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: colors.surfaceVioletDeep,
-    borderRadius: radius.pill,
-    paddingHorizontal: 18,
-    paddingVertical: 9,
-  },
-  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.purple },
-  note: { marginTop: 14 },
-});

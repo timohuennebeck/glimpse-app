@@ -1,27 +1,23 @@
-import { ImageStyle, StyleSheet, ViewStyle } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
-import { radius } from '@/shared/theme/page-structure';
+import { cn } from '@/shared/lib/cn';
 interface HeroPanelProps {
   source: number;
-  imageStyle: ImageStyle;
-  style?: ViewStyle;
+  /** Size of the art inside the panel, e.g. `h-[220px] w-[220px]`. */
+  imageClassName?: string;
+  className?: string;
 }
 
 /** The lilac gradient panel with a piece of hero art in it (camera ask, sign-up). */
-export function HeroPanel({ source, imageStyle, style }: HeroPanelProps) {
+export function HeroPanel({ source, imageClassName, className }: HeroPanelProps) {
   return (
     <LinearGradient
       colors={['#F4EDFE', '#EDE2FD']}
       start={{ x: 0.1, y: 0 }}
       end={{ x: 0.9, y: 1 }}
-      style={[styles.panel, style]}
+      className={cn('h-[300px] items-center justify-center rounded-lg', className)}
     >
-      <Image source={source} style={imageStyle} contentFit="contain" />
+      <Image source={source} className={imageClassName} contentFit="contain" />
     </LinearGradient>
   );
 }
-
-const styles = StyleSheet.create({
-  panel: { height: 300, borderRadius: radius.lg, alignItems: 'center', justifyContent: 'center' },
-});

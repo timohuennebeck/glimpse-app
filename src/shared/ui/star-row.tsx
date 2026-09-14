@@ -1,5 +1,6 @@
-import { StyleSheet, View } from 'react-native';
-import { StarIcon } from '@/shared/ui/icons';
+import { View } from 'react-native';
+import { Star } from 'lucide-react-native';
+import { colors } from '@/shared/theme/colors';
 interface StarRowProps {
   size: number;
   gap?: number;
@@ -8,12 +9,10 @@ interface StarRowProps {
 /** Five filled stars in a row — the rating motif on welcome and reviews. */
 export function StarRow({ size, gap = 3 }: StarRowProps) {
   return (
-    <View style={[styles.row, { gap }]}>
+    <View className="flex-row" style={{ gap }}>
       {[0, 1, 2, 3, 4].map((i) => (
-        <StarIcon key={i} size={size} />
+        <Star key={i} size={size} color={colors.purple} fill={colors.purple} strokeWidth={0} />
       ))}
     </View>
   );
 }
-
-const styles = StyleSheet.create({ row: { flexDirection: 'row' } });

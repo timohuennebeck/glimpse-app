@@ -1,8 +1,9 @@
 import { ReactNode } from 'react';
-import { AccessibilityState, Pressable, StyleSheet, View } from 'react-native';
+import { AccessibilityState, Pressable, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
+import { cn } from '@/shared/lib/cn';
 import { alpha } from '@/shared/theme/colors';
 import { shadow } from '@/shared/theme/page-structure';
 interface GlassButtonProps {
@@ -37,17 +38,20 @@ export function GlassButton({
   accessibilityLabel,
   accessibilityState,
 }: GlassButtonProps) {
-  const radius = size / 2;
   const native = isLiquidGlassAvailable();
-  const content = <View style={styles.center}>{children}</View>;
+  // The diameter is a prop, so the frame stays a style; everything else is a class.
+  const frame = { width: size, height: size, borderRadius: size / 2 };
+  const content = <View className="absolute inset-0 items-center justify-center">{children}</View>;
   // Glass refracts what is behind it, so over a flat white screen the system
   // material has nothing to work with and all but disappears; a hairline gives
   // it an edge without fighting it. The fallback always draws its own ring.
   const edge = native
     ? onDark
       ? null
-      : styles.lightEdge
-    : { borderWidth: 1, borderColor: onDark ? alpha.onDarkBorder : alpha.glassBorder };
+      : 'border-hairline border-[#4C287829]'
+    : onDark
+      ? 'border border-on-dark-border'
+      : 'border border-glass-border';
 
   return (
     <Pressable
@@ -58,59 +62,51 @@ export function GlassButton({
       accessibilityLabel={accessibilityLabel}
       accessibilityState={{ disabled: !onPress, ...accessibilityState }}
       hitSlop={8}
-      style={({ pressed }) => [
-        { width: size, height: size, borderRadius: radius, opacity: pressed ? 0.72 : 1 },
-        // The system material carries its own shadow; ours would double it.
-        !onDark && shadow.glass,
-      ]}
+      className="active:opacity-[0.72]"
+      // The system material carries its own shadow; ours would double it.
+      style={[frame, !onDark && shadow.glass]}
     >
       {native ? (
         <GlassView
           glassEffectStyle="regular"
           colorScheme={onDark ? 'dark' : 'light'}
           isInteractive
-          style={[styles.clip, { borderRadius: radius }]}
+          style={{ flex: 1, overflow: 'hidden', borderRadius: frame.borderRadius }}
         >
           {content}
         </GlassView>
       ) : (
-        <View style={[styles.clip, { borderRadius: radius }]}>
+        <View className="flex-1 overflow-hidden" style={{ borderRadius: frame.borderRadius }}>
           <BlurView
             intensity={onDark ? 30 : 24}
             tint={onDark ? 'dark' : 'light'}
-            style={StyleSheet.absoluteFill}
+            className="absolute inset-0"
           />
           {onDark ? (
-            <View style={[StyleSheet.absoluteFill, { backgroundColor: alpha.onDarkFill }]} />
+            <View className="absolute inset-0 bg-on-dark-fill" />
           ) : (
             <LinearGradient
               colors={[alpha.glassTop, alpha.glassBottom]}
               start={{ x: 0.15, y: 0 }}
               end={{ x: 0.85, y: 1 }}
-              style={StyleSheet.absoluteFill}
+              className="absolute inset-0"
             />
           )}
           {/* Stands in for the two inset highlights RN cannot express. */}
-          <View style={[styles.innerEdges, { borderRadius: radius }]} />
+          <View
+            className="absolute inset-0 border-b-[1.5px] border-t-[1.5px] border-b-[#8B5CF624] border-t-[#FFFFFFF2]"
+            style={{ borderRadius: frame.borderRadius }}
+          />
           {content}
         </View>
       )}
       {edge ? (
-        <View style={[StyleSheet.absoluteFill, edge, { borderRadius: radius }]} pointerEvents="none" />
+        <View
+          className={cn('absolute inset-0', edge)}
+          style={{ borderRadius: frame.borderRadius }}
+          pointerEvents="none"
+        />
       ) : null}
     </Pressable>
   );
 }
-
-const styles = StyleSheet.create({
-  clip: { flex: 1, overflow: 'hidden' },
-  center: { ...StyleSheet.absoluteFill, alignItems: 'center', justifyContent: 'center' },
-  innerEdges: {
-    ...StyleSheet.absoluteFill,
-    borderTopWidth: 1.5,
-    borderTopColor: 'rgba(255,255,255,.95)',
-    borderBottomWidth: 1.5,
-    borderBottomColor: 'rgba(139,92,246,.14)',
-  },
-  lightEdge: { borderWidth: StyleSheet.hairlineWidth, borderColor: 'rgba(76,40,120,.16)' },
-});

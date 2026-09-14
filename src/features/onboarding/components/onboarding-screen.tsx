@@ -1,11 +1,9 @@
 import { ReactNode } from 'react';
-import { StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { CtaFooter } from '@/shared/ui/cta-footer';
 import { ProgressHeader } from '@/shared/ui/progress-header';
 import { Screen } from '@/shared/ui/screen';
 import { Text } from '@/shared/ui/text';
-import { colors } from '@/shared/theme/colors';
 interface OnboardingScreenProps {
   /** 1-based index in the 7-step flow. */
   step: number;
@@ -56,26 +54,20 @@ export function OnboardingScreen({
     >
       <ProgressHeader step={step} onClose={() => router.back()} />
 
-      <Text variant="display" color={colors.ink} style={styles.title}>
+      <Text variant="display" className="mt-[26px] text-ink">
         {title}
       </Text>
-      <Text variant="bodySm" color={colors.muted} style={styles.subtitle}>
+      <Text variant="bodySm" className="mt-3 text-muted">
         {subtitle}
       </Text>
 
       {children}
 
       {footnote ? (
-        <Text variant="bodyXs" color={colors.muted} center style={styles.footnote}>
+        <Text variant="bodyXs" className="mt-5 text-center text-muted">
           {footnote}
         </Text>
       ) : null}
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  title: { marginTop: 26 },
-  subtitle: { marginTop: 12 },
-  footnote: { marginTop: 20 },
-});

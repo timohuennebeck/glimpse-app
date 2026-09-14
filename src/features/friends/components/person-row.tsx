@@ -1,9 +1,8 @@
 import { ReactNode } from 'react';
-import { AccessibilityRole, AccessibilityState, Pressable, StyleSheet, View } from 'react-native';
+import { AccessibilityRole, AccessibilityState, Pressable, View } from 'react-native';
 import { Avatar } from '@/shared/ui/avatar';
 import { Text } from '@/shared/ui/text';
 import { VerifiedIcon } from '@/shared/ui/icons';
-import { colors } from '@/shared/theme/colors';
 import { avatarSize } from '@/shared/theme/page-structure';
 export interface PersonRowProps {
   avatar: string | number;
@@ -42,7 +41,7 @@ export function PersonRow({
 }: PersonRowProps) {
   return (
     <Pressable
-      style={styles.row}
+      className="flex-row items-center gap-[13px]"
       onPress={onPress}
       disabled={!onPress}
       accessibilityRole={accessibilityRole ?? (onPress ? 'button' : undefined)}
@@ -50,17 +49,17 @@ export function PersonRow({
       accessibilityLabel={name}
     >
       <Avatar source={avatar} size={size} dimmed={dimmed} ring="halo" />
-      <View style={styles.text}>
-        <View style={styles.nameRow}>
-          <Text variant="rowTitleSm" color={colors.ink} numberOfLines={1}>
+      <View className="min-w-0 flex-1 gap-[3px]">
+        <View className="flex-row items-center gap-1.5">
+          <Text variant="rowTitleSm" className="text-ink" numberOfLines={1}>
             {name}
           </Text>
           {verified ? <VerifiedIcon size={15} /> : null}
         </View>
         {subtitle ? (
-          <View style={styles.subtitleRow}>
+          <View className="flex-row items-center gap-[5px]">
             {subtitleIcon}
-            <Text variant="meta" color={colors.mutedViolet} numberOfLines={1} style={styles.flex}>
+            <Text variant="meta" className="flex-1 text-muted-violet" numberOfLines={1}>
               {subtitle}
             </Text>
           </View>
@@ -70,11 +69,3 @@ export function PersonRow({
     </Pressable>
   );
 }
-
-const styles = StyleSheet.create({
-  row: { flexDirection: 'row', alignItems: 'center', gap: 13 },
-  text: { flex: 1, minWidth: 0, gap: 3 },
-  nameRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  subtitleRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  flex: { flex: 1 },
-});

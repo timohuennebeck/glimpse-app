@@ -1,8 +1,9 @@
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 import { router } from 'expo-router';
+import { Mail } from 'lucide-react-native';
 import { Button } from '@/shared/ui/button';
 import { Divider } from '@/shared/ui/divider';
-import { GoogleIcon, MailIcon } from '@/shared/ui/icons';
+import { GoogleIcon } from '@/shared/ui/icons';
 import { ProgressHeader } from '@/shared/ui/progress-header';
 import { Screen } from '@/shared/ui/screen';
 import { Text } from '@/shared/ui/text';
@@ -20,16 +21,16 @@ import { ART } from '@/shared/lib/fixtures';
 export default function SignUpScreen() {
   return (
     <Screen
-      background={colors.surfaceAlt}
+      className="bg-surface-alt"
       gutter={spacing.gutterWide}
       scroll
       footer={
-        <View style={styles.footer}>
-          <View style={styles.actions}>
+        <View className="gap-[22px]">
+          <View className="gap-4">
             <Button
               label={t('onboarding.signUp.email')}
               size="xl"
-              icon={<MailIcon size={26} />}
+              icon={<Mail size={26} color={colors.white} strokeWidth={1.9} />}
               onPress={() => router.push('/(onboarding)/details')}
             />
             <Button
@@ -42,7 +43,8 @@ export default function SignUpScreen() {
             />
           </View>
           <Divider label={t('onboarding.signUp.divider')} />
-          <Text variant="subtitle" color={colors.mutedLilac} center style={styles.legal}>
+          {/* 14.5 * 1.6 */}
+          <Text variant="subtitle" className="text-center leading-[23.2px] text-muted-lilac">
             {t('onboarding.signUp.legal', {
               terms: t('onboarding.signUp.terms'),
               privacy: t('onboarding.signUp.privacy'),
@@ -53,24 +55,14 @@ export default function SignUpScreen() {
     >
       <ProgressHeader step={4} onClose={() => router.back()} />
 
-      <Text variant="displayXl" color={colors.ink} style={styles.title}>
+      <Text variant="displayXl" className="mt-3.5 text-ink">
         {t('onboarding.signUp.title')}
       </Text>
-      <Text variant="bodyMd" color={colors.mutedViolet} style={styles.subtitle}>
+      <Text variant="bodyMd" className="mt-3.5 text-muted-violet">
         {t('onboarding.signUp.subtitle')}
       </Text>
 
-      <HeroPanel source={ART.signupKey} imageStyle={styles.heroImage} style={styles.hero} />
+      <HeroPanel source={ART.signupKey} imageClassName="h-[250px] w-[308px]" className="mt-1.5" />
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  title: { marginTop: 14 },
-  subtitle: { marginTop: 14 },
-  hero: { marginTop: 6 },
-  heroImage: { width: 308, height: 250 },
-  footer: { gap: 22 },
-  actions: { gap: 16 },
-  legal: { lineHeight: 14.5 * 1.6 },
-});

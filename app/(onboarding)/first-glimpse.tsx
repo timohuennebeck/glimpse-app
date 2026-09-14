@@ -5,12 +5,12 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { SwitchCamera, X } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from '@/shared/ui/button';
 import { GlassButton } from '@/shared/ui/glass-button';
 import { Text } from '@/shared/ui/text';
-import { CloseIcon, FlipCameraIcon } from '@/shared/ui/icons';
-import { alpha, colors } from '@/shared/theme/colors';
+import { colors } from '@/shared/theme/colors';
 import { t } from '@/shared/i18n/i18n';
 import { useComposer } from '@/features/moments/hooks/use-composer';
 import { useCapture } from '@/features/camera/hooks/use-capture';
@@ -45,79 +45,84 @@ export default function FirstGlimpseScreen() {
   }
 
   return (
-    <View style={styles.root}>
+    <View className="flex-1 bg-black">
       <StatusBar style="light" />
 
       {shot ? (
-        <Image source={{ uri: shot }} style={StyleSheet.absoluteFill} contentFit="cover" />
+        <Image source={{ uri: shot }} className="absolute inset-0" contentFit="cover" />
       ) : granted ? (
+        // CameraView is not registered with NativeWind's cssInterop, so it keeps a style.
         <CameraView ref={cameraRef} style={StyleSheet.absoluteFill} facing={facing} />
       ) : (
         // No camera (denied, or a simulator): the step still has to be passable.
-        <View style={styles.noCamera} />
+        <View className="absolute inset-0 bg-[#141019]" />
       )}
 
       <LinearGradient
         colors={['rgba(0,0,0,.55)', 'rgba(0,0,0,0)', 'rgba(0,0,0,0)', 'rgba(0,0,0,.72)']}
         locations={[0, 0.26, 0.58, 1]}
-        style={StyleSheet.absoluteFill}
+        className="absolute inset-0"
         pointerEvents="none"
       />
 
-      <View style={[styles.chrome, { paddingTop: insets.top + 12, paddingBottom: insets.bottom + 28 }]}>
-        <View style={styles.topRow}>
+      {/* Safe-area insets are runtime values, so they stay as style. */}
+      <View
+        className="absolute inset-0 justify-between px-5"
+        style={{ paddingTop: insets.top + 12, paddingBottom: insets.bottom + 28 }}
+      >
+        <View className="h-8 flex-row items-center">
           <GlassButton size={32} onDark onPress={() => router.back()} accessibilityLabel={t('common.back')}>
-            <CloseIcon size={11} color={colors.white} />
+            <X size={11} color={colors.white} strokeWidth={2.2} />
           </GlassButton>
         </View>
 
-        <View style={styles.controls}>
+        <View className="gap-5">
           {shot ? (
             <>
-              <Text variant="buttonSm" color={alpha.onDarkText} style={styles.hint}>
+              <Text variant="buttonSm" weight="medium" className="text-center text-on-dark-text">
                 {t('onboarding.firstGlimpse.hint')}
               </Text>
-              <View style={styles.ctaRow}>
+              <View className="flex-row gap-3">
                 <Button
                   label={t('compose.retake')}
                   variant="outline"
                   size="sm"
                   onPress={() => setShot(null)}
-                  style={styles.flex}
+                  className="flex-1"
                 />
                 <Button
                   label={t('common.next')}
                   variant="purple"
                   size="sm"
                   onPress={next}
-                  style={styles.flex}
+                  className="flex-1"
                 />
               </View>
             </>
           ) : granted ? (
             <>
-              <View style={styles.controlRow}>
+              <View className="flex-row items-center justify-between px-[26px]">
                 <GlassButton
                   size={50}
                   onDark
                   onPress={() => setFacing((f) => (f === 'back' ? 'front' : 'back'))}
                   accessibilityLabel={t('camera.flipLabel')}
                 >
-                  <FlipCameraIcon size={22} />
+                  <SwitchCamera size={22} color={colors.white} strokeWidth={2} />
                 </GlassButton>
 
                 <ShutterButton onPress={capture} />
 
                 {/* Spacer keeps the shutter centred. */}
-                <View style={styles.spacer} />
+                <View className="w-[50px]" />
               </View>
-              <Text variant="buttonSm" color={alpha.onDarkText} style={styles.hint}>
+              <Text variant="buttonSm" weight="medium" className="text-center text-on-dark-text">
                 {t('camera.hint')}
               </Text>
             </>
           ) : (
             <>
-              <Text variant="bodySm" color={alpha.onDarkText} center style={styles.denied}>
+              <Text variant="bodySm" className="max-w-[280px] self-center text-center text-on-dark-text">
                 {t('camera.permissionBody')}
               </Text>
               <Button label={t('common.next')} variant="purple" size="sm" onPress={next} />
@@ -128,22 +133,3 @@ export default function FirstGlimpseScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  flex: { flex: 1 },
-  root: { flex: 1, backgroundColor: colors.black },
-  noCamera: { ...StyleSheet.absoluteFill, backgroundColor: '#141019' },
-  chrome: { ...StyleSheet.absoluteFill, paddingHorizontal: 20, justifyContent: 'space-between' },
-  topRow: { flexDirection: 'row', alignItems: 'center', height: 32 },
-  controls: { gap: 20 },
-  controlRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 26,
-  },
-  spacer: { width: 50 },
-  hint: { fontWeight: '500', textAlign: 'center' },
-  ctaRow: { flexDirection: 'row', gap: 12 },
-  denied: { maxWidth: 280, alignSelf: 'center' },
-});

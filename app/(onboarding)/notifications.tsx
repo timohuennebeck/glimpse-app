@@ -1,10 +1,9 @@
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import * as Notifications from 'expo-notifications';
 import { Text } from '@/shared/ui/text';
-import { colors } from '@/shared/theme/colors';
-import { radius, shadow } from '@/shared/theme/page-structure';
+import { shadow } from '@/shared/theme/page-structure';
 import { t } from '@/shared/i18n/i18n';
 import { OnboardingScreen } from '@/features/onboarding/components/onboarding-screen';
 import { ART } from '@/shared/lib/fixtures';
@@ -31,32 +30,40 @@ export default function NotificationsScreen() {
       onSecondary={() => router.push('/(onboarding)/widget')}
       footnote={t('onboarding.notifications.note')}
     >
-      <View style={styles.stage}>
-        <View style={styles.art}>
-          <Image source={ART.bell} style={styles.bell} contentFit="contain" />
-          <Image source={ART.mascot} style={styles.mascot} contentFit="contain" />
-          <View style={styles.chip}>
-            <Text variant="meta" color={colors.inkFaint}>
+      <View className="mt-5 gap-1.5 rounded-lg bg-surface-violet-deep px-[18px] pb-5 pt-2">
+        <View className="h-[210px]">
+          <Image source={ART.bell} className="absolute left-[150px] top-3 h-40 w-40" contentFit="contain" />
+          <Image
+            source={ART.mascot}
+            className="absolute left-1 top-[100px] h-24 w-24 -scale-x-100"
+            contentFit="contain"
+          />
+          <View className="absolute bottom-0 right-0 rounded-pill bg-notification-chip px-3.5 py-1.5">
+            <Text variant="meta" className="text-ink-faint">
               {t('onboarding.notifications.badge')}
             </Text>
           </View>
         </View>
 
         {/* A realistic push preview, so the ask is concrete. */}
-        <View style={styles.preview}>
-          <View style={styles.appIcon}>
-            <Image source={ART.mascot} style={styles.appIconImage} contentFit="contain" />
+        <View
+          className="mt-2.5 flex-row items-center gap-3.5 rounded-input bg-white p-3.5"
+          // Shadows stay as a style: RN's shadow props have no NativeWind mapping.
+          style={shadow.raised}
+        >
+          <View className="h-[46px] w-[46px] items-center justify-center rounded-tile bg-notification-tint">
+            <Image source={ART.mascot} className="h-9 w-9" contentFit="contain" />
           </View>
-          <View style={styles.previewText}>
-            <View style={styles.previewHeader}>
-              <Text variant="bodyXs" color={colors.ink} style={styles.previewApp}>
+          <View className="flex-1 gap-[3px]">
+            <View className="flex-row items-baseline justify-between">
+              <Text variant="bodyXs" weight="semibold" className="text-ink">
                 {t('onboarding.notifications.previewApp')}
               </Text>
-              <Text variant="metaSm" color={colors.mutedGrey}>
+              <Text variant="metaSm" className="text-muted-grey">
                 {t('onboarding.notifications.previewTime')}
               </Text>
             </View>
-            <Text variant="bodyXs" color={colors.inkSoft}>
+            <Text variant="bodyXs" className="text-ink-soft">
               {t('onboarding.notifications.previewBody')}
             </Text>
           </View>
@@ -65,56 +72,3 @@ export default function NotificationsScreen() {
     </OnboardingScreen>
   );
 }
-
-const styles = StyleSheet.create({
-  stage: {
-    marginTop: 20,
-    backgroundColor: colors.surfaceVioletDeep,
-    borderRadius: radius.lg,
-    paddingHorizontal: 18,
-    paddingTop: 8,
-    paddingBottom: 20,
-    gap: 6,
-  },
-  art: { height: 210 },
-  bell: { position: 'absolute', left: 150, top: 12, width: 160, height: 160 },
-  mascot: {
-    position: 'absolute',
-    left: 4,
-    top: 100,
-    width: 96,
-    height: 96,
-    transform: [{ scaleX: -1 }],
-  },
-  chip: {
-    position: 'absolute',
-    right: 0,
-    bottom: 0,
-    backgroundColor: colors.notificationChip,
-    borderRadius: radius.pill,
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-  },
-  preview: {
-    marginTop: 10,
-    backgroundColor: colors.white,
-    borderRadius: radius.input,
-    padding: 14,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 14,
-    ...shadow.raised,
-  },
-  appIcon: {
-    width: 46,
-    height: 46,
-    borderRadius: radius.tile,
-    backgroundColor: colors.notificationTint,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  appIconImage: { width: 36, height: 36 },
-  previewText: { flex: 1, gap: 3 },
-  previewHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
-  previewApp: { fontWeight: '600' },
-});

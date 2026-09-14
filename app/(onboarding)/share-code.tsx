@@ -1,15 +1,13 @@
-import { Share, StyleSheet, View } from 'react-native';
+import { Share, View } from 'react-native';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
+import { Copy, MoreHorizontal } from 'lucide-react-native';
 import { Button } from '@/shared/ui/button';
 import { CloseRow } from '@/shared/ui/close-row';
-import { CopyIcon, MoreIcon } from '@/shared/ui/icons';
 import { Screen } from '@/shared/ui/screen';
 import { Text } from '@/shared/ui/text';
 import { colors } from '@/shared/theme/colors';
-import { fontFamily } from '@/shared/theme/fonts';
-import { radius } from '@/shared/theme/page-structure';
 import { t } from '@/shared/i18n/i18n';
 import { BloomBackdrop } from '@/features/onboarding/components/bloom-backdrop';
 import { ART } from '@/shared/lib/fixtures';
@@ -25,7 +23,7 @@ export default function ShareCodeScreen() {
   return (
     <Screen
       footer={
-        <View style={styles.footer}>
+        <View className="gap-3.5">
           <Button
             label={t('referral.share.cta')}
             size="md"
@@ -33,8 +31,7 @@ export default function ShareCodeScreen() {
           />
           <Text
             variant="bodyXs"
-            color={colors.purpleMuted}
-            center
+            className="text-center text-purple-muted"
             accessibilityRole="link"
             onPress={() => router.push('/(onboarding)/heard-about')}
           >
@@ -47,79 +44,60 @@ export default function ShareCodeScreen() {
     >
       <CloseRow onPress={() => router.push('/(onboarding)/heard-about')} />
 
-      <Image source={ART.mascotHeart} style={styles.mascot} contentFit="contain" />
+      <Image
+        source={ART.mascotHeart}
+        className="-mb-3 -mt-[18px] h-[190px] w-[210px] self-center"
+        contentFit="contain"
+      />
 
-      <Text variant="eyebrowAccent" color={colors.purpleDeep} style={styles.eyebrow}>
+      <Text variant="eyebrowAccent" className="mt-3.5 text-purple-deep">
         {t('referral.share.eyebrow')}
       </Text>
-      <Text variant="displayLg" color={colors.ink} style={styles.title}>
+      <Text variant="displayLg" className="mt-1.5 text-ink">
         {t('referral.share.title')}
       </Text>
-      <Text variant="body" color={colors.purpleMuted} style={styles.subtitle}>
+      <Text variant="body" className="mt-3.5 text-purple-muted">
         {t('referral.share.subtitle')}
       </Text>
 
-      <View style={styles.codeCard}>
-        <Text variant="eyebrowAccent" color={colors.purpleDeep}>
+      <View className="mt-8 items-center gap-1.5 rounded-card-sm border-2 border-purple bg-surface-violet-tint px-5 py-[22px]">
+        <Text variant="eyebrowAccent" className="text-purple-deep">
           {t('referral.share.codeLabel')}
         </Text>
-        <Text style={styles.code}>{`${code} `}</Text>
-        <Text variant="meta" color={colors.purpleMuted}>
+        {/*
+          Without an explicit lineHeight the mono face clips its own ascenders and
+          descenders at this size; the trailing space balances the letterSpacing so
+          the string stays optically centred.
+        */}
+        <Text
+          weight="semibold"
+          className="android:font-mono-android text-center font-mono text-[32px] font-semibold leading-[42px] tracking-[5.12px] text-ink"
+        >
+          {`${code} `}
+        </Text>
+        <Text variant="meta" className="text-purple-muted">
           {t('referral.share.codeNote')}
         </Text>
       </View>
 
-      <View style={styles.actions}>
+      <View className="mt-3 flex-row gap-3">
         <Button
           label={t('referral.share.copy')}
           variant="outline"
           size="xs"
-          icon={<CopyIcon size={14} color={colors.inkBody} />}
-          style={styles.action}
+          icon={<Copy size={14} color={colors.inkBody} strokeWidth={2} />}
+          className="flex-1"
           onPress={() => void Clipboard.setStringAsync(code)}
         />
         <Button
           label={t('referral.share.share')}
           variant="purple"
           size="xs"
-          icon={<MoreIcon size={14} color={colors.white} />}
-          style={styles.action}
+          icon={<MoreHorizontal size={14} color={colors.white} strokeWidth={2.4} />}
+          className="flex-1"
           onPress={() => void Share.share({ message: code })}
         />
       </View>
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  mascot: { width: 210, height: 190, alignSelf: 'center', marginTop: -18, marginBottom: -12 },
-  eyebrow: { marginTop: 14 },
-  title: { marginTop: 6 },
-  subtitle: { marginTop: 14 },
-  codeCard: {
-    marginTop: 32,
-    borderWidth: 2,
-    borderColor: colors.purple,
-    borderRadius: radius.cardSm,
-    backgroundColor: colors.surfaceVioletTint,
-    paddingVertical: 22,
-    paddingHorizontal: 20,
-    alignItems: 'center',
-    gap: 6,
-  },
-  code: {
-    fontFamily: fontFamily.mono,
-    fontSize: 32,
-    fontWeight: '600',
-    // Without an explicit lineHeight the mono face clips its own ascenders and
-    // descenders at this size; the trailing space balances the letterSpacing so
-    // the string stays optically centred.
-    lineHeight: 42,
-    letterSpacing: 32 * 0.16,
-    textAlign: 'center',
-    color: colors.ink,
-  },
-  actions: { marginTop: 12, flexDirection: 'row', gap: 12 },
-  action: { flex: 1 },
-  footer: { gap: 14 },
-});

@@ -1,5 +1,6 @@
-import { StyleSheet, View } from 'react-native';
-import { CheckIcon } from '@/shared/ui/icons';
+import { View } from 'react-native';
+import { Check } from 'lucide-react-native';
+import { cn } from '@/shared/lib/cn';
 import { colors } from '@/shared/theme/colors';
 interface CheckboxProps {
   checked: boolean;
@@ -8,14 +9,13 @@ interface CheckboxProps {
 /** The 28px circular selection control on the recipients screen. */
 export function Checkbox({ checked }: CheckboxProps) {
   return (
-    <View style={[styles.base, checked ? styles.checked : styles.unchecked]}>
-      {checked ? <CheckIcon size={13} /> : null}
+    <View
+      className={cn(
+        'h-7 w-7 items-center justify-center rounded-[14px]',
+        checked ? 'bg-purple' : 'border-[1.8px] border-border-strong',
+      )}
+    >
+      {checked ? <Check size={13} color={colors.white} strokeWidth={2.6} /> : null}
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  base: { width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-  checked: { backgroundColor: colors.purple },
-  unchecked: { borderWidth: 1.8, borderColor: colors.borderStrong },
-});

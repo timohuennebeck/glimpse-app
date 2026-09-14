@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { router } from 'expo-router';
+import { X } from 'lucide-react-native';
 import { Button } from '@/shared/ui/button';
 import { GlassButton } from '@/shared/ui/glass-button';
-import { CloseIcon } from '@/shared/ui/icons';
 import { Screen } from '@/shared/ui/screen';
 import { SectionLabel } from '@/shared/ui/section-label';
 import { Text } from '@/shared/ui/text';
@@ -71,23 +71,23 @@ export default function RecipientsScreen() {
 
   return (
     <Screen gutter={0} bottomInset={spacing.contentBottom}>
-      <View style={styles.header}>
+      <View className="flex-row items-center gap-3.5 px-gutter">
         <GlassButton size={38} onPress={() => router.back()} accessibilityLabel={t('common.close')}>
-          <CloseIcon size={12} />
+          <X size={12} color={colors.inkFaint} strokeWidth={2.2} />
         </GlassButton>
-        <Text variant="cardTitleLg" color={colors.ink}>
+        <Text variant="cardTitleLg" className="text-ink">
           {t('compose.recipientsTitle')}
         </Text>
       </View>
 
       <ScrollView
-        style={styles.flex}
-        contentContainerStyle={styles.scroll}
+        className="flex-1"
+        contentContainerClassName="gap-[26px] px-gutter pb-6 pt-[30px]"
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.section}>
+        <View className="gap-3.5">
           <SectionLabel>{t('compose.friendsSection')}</SectionLabel>
-          <View style={styles.list}>
+          <View className="gap-4">
             {friends.map((f) => (
               <PersonRow
                 key={f.id}
@@ -105,9 +105,9 @@ export default function RecipientsScreen() {
         </View>
 
         {notOnGlimpse.length > 0 ? (
-          <View style={styles.section}>
+          <View className="gap-3.5">
             <SectionLabel>{t('compose.waitingSection')}</SectionLabel>
-            <View style={styles.list}>
+            <View className="gap-4">
               {notOnGlimpse.map((p) => (
                 <PersonRow
                   key={p.id}
@@ -123,7 +123,7 @@ export default function RecipientsScreen() {
           </View>
         ) : null}
 
-        <View style={styles.section}>
+        <View className="gap-3.5">
           <EmptyState
             title={t('compose.inviteTitle')}
             body={t('compose.inviteBody')}
@@ -134,13 +134,13 @@ export default function RecipientsScreen() {
         </View>
 
         {error ? (
-          <Text variant="meta" color={colors.purpleDeep} center style={styles.error}>
+          <Text variant="meta" className="mt-2 text-center text-purple-deep">
             {errorMessage(error)}
           </Text>
         ) : null}
       </ScrollView>
 
-      <View style={styles.footer}>
+      <View className="px-gutter pt-3">
         <Button
           label={ctaLabel}
           onPress={() => send.mutate()}
@@ -152,18 +152,3 @@ export default function RecipientsScreen() {
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  flex: { flex: 1 },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 14,
-    paddingHorizontal: spacing.gutter,
-  },
-  scroll: { paddingTop: 30, paddingHorizontal: spacing.gutter, gap: 26, paddingBottom: 24 },
-  section: { gap: 14 },
-  list: { gap: 16 },
-  footer: { paddingHorizontal: spacing.gutter, paddingTop: 12 },
-  error: { marginTop: 8 },
-});

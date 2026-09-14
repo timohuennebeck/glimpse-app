@@ -1,19 +1,13 @@
 import { ReactNode } from 'react';
-import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  View,
-  StatusBar as RNStatusBar,
-} from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, View, StatusBar as RNStatusBar } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import { colors } from '@/shared/theme/colors';
+import { cn } from '@/shared/lib/cn';
 import { spacing } from '@/shared/theme/page-structure';
 interface ScreenProps {
   children: ReactNode;
-  background?: string;
+  /** Background utility, e.g. `bg-surface-alt` or `bg-transparent`. */
+  className?: string;
   /** Horizontal gutter; the mock uses 20 almost everywhere, 18/22 on a few screens. */
   gutter?: number;
   /** Wrap children in a ScrollView. Off for camera / viewer screens. */
@@ -43,7 +37,7 @@ interface ScreenProps {
  */
 export function Screen({
   children,
-  background = colors.white,
+  className = 'bg-white',
   gutter = spacing.gutter,
   scroll = false,
   bottomInset = 0,
@@ -51,6 +45,7 @@ export function Screen({
   floating,
   footer,
 }: ScreenProps) {
+  // Safe-area insets are runtime values, so they stay as style.
   const insets = useSafeAreaInsets();
   const paddingTop = Math.max(insets.top, RNStatusBar.currentHeight ?? 0) + 12;
   const safeBottom = Math.max(insets.bottom, 12);
@@ -58,11 +53,15 @@ export function Screen({
   // footer carries the home-indicator inset itself.
   const paddingBottom = footer ? spacing.footerGap : safeBottom + bottomInset;
 
-  const content = <View style={[styles.flex, { paddingHorizontal: gutter }]}>{children}</View>;
+  const content = (
+    <View className="flex-1" style={{ paddingHorizontal: gutter }}>
+      {children}
+    </View>
+  );
 
   return (
     <KeyboardAvoidingView
-      style={[styles.flex, { backgroundColor: background }]}
+      className={cn('flex-1', className)}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       enabled={Boolean(footer)}
     >
@@ -70,15 +69,18 @@ export function Screen({
       {backdrop}
       {scroll ? (
         <ScrollView
-          style={styles.flex}
-          contentContainerStyle={{ paddingTop, paddingBottom, flexGrow: 1 }}
+          className="flex-1"
+          contentContainerClassName="grow"
+          contentContainerStyle={{ paddingTop, paddingBottom }}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
           {content}
         </ScrollView>
       ) : (
-        <View style={[styles.flex, { paddingTop, paddingBottom }]}>{content}</View>
+        <View className="flex-1" style={{ paddingTop, paddingBottom }}>
+          {content}
+        </View>
       )}
       {footer ? (
         <View style={{ paddingHorizontal: gutter, paddingBottom: safeBottom + spacing.footerGap }}>
@@ -89,5 +91,3 @@ export function Screen({
     </KeyboardAvoidingView>
   );
 }
-
-const styles = StyleSheet.create({ flex: { flex: 1 } });

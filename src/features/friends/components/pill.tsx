@@ -1,7 +1,6 @@
-import { Pressable, StyleSheet } from 'react-native';
+import { Pressable } from 'react-native';
+import { cn } from '@/shared/lib/cn';
 import { Text } from '@/shared/ui/text';
-import { colors } from '@/shared/theme/colors';
-import { radius } from '@/shared/theme/page-structure';
 interface PillProps {
   label: string;
   /** filled = purple CTA, outline = hairline, muted = grey "Ausstehend". */
@@ -10,40 +9,31 @@ interface PillProps {
   compact?: boolean;
 }
 
+/** Fill and hairline per tone, plus the label colour. */
+const PALETTE = {
+  filled: { className: 'bg-purple', textClassName: 'text-white' },
+  outline: { className: 'border-[1.5px] border-border', textClassName: 'text-ink-body' },
+  muted: { className: 'bg-surface-chip-cool', textClassName: 'text-muted-chip' },
+  quiet: { className: 'border-[1.5px] border-border', textClassName: 'text-muted-lilac' },
+} as const;
+
 /** The small trailing action on a person row. */
 export function Pill({ label, tone = 'filled', onPress, compact = false }: PillProps) {
-  const palette = {
-    filled: { bg: colors.purple, fg: colors.white, border: 'transparent' },
-    outline: { bg: 'transparent', fg: colors.inkBody, border: colors.border },
-    muted: { bg: colors.surfaceChipCool, fg: colors.mutedChip, border: 'transparent' },
-    quiet: { bg: 'transparent', fg: colors.mutedLilac, border: colors.border },
-  }[tone];
+  const palette = PALETTE[tone];
 
   return (
     <Pressable
       onPress={onPress}
       disabled={!onPress}
-      style={({ pressed }) => [
-        styles.pill,
-        compact ? styles.compact : styles.regular,
-        {
-          backgroundColor: palette.bg,
-          borderColor: palette.border,
-          borderWidth: palette.border === 'transparent' ? 0 : 1.5,
-          opacity: pressed ? 0.85 : 1,
-        },
-      ]}
+      className={cn(
+        'items-center justify-center rounded-pill active:opacity-85',
+        compact ? 'h-[38px] px-4' : 'px-[18px] py-[11px]',
+        palette.className,
+      )}
     >
-      <Text variant="bodyXs" color={palette.fg} style={styles.label}>
+      <Text variant="bodyXs" weight="semibold" className={palette.textClassName}>
         {label}
       </Text>
     </Pressable>
   );
 }
-
-const styles = StyleSheet.create({
-  pill: { borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center' },
-  regular: { paddingHorizontal: 18, paddingVertical: 11 },
-  compact: { paddingHorizontal: 16, height: 38 },
-  label: { fontWeight: '600' },
-});

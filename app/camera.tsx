@@ -5,11 +5,11 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SwitchCamera, X, Zap } from 'lucide-react-native';
 import { Button } from '@/shared/ui/button';
 import { GlassButton } from '@/shared/ui/glass-button';
 import { Text } from '@/shared/ui/text';
-import { CloseIcon, FlipCameraIcon, FlashIcon } from '@/shared/ui/icons';
-import { alpha, colors } from '@/shared/theme/colors';
+import { colors } from '@/shared/theme/colors';
 import { t } from '@/shared/i18n/i18n';
 import { useComposer } from '@/features/moments/hooks/use-composer';
 import { useCapture } from '@/features/camera/hooks/use-capture';
@@ -47,16 +47,20 @@ export default function CameraScreen() {
 
   // `null` means the permission is still being read; a black frame beats a
   // "not allowed" screen that flashes on every open.
-  if (!permission) return <View style={styles.root} />;
+  if (!permission) return <View className="flex-1 bg-black" />;
 
   if (!permission.granted) {
+    // Safe-area insets are runtime values, so they stay as style.
     return (
-      <View style={[styles.permission, { paddingTop: insets.top + 24, paddingBottom: insets.bottom + 24 }]}>
+      <View
+        className="flex-1 justify-center gap-[18px] bg-black px-7"
+        style={{ paddingTop: insets.top + 24, paddingBottom: insets.bottom + 24 }}
+      >
         <StatusBar style="light" />
-        <Text variant="display" color={colors.white} center>
+        <Text variant="display" className="text-center text-white">
           {t('camera.permissionTitle')}
         </Text>
-        <Text variant="bodySm" color={alpha.onDarkText} center>
+        <Text variant="bodySm" className="text-center text-on-dark-text">
           {permission.canAskAgain ? t('camera.permissionBody') : t('camera.permissionSettingsBody')}
         </Text>
         <Button
@@ -71,34 +75,39 @@ export default function CameraScreen() {
   }
 
   return (
-    <View style={styles.root}>
+    <View className="flex-1 bg-black">
       <StatusBar style="light" />
+      {/* CameraView is not registered with NativeWind's cssInterop, so it keeps a plain style. */}
       <CameraView ref={cameraRef} style={StyleSheet.absoluteFill} facing={facing} flash={flash} />
 
       {/* Top and bottom scrims, matching the mock's two-stop gradient. */}
       <LinearGradient
         colors={['rgba(0,0,0,.55)', 'rgba(0,0,0,0)', 'rgba(0,0,0,0)', 'rgba(0,0,0,.72)']}
         locations={[0, 0.26, 0.58, 1]}
-        style={StyleSheet.absoluteFill}
+        className="absolute inset-0"
         pointerEvents="none"
       />
 
-      <View style={[styles.chrome, { paddingTop: insets.top + 12, paddingBottom: insets.bottom + 32 }]}>
-        <View style={styles.topRow}>
+      {/* Safe-area insets are runtime values, so they stay as style. */}
+      <View
+        className="absolute inset-0 justify-between px-5"
+        style={{ paddingTop: insets.top + 12, paddingBottom: insets.bottom + 32 }}
+      >
+        <View className="h-8 flex-row items-center">
           <GlassButton size={32} onDark onPress={close} accessibilityLabel={t('common.close')}>
-            <CloseIcon size={11} color={colors.white} />
+            <X size={11} color={colors.white} strokeWidth={2.2} />
           </GlassButton>
         </View>
 
-        <View style={styles.controls}>
-          <View style={styles.controlRow}>
+        <View className="items-center gap-5">
+          <View className="w-full flex-row items-center justify-between px-[26px]">
             <GlassButton
               size={50}
               onDark
               onPress={() => setFacing((f) => (f === 'back' ? 'front' : 'back'))}
               accessibilityLabel={t('camera.flipLabel')}
             >
-              <FlipCameraIcon size={22} />
+              <SwitchCamera size={22} color={colors.white} strokeWidth={2} />
             </GlassButton>
 
             <ShutterButton onPress={capture} />
@@ -110,11 +119,11 @@ export default function CameraScreen() {
               accessibilityLabel={t('camera.flashLabel')}
               accessibilityState={{ selected: flash === 'on' }}
             >
-              <FlashIcon size={22} color={flash === 'on' ? colors.purpleSoft : colors.white} />
+              <Zap size={22} color={flash === 'on' ? colors.purpleSoft : colors.white} strokeWidth={2} />
             </GlassButton>
           </View>
 
-          <Text variant="buttonSm" color={alpha.onDarkText} style={styles.hint}>
+          <Text variant="buttonSm" weight="medium" className="text-on-dark-text">
             {t('camera.hint')}
           </Text>
         </View>
@@ -122,25 +131,3 @@ export default function CameraScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.black },
-  permission: {
-    flex: 1,
-    backgroundColor: colors.black,
-    paddingHorizontal: 28,
-    justifyContent: 'center',
-    gap: 18,
-  },
-  chrome: { ...StyleSheet.absoluteFill, paddingHorizontal: 20, justifyContent: 'space-between' },
-  topRow: { flexDirection: 'row', alignItems: 'center', height: 32 },
-  controls: { alignItems: 'center', gap: 20 },
-  controlRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    width: '100%',
-    paddingHorizontal: 26,
-  },
-  hint: { fontWeight: '500' },
-});

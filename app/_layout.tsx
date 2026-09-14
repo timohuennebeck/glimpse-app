@@ -9,12 +9,13 @@ import {
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as SplashScreen from 'expo-splash-screen';
-import { StyleSheet } from 'react-native';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { colors } from '@/shared/theme/colors';
 import { queryClient } from '@/shared/lib/query-client';
-// Side-effect import: configures the locale before any screen renders.
+// Side-effect imports: locale, Tailwind stylesheet, className support for third-party views.
 import '@/shared/i18n/i18n';
+import '../global.css';
+import '@/shared/lib/css-interop';
 
 void SplashScreen.preventAutoHideAsync();
 
@@ -35,7 +36,7 @@ export default function RootLayout() {
   if (!fontsLoaded) return null;
 
   return (
-    <GestureHandlerRootView style={styles.root}>
+    <GestureHandlerRootView className="flex-1">
       <QueryClientProvider client={queryClient}>
         <SafeAreaProvider>
           <Stack
@@ -60,5 +61,3 @@ export default function RootLayout() {
     </GestureHandlerRootView>
   );
 }
-
-const styles = StyleSheet.create({ root: { flex: 1 } });

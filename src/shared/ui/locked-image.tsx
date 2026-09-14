@@ -1,7 +1,7 @@
-import { StyleSheet, View, ViewStyle } from 'react-native';
+import { View } from 'react-native';
 import { Image, ImageSource } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
-import { alpha } from '@/shared/theme/colors';
+import { cn } from '@/shared/lib/cn';
 import { LockedIcon } from '@/shared/ui/icons';
 interface LockedImageProps {
   source: ImageSource | string | number;
@@ -15,7 +15,7 @@ interface LockedImageProps {
   blur?: number;
   /** Size of the frosted lock puck. `0` hides it. */
   puckSize?: number;
-  style?: ViewStyle;
+  className?: string;
   children?: React.ReactNode;
 }
 
@@ -46,27 +46,30 @@ export function LockedImage({
   radius = 18,
   blur = BLUR.card,
   puckSize = 56,
-  style,
+  className,
   children,
 }: LockedImageProps) {
   const img = typeof source === 'string' ? { uri: source } : source;
 
   return (
-    <View style={[{ borderRadius: radius, overflow: 'hidden' }, styles.container, style]}>
-      <Image
-        source={img}
-        style={[StyleSheet.absoluteFill, styles.scaled]}
-        contentFit="cover"
-        blurRadius={blur}
-      />
-      <LinearGradient colors={['rgba(0,0,0,.1)', 'rgba(0,0,0,.26)']} style={StyleSheet.absoluteFill} />
+    <View
+      className={cn('items-center justify-center overflow-hidden', className)}
+      style={{ borderRadius: radius }}
+    >
+      {/* The mock scales the blurred image 1.08x so the blur never reveals the edge. */}
+      <Image source={img} className="absolute inset-0 scale-[1.08]" contentFit="cover" blurRadius={blur} />
+      <LinearGradient colors={['rgba(0,0,0,.1)', 'rgba(0,0,0,.26)']} className="absolute inset-0" />
       {/* inset 0 0 0 1px rgba(255,255,255,.18) */}
       <View
-        style={[StyleSheet.absoluteFill, styles.hairline, { borderRadius: radius }]}
+        className="absolute inset-0 border border-[#FFFFFF2E]"
+        style={{ borderRadius: radius }}
         pointerEvents="none"
       />
       {puckSize > 0 ? (
-        <View style={[styles.puck, { width: puckSize, height: puckSize, borderRadius: puckSize / 2 }]}>
+        <View
+          className="items-center justify-center border border-lock-border bg-lock-scrim"
+          style={{ width: puckSize, height: puckSize, borderRadius: puckSize / 2 }}
+        >
           <LockedIcon size={puckSize * 0.39} />
         </View>
       ) : null}
@@ -74,17 +77,3 @@ export function LockedImage({
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { alignItems: 'center', justifyContent: 'center' },
-  // The mock scales the blurred image 1.08x so the blur never reveals the edge.
-  scaled: { transform: [{ scale: 1.08 }] },
-  hairline: { borderWidth: 1, borderColor: 'rgba(255,255,255,.18)' },
-  puck: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: alpha.lockScrim,
-    borderWidth: 1,
-    borderColor: alpha.lockBorder,
-  },
-});

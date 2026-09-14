@@ -56,6 +56,9 @@ npm run format                     # prettier --write .
 npm run format:check               # what CI would run
 npx expo export --platform ios     # verify the bundle
 npx expo start --web               # drive the real UI in a browser
+# If a newly added Tailwind class does not apply in the dev server, restart
+# it with `--clear`: NativeWind's stylesheet is compiled by a watcher that
+# can miss edits made while it runs.
 ```
 
 **Typecheck and bundling are not verification.** Both pass on an app that never
@@ -106,8 +109,20 @@ docs/database.md          schema design and rationale
   complete in `de.ts`, since the go-to-market plan is German-speaking circles
   first. Both files are typed as the full `Translations`, so a missing key is a
   compile error rather than a screen in two languages.
-- **Icons come from `lucide-react-native`.** Only the brand marks — the camera
-  with its punched-out lens, the lock puck, the verified rosette — stay bespoke.
+- **Styling is Tailwind, via NativeWind.** Every static style is a `className`;
+  the theme tokens in `src/shared/theme/*.ts` are the single source of truth
+  and `tailwind.config.js` projects them into utilities (`bg-surface-violet-tint`,
+  `rounded-card`, `h-xl`, `px-gutter`). Only runtime numbers stay as `style`:
+  safe-area insets, measured widths, sizes that come from a prop, and the
+  `shadow.*` presets. Conditional classes go through `cn()` from
+  `src/shared/lib/cn.ts`, which merges Tailwind conflicts by meaning. Type
+  sizes are not used as utilities directly — `<Text variant="…">` picks them.
+  The setup follows Expo's Tailwind guide (`babel-preset-expo` with
+  `jsxImportSource: 'nativewind'`, `withNativeWind` in Metro, `global.css`).
+- **Icons come from `lucide-react-native`, used directly at the call site.**
+  Only the brand marks in `src/shared/ui/icons.tsx` — the camera with its
+  punched-out lens, the lock puck, the verified rosette, the Google mark, the
+  laurel — stay bespoke.
 - **Screens do not query Supabase directly.** They call a feature's `data/`
   module, which falls back to fixtures when unconfigured.
 - **Server state goes through TanStack Query.** Each feature declares its keys

@@ -1,14 +1,13 @@
 import { useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
+import { cn } from '@/shared/lib/cn';
 import { Button } from '@/shared/ui/button';
 import { CheckCircle } from '@/shared/ui/check-circle';
 import { CloseRow } from '@/shared/ui/close-row';
 import { Screen } from '@/shared/ui/screen';
 import { Text } from '@/shared/ui/text';
-import { colors } from '@/shared/theme/colors';
-import { radius } from '@/shared/theme/page-structure';
 import { t, tList } from '@/shared/i18n/i18n';
 import { BloomBackdrop } from '@/features/onboarding/components/bloom-backdrop';
 import { ART } from '@/shared/lib/fixtures';
@@ -34,21 +33,21 @@ export default function PaywallScreen() {
   return (
     <Screen
       footer={
-        <View style={styles.footer}>
+        <View className="items-center gap-3.5">
           <Button
             label={t('paywall.cta')}
             size="md"
             onPress={() => router.push('/(onboarding)/share-code')}
           />
-          <View style={styles.footerLinks}>
-            <Text variant="bodyXs" color={colors.purpleMuted}>
+          <View className="flex-row items-center gap-[18px]">
+            <Text variant="bodyXs" className="text-purple-muted">
               {t('paywall.restore')}
             </Text>
-            <View style={styles.footerDot} />
+            <View className="h-1 w-1 rounded-[2px] bg-swatch-grey" />
             <Text
               variant="bodyXs"
-              color={colors.purpleDeep}
-              style={styles.footerLink}
+              weight="semibold"
+              className="text-purple-deep"
               accessibilityRole="link"
               onPress={() => router.push('/(onboarding)/redeem')}
             >
@@ -62,27 +61,27 @@ export default function PaywallScreen() {
     >
       <CloseRow onPress={() => router.push('/(onboarding)/heard-about')} />
 
-      <Image source={ART.mascot} style={styles.mascot} contentFit="contain" />
+      <Image source={ART.mascot} className="-mt-1.5 h-[150px] w-[150px] self-center" contentFit="contain" />
 
-      <Text variant="eyebrowAccent" color={colors.purpleDeep} style={styles.eyebrow}>
+      <Text variant="eyebrowAccent" className="mt-3.5 text-purple-deep">
         {t('paywall.eyebrow')}
       </Text>
-      <Text variant="displayLg" color={colors.ink} style={styles.title}>
+      <Text variant="displayLg" className="mt-1.5 text-ink">
         {t('paywall.title')}
       </Text>
 
-      <View style={styles.benefits}>
+      <View className="mt-[22px] gap-4">
         {benefits.map((benefit) => (
-          <View key={benefit} style={styles.benefitRow}>
+          <View key={benefit} className="flex-row items-center gap-3.5">
             <CheckCircle checked size={28} />
-            <Text variant="body" color={colors.inkBody} style={styles.flex}>
+            <Text variant="body" className="flex-1 text-ink-body">
               {benefit}
             </Text>
           </View>
         ))}
       </View>
 
-      <View style={styles.plans}>
+      <View className="mt-[34px] flex-row gap-3">
         <PlanCard
           selected={plan === 'monthly'}
           onPress={() => setPlan('monthly')}
@@ -100,12 +99,12 @@ export default function PaywallScreen() {
         />
       </View>
 
-      <View style={styles.trialRow}>
-        <View style={styles.flex}>
-          <Text variant="rowTitle" color={colors.inkBody}>
+      <View className="mt-3 flex-row items-center gap-3 rounded-card-sm px-[18px] py-4">
+        <View className="flex-1">
+          <Text variant="rowTitle" className="text-ink-body">
             {t('paywall.trial.title')}
           </Text>
-          <Text variant="meta" color={colors.purpleMuted}>
+          <Text variant="meta" className="text-purple-muted">
             {t('paywall.trial.body')}
           </Text>
         </View>
@@ -113,9 +112,17 @@ export default function PaywallScreen() {
           onPress={() => setTrial((v) => !v)}
           accessibilityRole="switch"
           accessibilityState={{ checked: trial }}
-          style={[styles.switch, !trial && styles.switchOff]}
+          className={cn(
+            'h-[34px] w-14 justify-center rounded-pill',
+            trial ? 'bg-purple-deep' : 'bg-swatch-grey',
+          )}
         >
-          <View style={[styles.knob, trial ? styles.knobOn : styles.knobOff]} />
+          <View
+            className={cn(
+              'h-7 w-7 rounded-[14px] bg-white',
+              trial ? 'mr-[3px] self-end' : 'ml-[3px] self-start',
+            )}
+          />
         </Pressable>
       </View>
     </Screen>
@@ -134,89 +141,34 @@ interface PlanCardProps {
 function PlanCard({ selected, onPress, label, price, note, badge }: PlanCardProps) {
   return (
     <Pressable
-      style={[styles.plan, selected && styles.planSelected]}
+      // Constant border width so selecting a plan does not resize the card.
+      className={cn(
+        'flex-1 gap-1 rounded-card-sm border-2 px-4 pb-4 pt-[18px]',
+        selected ? 'border-purple bg-surface-violet-tint' : 'border-border bg-white',
+      )}
       onPress={onPress}
       accessibilityRole="radio"
       accessibilityState={{ selected }}
       accessibilityLabel={`${label}, ${price} ${note}`}
     >
       {badge ? (
-        <View style={styles.planBadge}>
-          <Text variant="caption" color={colors.white} style={styles.planBadgeText}>
+        <View className="absolute -top-[13px] right-3.5 rounded-pill bg-purple-deep px-2.5 py-[5px]">
+          <Text variant="caption" weight="semibold" className="text-white">
             {badge}
           </Text>
         </View>
       ) : null}
 
-      <Text variant="eyebrowAccent" color={selected ? colors.purpleDeep : '#8B7BA8'}>
+      <Text variant="eyebrowAccent" className={selected ? 'text-purple-deep' : 'text-[#8B7BA8]'}>
         {label}
       </Text>
-      <Text variant="title" color={colors.ink} style={styles.planPrice}>
+      <Text variant="title" className="mt-1 text-ink">
         {price}
       </Text>
-      <Text variant="meta" color={colors.purpleMuted}>
+      <Text variant="meta" className="text-purple-muted">
         {note}
       </Text>
-      <CheckCircle checked={selected} size={28} style={styles.radio} />
+      <CheckCircle checked={selected} size={28} className="mt-3.5" />
     </Pressable>
   );
 }
-
-const styles = StyleSheet.create({
-  flex: { flex: 1 },
-  mascot: { width: 150, height: 150, alignSelf: 'center', marginTop: -6 },
-  eyebrow: { marginTop: 14 },
-  title: { marginTop: 6 },
-  benefits: { marginTop: 22, gap: 16 },
-  benefitRow: { flexDirection: 'row', alignItems: 'center', gap: 14 },
-  plans: { marginTop: 34, flexDirection: 'row', gap: 12 },
-  plan: {
-    flex: 1,
-    // Constant width so selecting a plan does not resize the card.
-    borderWidth: 2,
-    borderColor: colors.border,
-    borderRadius: radius.cardSm,
-    backgroundColor: colors.white,
-    paddingHorizontal: 16,
-    paddingTop: 18,
-    paddingBottom: 16,
-    gap: 4,
-  },
-  planSelected: { borderColor: colors.purple, backgroundColor: colors.surfaceVioletTint },
-  planBadge: {
-    position: 'absolute',
-    top: -13,
-    right: 14,
-    backgroundColor: colors.purpleDeep,
-    borderRadius: radius.pill,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-  },
-  planBadgeText: { fontWeight: '600' },
-  planPrice: { marginTop: 4 },
-  radio: { marginTop: 14 },
-  trialRow: {
-    marginTop: 12,
-    borderRadius: radius.cardSm,
-    paddingHorizontal: 18,
-    paddingVertical: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  switch: {
-    width: 56,
-    height: 34,
-    borderRadius: radius.pill,
-    backgroundColor: colors.purpleDeep,
-    justifyContent: 'center',
-  },
-  switchOff: { backgroundColor: colors.swatchGrey },
-  knob: { width: 28, height: 28, borderRadius: 14, backgroundColor: colors.white },
-  knobOn: { alignSelf: 'flex-end', marginRight: 3 },
-  knobOff: { alignSelf: 'flex-start', marginLeft: 3 },
-  footer: { gap: 14, alignItems: 'center' },
-  footerLinks: { flexDirection: 'row', alignItems: 'center', gap: 18 },
-  footerDot: { width: 4, height: 4, borderRadius: 2, backgroundColor: colors.swatchGrey },
-  footerLink: { fontWeight: '600' },
-});

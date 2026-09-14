@@ -1,14 +1,14 @@
 import { useState } from 'react';
-import { Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { Pressable, TextInput, View } from 'react-native';
 import { router } from 'expo-router';
+import { Check, Eye, Mail } from 'lucide-react-native';
+import { cn } from '@/shared/lib/cn';
 import { Button } from '@/shared/ui/button';
-import { CheckIcon, EyeIcon, MailIcon } from '@/shared/ui/icons';
 import { ProgressHeader } from '@/shared/ui/progress-header';
 import { Screen } from '@/shared/ui/screen';
 import { Text } from '@/shared/ui/text';
 import { colors } from '@/shared/theme/colors';
-import { fontFamily } from '@/shared/theme/fonts';
-import { radius, spacing } from '@/shared/theme/page-structure';
+import { spacing } from '@/shared/theme/page-structure';
 import { t } from '@/shared/i18n/i18n';
 /** Screen `04a Your details · 4 of 7` — email + password, with a strength meter. */
 export default function DetailsScreen() {
@@ -23,21 +23,21 @@ export default function DetailsScreen() {
   return (
     <Screen
       footer={
-        <View style={styles.footer}>
+        <View className="gap-[18px]">
           <Button
             label={t('onboarding.details.cta')}
             size="xl"
             disabled={!valid}
             onPress={() => router.push('/(onboarding)/friends')}
           />
-          <Text variant="subtitle" color={colors.mutedLilac} center>
+          <Text variant="subtitle" className="text-center text-muted-lilac">
             {t('onboarding.details.hasAccount')}{' '}
             {/* Until auth is wired this form doubles as sign-in, so the link
                 simply clears the flow above it. */}
             <Text
               variant="subtitle"
-              color={colors.inkBody}
-              style={styles.link}
+              weight="semibold"
+              className="text-ink-body"
               accessibilityRole="link"
               onPress={() => router.dismissTo('/(onboarding)/welcome')}
             >
@@ -46,26 +46,26 @@ export default function DetailsScreen() {
           </Text>
         </View>
       }
-      background={colors.surfaceAlt}
+      className="bg-surface-alt"
       gutter={spacing.gutterWide}
       scroll
     >
       <ProgressHeader step={4} onClose={() => router.back()} />
 
-      <Text variant="display" color={colors.ink} style={styles.title}>
+      <Text variant="display" className="mt-[22px] text-ink">
         {t('onboarding.details.title')}
       </Text>
-      <Text variant="bodySm" color={colors.muted} style={styles.subtitle}>
+      <Text variant="bodySm" className="mt-3 text-muted">
         {t('onboarding.details.subtitle')}
       </Text>
 
-      <View style={styles.fields}>
-        <View style={styles.field}>
-          <Text variant="meta" color={colors.muted}>
+      <View className="mt-7 gap-[18px]">
+        <View className="gap-2">
+          <Text variant="meta" className="text-muted">
             {t('onboarding.details.emailLabel')}
           </Text>
-          <View style={[styles.input, email.length > 0 && styles.inputActive]}>
-            <MailIcon size={21} color={colors.purple} strokeWidth={1.6} />
+          <View className={cn(INPUT, email.length > 0 && 'border-purple')}>
+            <Mail size={21} color={colors.purple} strokeWidth={1.6} />
             <TextInput
               value={email}
               onChangeText={setEmail}
@@ -74,23 +74,23 @@ export default function DetailsScreen() {
               keyboardType="email-address"
               autoCapitalize="none"
               autoComplete="email"
-              style={styles.inputText}
+              className={INPUT_TEXT}
             />
           </View>
         </View>
 
-        <View style={styles.field}>
-          <Text variant="meta" color={colors.muted}>
+        <View className="gap-2">
+          <Text variant="meta" className="text-muted">
             {t('onboarding.details.passwordLabel')}
           </Text>
-          <View style={[styles.input, styles.inputMuted]}>
+          <View className={cn(INPUT, 'bg-surface-violet-warm')}>
             <TextInput
               value={password}
               onChangeText={setPassword}
               secureTextEntry={!reveal}
               autoCapitalize="none"
               autoComplete="new-password"
-              style={[styles.inputText, styles.flex]}
+              className={INPUT_TEXT}
             />
             <Pressable
               onPress={() => setReveal((r) => !r)}
@@ -100,17 +100,23 @@ export default function DetailsScreen() {
                 reveal ? t('onboarding.details.hidePassword') : t('onboarding.details.showPassword')
               }
             >
-              <EyeIcon size={21} />
+              <Eye size={21} color={colors.muted} strokeWidth={1.6} />
             </Pressable>
           </View>
 
-          <View style={styles.meter}>
-            <View style={styles.meterBars}>
+          <View className="flex-row items-center gap-2.5 pl-0.5">
+            <View className="flex-row gap-1">
               {[0, 1, 2, 3].map((i) => (
-                <View key={i} style={[styles.meterBar, i < strength && styles.meterBarOn]} />
+                <View
+                  key={i}
+                  className={cn(
+                    'h-[5px] w-[34px] rounded-[3px]',
+                    i < strength ? 'bg-purple' : 'bg-border-lilac',
+                  )}
+                />
               ))}
             </View>
-            <Text variant="metaSm" color={colors.muted}>
+            <Text variant="metaSm" className="text-muted">
               {t('onboarding.details.passwordHint')}
             </Text>
           </View>
@@ -118,15 +124,20 @@ export default function DetailsScreen() {
       </View>
 
       <Pressable
-        style={styles.consent}
+        className="mt-[22px] flex-row items-start gap-3"
         onPress={() => setConsent((c) => !c)}
         accessibilityRole="checkbox"
         accessibilityState={{ checked: consent }}
       >
-        <View style={[styles.checkbox, !consent && styles.checkboxOff]}>
-          {consent ? <CheckIcon size={14} strokeWidth={2.2} /> : null}
+        <View
+          className={cn(
+            'mt-px h-6 w-6 items-center justify-center rounded-[8px]',
+            consent ? 'bg-purple' : 'border-[1.8px] border-swatch-grey bg-transparent',
+          )}
+        >
+          {consent ? <Check size={14} color={colors.white} strokeWidth={2.2} /> : null}
         </View>
-        <Text variant="subtitle" color={colors.mutedLilac} style={styles.flex}>
+        <Text variant="subtitle" className="flex-1 text-muted-lilac">
           {t('onboarding.details.consent', {
             terms: t('onboarding.signUp.terms'),
             privacy: t('onboarding.signUp.privacy'),
@@ -147,47 +158,6 @@ function passwordStrength(value: string): number {
   return score;
 }
 
-const styles = StyleSheet.create({
-  flex: { flex: 1 },
-  title: { marginTop: 22 },
-  subtitle: { marginTop: 12 },
-  fields: { marginTop: 28, gap: 18 },
-  field: { gap: 8 },
-  input: {
-    height: 62,
-    borderRadius: radius.input,
-    backgroundColor: colors.white,
-    borderWidth: 1.5,
-    borderColor: colors.borderInput,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    paddingHorizontal: 18,
-  },
-  inputActive: { borderColor: colors.purple },
-  inputMuted: { backgroundColor: colors.surfaceVioletWarm },
-  inputText: {
-    flex: 1,
-    fontSize: 17.5,
-    color: colors.inkBody,
-    fontFamily: fontFamily.regular,
-    padding: 0,
-  },
-  meter: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingLeft: 2 },
-  meterBars: { flexDirection: 'row', gap: 4 },
-  meterBar: { width: 34, height: 5, borderRadius: 3, backgroundColor: colors.borderLilac },
-  meterBarOn: { backgroundColor: colors.purple },
-  consent: { marginTop: 22, flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
-  checkbox: {
-    width: 24,
-    height: 24,
-    borderRadius: 8,
-    backgroundColor: colors.purple,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 1,
-  },
-  checkboxOff: { backgroundColor: 'transparent', borderWidth: 1.8, borderColor: colors.swatchGrey },
-  footer: { gap: 18 },
-  link: { fontWeight: '600' },
-});
+const INPUT =
+  'h-[62px] flex-row items-center gap-3 rounded-input border-[1.5px] border-border-input bg-white px-[18px]';
+const INPUT_TEXT = 'flex-1 p-0 font-sans text-[17.5px] text-ink-body';

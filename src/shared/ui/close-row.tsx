@@ -1,23 +1,21 @@
-import { StyleSheet, View, ViewStyle } from 'react-native';
+import { View } from 'react-native';
+import { X } from 'lucide-react-native';
+import { cn } from '@/shared/lib/cn';
 import { GlassButton } from '@/shared/ui/glass-button';
-import { CloseIcon } from '@/shared/ui/icons';
+import { colors } from '@/shared/theme/colors';
 import { t } from '@/shared/i18n/i18n';
 interface CloseRowProps {
   onPress: () => void;
-  style?: ViewStyle;
+  className?: string;
 }
 
 /** The lone close button that tops the screens outside the numbered onboarding steps. */
-export function CloseRow({ onPress, style }: CloseRowProps) {
+export function CloseRow({ onPress, className }: CloseRowProps) {
   return (
-    <View style={[styles.row, style]}>
+    <View className={cn('h-8 flex-row items-center', className)}>
       <GlassButton size={32} onPress={onPress} accessibilityLabel={t('common.close')}>
-        <CloseIcon size={11} />
+        <X size={11} color={colors.inkFaint} strokeWidth={2.2} />
       </GlassButton>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  row: { flexDirection: 'row', alignItems: 'center', height: 32 },
-});

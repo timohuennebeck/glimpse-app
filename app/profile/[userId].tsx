@@ -1,5 +1,5 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { CloseIcon } from '@/shared/ui/icons';
+import { X } from 'lucide-react-native';
 import { GlassButton } from '@/shared/ui/glass-button';
 import { Screen } from '@/shared/ui/screen';
 import { colors } from '@/shared/theme/colors';
@@ -25,7 +25,7 @@ export default function ProfileScreen() {
         subtitle={profile.tagline || memberSince(profile.created_at)}
         leading={
           <GlassButton size={44} onPress={() => router.back()} accessibilityLabel={t('common.close')}>
-            <CloseIcon size={15} color={colors.inkSoft} />
+            <X size={15} color={colors.inkSoft} strokeWidth={2.2} />
           </GlassButton>
         }
         onPressTrade={() => {

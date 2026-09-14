@@ -1,12 +1,10 @@
 import { useMemo } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { SectionHeading } from '@/shared/ui/section-heading';
 import { SectionLabel } from '@/shared/ui/section-label';
 import { Text } from '@/shared/ui/text';
-import { colors } from '@/shared/theme/colors';
-import { radius } from '@/shared/theme/page-structure';
 import { t } from '@/shared/i18n/i18n';
 import { memberSince } from '@/shared/lib/format';
 import { useInbox } from '@/features/moments/hooks/use-inbox';
@@ -52,7 +50,7 @@ export default function FeedScreen() {
 
   return (
     <TabScreen>
-      <View style={styles.stack}>
+      <View className="flex-1 gap-4">
         <FeedHeader
           avatar={AVATARS.self}
           name={demoProfiles[DEMO_USER_ID].display_name}
@@ -61,7 +59,7 @@ export default function FeedScreen() {
           onPressAvatar={() => router.push('/(app)/friends')}
         />
 
-        <View style={styles.gap12}>
+        <View className="gap-3">
           <SectionLabel
             trailing={pending.length > 0 ? t('feed.storiesTrailing', { count: pending.length }) : undefined}
           >
@@ -76,7 +74,7 @@ export default function FeedScreen() {
           />
         </View>
 
-        <Text variant="headline" color={colors.ink}>
+        <Text variant="headline" className="text-ink">
           {hasFriends ? greeting : t('feed.empty.headline')}
         </Text>
 
@@ -93,16 +91,22 @@ export default function FeedScreen() {
 
             <SectionHeading title={t('feed.momentsTitle')} />
 
-            <View style={styles.grid}>
+            {/* Fixed share rather than flex:1, which would stretch a lone item across the
+                full width and render a portrait photo as a letterbox strip. */}
+            <View className="flex-row flex-wrap gap-[13px]">
               {open.map((moment) => (
                 <Pressable
                   key={moment.tradeId}
-                  style={styles.gridCell}
+                  className="w-[48%]"
                   onPress={() => router.push(`/photo/${moment.momentId}`)}
                   accessibilityRole="imagebutton"
                   accessibilityLabel={moment.from.name}
                 >
-                  <Image source={moment.photo} style={styles.gridImage} contentFit="cover" />
+                  <Image
+                    source={moment.photo}
+                    className="aspect-[4/5] w-full rounded-thumb"
+                    contentFit="cover"
+                  />
                 </Pressable>
               ))}
             </View>
@@ -128,13 +132,3 @@ function greetingForNow(): string {
   if (hour >= 18) return t('feed.greetingEvening');
   return t('feed.greetingDay');
 }
-
-const styles = StyleSheet.create({
-  stack: { gap: 16, flex: 1 },
-  gap12: { gap: 12 },
-  grid: { flexDirection: 'row', gap: 13, flexWrap: 'wrap' },
-  // Fixed share rather than flex:1, which would stretch a lone item across the
-  // full width and render a portrait photo as a letterbox strip.
-  gridCell: { width: '48%' },
-  gridImage: { width: '100%', aspectRatio: 4 / 5, borderRadius: radius.thumb },
-});

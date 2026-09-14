@@ -1,13 +1,11 @@
 import { useRef, useState } from 'react';
-import { Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { Pressable, TextInput, View } from 'react-native';
 import { router } from 'expo-router';
+import { cn } from '@/shared/lib/cn';
 import { Button } from '@/shared/ui/button';
 import { CloseRow } from '@/shared/ui/close-row';
 import { Screen } from '@/shared/ui/screen';
 import { Text } from '@/shared/ui/text';
-import { colors } from '@/shared/theme/colors';
-import { fontFamily } from '@/shared/theme/fonts';
-import { radius } from '@/shared/theme/page-structure';
 import { t } from '@/shared/i18n/i18n';
 const LENGTH = 6;
 
@@ -25,14 +23,14 @@ export default function RedeemScreen() {
   return (
     <Screen
       footer={
-        <View style={styles.footer}>
+        <View className="gap-3.5">
           <Button
             label={t('referral.redeem.cta')}
             size="md"
             disabled={!complete}
             onPress={() => router.push('/(onboarding)/heard-about')}
           />
-          <Text variant="bodyXs" color={colors.purpleMuted} center>
+          <Text variant="bodyXs" className="text-center text-purple-muted">
             {t('referral.redeem.note')}
           </Text>
         </View>
@@ -41,19 +39,19 @@ export default function RedeemScreen() {
     >
       <CloseRow onPress={() => router.back()} />
 
-      <Text variant="eyebrowAccent" color={colors.purpleDeep} style={styles.eyebrow}>
+      <Text variant="eyebrowAccent" className="mt-9 text-purple-deep">
         {t('referral.redeem.eyebrow')}
       </Text>
-      <Text variant="displayLg" color={colors.ink} style={styles.title}>
+      <Text variant="displayLg" className="mt-1.5 text-ink">
         {t('referral.redeem.title')}
       </Text>
-      <Text variant="body" color={colors.purpleMuted} style={styles.subtitle}>
+      <Text variant="body" className="mt-3.5 text-purple-muted">
         {t('referral.redeem.subtitle')}
       </Text>
 
       {/* Tapping the boxes must bring the keyboard back, not just restyle the cursor. */}
       <Pressable
-        style={styles.boxes}
+        className="mt-9 flex-row gap-2"
         onPress={() => inputRef.current?.focus()}
         accessibilityRole="none"
         accessibilityLabel={t('referral.redeem.inputLabel')}
@@ -62,11 +60,22 @@ export default function RedeemScreen() {
           const char = code[i];
           const isCursor = focused && i === code.length;
           return (
-            <View key={i} style={[styles.box, (char || isCursor) && styles.boxActive]}>
+            <View
+              key={i}
+              className={cn(
+                'h-16 flex-1 items-center justify-center rounded-chip border-[1.6px] border-border bg-white',
+                (char || isCursor) && 'border-2 border-purple bg-surface-violet-tint',
+              )}
+            >
               {char ? (
-                <Text style={styles.boxChar}>{char}</Text>
+                <Text
+                  weight="semibold"
+                  className="android:font-mono-android font-mono text-[24px] font-semibold text-ink"
+                >
+                  {char}
+                </Text>
               ) : isCursor ? (
-                <View style={styles.cursor} />
+                <View className="h-7 w-0.5 rounded-[1px] bg-purple-deep" />
               ) : null}
             </View>
           );
@@ -91,31 +100,9 @@ export default function RedeemScreen() {
         autoCapitalize="characters"
         autoCorrect={false}
         maxLength={LENGTH}
-        style={styles.hiddenInput}
+        className="absolute h-px w-px opacity-0"
         textContentType="oneTimeCode"
       />
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  eyebrow: { marginTop: 36 },
-  title: { marginTop: 6 },
-  subtitle: { marginTop: 14 },
-  boxes: { marginTop: 36, flexDirection: 'row', gap: 8 },
-  box: {
-    flex: 1,
-    height: 64,
-    borderRadius: radius.chip,
-    borderWidth: 1.6,
-    borderColor: colors.border,
-    backgroundColor: colors.white,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  boxActive: { borderWidth: 2, borderColor: colors.purple, backgroundColor: colors.surfaceVioletTint },
-  boxChar: { fontFamily: fontFamily.mono, fontSize: 24, fontWeight: '600', color: colors.ink },
-  cursor: { width: 2, height: 28, borderRadius: 1, backgroundColor: colors.purpleDeep },
-  hiddenInput: { position: 'absolute', opacity: 0, height: 1, width: 1 },
-  footer: { gap: 14 },
-});

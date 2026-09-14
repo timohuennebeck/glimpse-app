@@ -1,17 +1,16 @@
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, StyleSheet, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, TextInput, View } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
+import { Pencil, RotateCcw, X } from 'lucide-react-native';
 import { Button } from '@/shared/ui/button';
 import { GlassButton } from '@/shared/ui/glass-button';
 import { Text } from '@/shared/ui/text';
-import { CloseIcon, RetakeIcon, PencilIcon } from '@/shared/ui/icons';
 import { alpha, colors } from '@/shared/theme/colors';
-import { fontFamily } from '@/shared/theme/fonts';
 import { t } from '@/shared/i18n/i18n';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useComposer } from '@/features/moments/hooks/use-composer';
@@ -65,27 +64,29 @@ export default function ComposeScreen() {
   }
 
   return (
-    <View style={styles.root}>
+    <View className="flex-1 bg-black">
       <StatusBar style="light" />
       <Image
         source={composer.uri ? { uri: composer.uri } : PHOTOS.viewfinder}
-        style={StyleSheet.absoluteFill}
+        className="absolute inset-0"
         contentFit="cover"
       />
       <LinearGradient
         colors={['rgba(0,0,0,.5)', 'rgba(0,0,0,0)', 'rgba(0,0,0,0)', 'rgba(0,0,0,.8)']}
         locations={[0, 0.22, 0.5, 1]}
-        style={StyleSheet.absoluteFill}
+        className="absolute inset-0"
         pointerEvents="none"
       />
 
+      {/* Safe-area insets are runtime values, so they stay as style. */}
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={[StyleSheet.absoluteFill, { paddingTop: insets.top + 12 }]}
+        className="absolute inset-0"
+        style={{ paddingTop: insets.top + 12 }}
       >
-        <View style={styles.topRow}>
+        <View className="flex-row items-start justify-between px-5">
           <GlassButton size={38} onDark onPress={() => router.back()} accessibilityLabel={t('common.close')}>
-            <CloseIcon size={12} color={colors.white} />
+            <X size={12} color={colors.white} strokeWidth={2.2} />
           </GlassButton>
           <GlassButton
             size={38}
@@ -93,28 +94,32 @@ export default function ComposeScreen() {
             onPress={() => router.back()}
             accessibilityLabel={t('compose.retake')}
           >
-            <RetakeIcon size={17} />
+            <RotateCcw size={17} color={colors.white} strokeWidth={1.9} />
           </GlassButton>
         </View>
 
-        <View style={styles.spacer} />
+        <View className="flex-1" />
 
         {/* Frosted action bar, matching `rgba(18,16,24,.62)` + blur(22px). */}
-        <BlurView intensity={40} tint="dark" style={styles.bar}>
-          <View style={[styles.barInner, { paddingBottom: insets.bottom + 22 }]}>
+        <BlurView
+          intensity={40}
+          tint="dark"
+          className="overflow-hidden border-t border-t-[rgba(255,255,255,.14)]"
+        >
+          <View className="gap-[18px] px-[22px] pt-[22px]" style={{ paddingBottom: insets.bottom + 22 }}>
             {reply.error ? (
-              <Text variant="meta" color={alpha.onDarkText} style={styles.error}>
+              <Text variant="meta" className="px-1.5 text-on-dark-text">
                 {errorMessage(reply.error)}
               </Text>
             ) : null}
-            <View style={styles.captionRow}>
-              <PencilIcon size={15} />
+            <View className="flex-row items-center gap-[9px] px-1.5">
+              <Pencil size={15} color="rgba(255,255,255,.82)" strokeWidth={1.8} />
               <TextInput
                 value={caption}
                 onChangeText={setCaption}
                 placeholder={t('compose.captionPlaceholder')}
                 placeholderTextColor={alpha.onDarkText}
-                style={styles.captionInput}
+                className="max-h-[90px] flex-1 p-0 font-sans text-[15px] text-white"
                 maxLength={280}
                 multiline
               />
@@ -132,26 +137,3 @@ export default function ComposeScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.black },
-  topRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-  },
-  spacer: { flex: 1 },
-  bar: { borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,.14)', overflow: 'hidden' },
-  barInner: { paddingHorizontal: 22, paddingTop: 22, gap: 18 },
-  error: { paddingHorizontal: 6 },
-  captionRow: { flexDirection: 'row', alignItems: 'center', gap: 9, paddingHorizontal: 6 },
-  captionInput: {
-    flex: 1,
-    fontSize: 15,
-    color: colors.white,
-    fontFamily: fontFamily.regular,
-    maxHeight: 90,
-    padding: 0,
-  },
-});

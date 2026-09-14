@@ -1,18 +1,45 @@
 import { ReactNode } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, View, ViewStyle } from 'react-native';
+import { ActivityIndicator, Pressable, View } from 'react-native';
+import { cn } from '@/shared/lib/cn';
 import { Text } from '@/shared/ui/text';
 import { colors } from '@/shared/theme/colors';
 import { TypeToken } from '@/shared/theme/fonts';
-import { controlHeight, radius, shadow } from '@/shared/theme/page-structure';
+import { shadow } from '@/shared/theme/page-structure';
 type Variant = 'primary' | 'purple' | 'outline' | 'ghost';
 type Size = 'xl' | 'lg' | 'md' | 'sm' | 'xs';
 
-const sizeMap: Record<Size, { height: number; variant: TypeToken }> = {
-  xl: { height: controlHeight.xl, variant: 'buttonXl' },
-  lg: { height: controlHeight.lg, variant: 'button' },
-  md: { height: controlHeight.md, variant: 'button' },
-  sm: { height: controlHeight.sm, variant: 'buttonSm' },
-  xs: { height: controlHeight.xs, variant: 'buttonSm' },
+interface SizeSpec {
+  className: string;
+  variant: TypeToken;
+}
+
+const SIZE: Record<Size, SizeSpec> = {
+  xl: { className: 'h-xl', variant: 'buttonXl' },
+  lg: { className: 'h-lg', variant: 'button' },
+  md: { className: 'h-md', variant: 'button' },
+  sm: { className: 'h-sm', variant: 'buttonSm' },
+  xs: { className: 'h-xs', variant: 'buttonSm' },
+};
+
+interface Palette {
+  className: string;
+  textClassName: string;
+  spinner: string;
+}
+
+/**
+ * The mock only ever uses three fills: near-black for the primary CTA, purple
+ * for in-card actions, and a hairline outline.
+ */
+const PALETTE: Record<Variant, Palette> = {
+  primary: { className: 'bg-ink', textClassName: 'text-white', spinner: colors.white },
+  purple: { className: 'bg-purple', textClassName: 'text-white', spinner: colors.white },
+  outline: {
+    className: 'bg-white border-[1.6px] border-border',
+    textClassName: 'text-ink-body',
+    spinner: colors.inkBody,
+  },
+  ghost: { className: 'bg-transparent', textClassName: 'text-ink-soft', spinner: colors.inkSoft },
 };
 
 export interface ButtonProps {
@@ -24,13 +51,10 @@ export interface ButtonProps {
   icon?: ReactNode;
   disabled?: boolean;
   loading?: boolean;
-  style?: ViewStyle;
+  className?: string;
 }
 
-/**
- * Pill button. The mock only ever uses three fills: near-black (#0B0B0E) for the
- * primary CTA, purple (#8B5CF6) for in-card actions, and a hairline outline.
- */
+/** Pill button. */
 export function Button({
   label,
   onPress,
@@ -39,10 +63,9 @@ export function Button({
   icon,
   disabled = false,
   loading = false,
-  style,
+  className,
 }: ButtonProps) {
-  const { height, variant: textVariant } = sizeMap[size];
-  const palette = paletteFor(variant);
+  const palette = PALETTE[variant];
   const inactive = disabled || loading;
 
   return (
@@ -50,26 +73,25 @@ export function Button({
       onPress={inactive ? undefined : onPress}
       accessibilityRole="button"
       accessibilityState={{ disabled: inactive }}
-      style={({ pressed }) => [
-        styles.base,
-        {
-          height,
-          backgroundColor: palette.background,
-          borderColor: palette.border,
-          borderWidth: palette.border ? 1.6 : 0,
-          // The mock renders the disabled CTA at 35% opacity (screen 10a).
-          opacity: inactive ? 0.35 : pressed ? 0.88 : 1,
-        },
-        variant === 'purple' && shadow.cta,
-        style,
-      ]}
+      className={cn(
+        // `self-stretch` fills the parent even when it centres its children;
+        // without it the button shrink-wraps its label.
+        'flex-row items-center justify-center gap-3 self-stretch rounded-pill',
+        SIZE[size].className,
+        palette.className,
+        // The mock renders the disabled CTA at 35% opacity (screen 10a).
+        inactive ? 'opacity-35' : 'active:opacity-[0.88]',
+        className,
+      )}
+      // Shadows stay as a style: RN's shadow props have no CSS equivalent NativeWind maps.
+      style={variant === 'purple' ? shadow.cta : undefined}
     >
       {loading ? (
-        <ActivityIndicator color={palette.text} />
+        <ActivityIndicator color={palette.spinner} />
       ) : (
         <>
-          {icon ? <View style={styles.icon}>{icon}</View> : null}
-          <Text variant={textVariant} color={palette.text}>
+          {icon ? <View className="items-center justify-center">{icon}</View> : null}
+          <Text variant={SIZE[size].variant} className={palette.textClassName}>
             {label}
           </Text>
         </>
@@ -77,32 +99,3 @@ export function Button({
     </Pressable>
   );
 }
-
-function paletteFor(variant: Variant): { background: string; text: string; border?: string } {
-  switch (variant) {
-    case 'purple':
-      return { background: colors.purple, text: colors.white };
-    case 'outline':
-      return { background: colors.white, text: colors.inkBody, border: colors.border };
-    case 'ghost':
-      return { background: 'transparent', text: colors.inkSoft };
-    case 'primary':
-    default:
-      return { background: colors.ink, text: colors.white };
-  }
-}
-
-const styles = StyleSheet.create({
-  base: {
-    borderRadius: radius.pill,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 12,
-    // Fill the parent even when it centres its children (several footers use
-    // alignItems:'center' to centre the text links beneath the CTA). Without
-    // this the button shrink-wraps its label.
-    alignSelf: 'stretch',
-  },
-  icon: { alignItems: 'center', justifyContent: 'center' },
-});

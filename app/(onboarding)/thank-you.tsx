@@ -1,4 +1,4 @@
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
@@ -6,7 +6,6 @@ import { Button } from '@/shared/ui/button';
 import { CloseRow } from '@/shared/ui/close-row';
 import { Screen } from '@/shared/ui/screen';
 import { Text } from '@/shared/ui/text';
-import { colors } from '@/shared/theme/colors';
 import { t } from '@/shared/i18n/i18n';
 import { ART } from '@/shared/lib/fixtures';
 /**
@@ -20,7 +19,7 @@ export default function ThankYouScreen() {
   return (
     <Screen
       footer={
-        <View style={styles.footer}>
+        <View className="gap-6">
           <Button
             label={t('onboarding.thankYou.variantA.cta')}
             onPress={() => {
@@ -31,8 +30,7 @@ export default function ThankYouScreen() {
           />
           <Text
             variant="buttonSm"
-            color={colors.inkSoft}
-            center
+            className="text-center text-ink-soft"
             accessibilityRole="link"
             onPress={() => router.replace('/(app)/feed')}
           >
@@ -42,37 +40,26 @@ export default function ThankYouScreen() {
       }
       scroll
     >
-      <CloseRow style={styles.topRow} onPress={() => router.replace('/(app)/feed')} />
+      <CloseRow className="h-9" onPress={() => router.replace('/(app)/feed')} />
 
-      <Text variant="display" color={colors.ink} center style={styles.title}>
+      <Text variant="display" className="mt-10 text-center text-ink">
         {t('onboarding.thankYou.variantA.title')}
       </Text>
-      <Text variant="bodyMd" color={colors.purpleMuted} center style={styles.subtitle}>
+      <Text variant="bodyMd" className="mt-3 text-center text-purple-muted">
         {t('onboarding.thankYou.variantA.subtitle')}
       </Text>
 
-      <View style={styles.stage}>
+      <View className="mt-[34px] h-[280px] items-center justify-center">
         <LinearGradient
           colors={['rgba(180,140,255,.42)', 'rgba(180,140,255,.14)', 'rgba(180,140,255,0)']}
           locations={[0, 0.45, 0.72]}
-          style={styles.halo}
+          className="absolute h-[260px] w-[260px] rounded-[130px]"
         />
-        <Image source={ART.mascotUnlock} style={styles.mascot} contentFit="contain" />
+        <Image source={ART.mascotUnlock} className="h-[250px] w-[250px]" contentFit="contain" />
       </View>
-      <Text variant="bodyMd" color={colors.purpleMuted} center style={styles.footnote}>
+      <Text variant="bodyMd" className="mt-11 text-center text-purple-muted">
         {t('onboarding.thankYou.variantA.footnote')}
       </Text>
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  topRow: { height: 36 },
-  title: { marginTop: 40 },
-  subtitle: { marginTop: 12 },
-  stage: { marginTop: 34, height: 280, alignItems: 'center', justifyContent: 'center' },
-  halo: { position: 'absolute', width: 260, height: 260, borderRadius: 130 },
-  mascot: { width: 250, height: 250 },
-  footnote: { marginTop: 44 },
-  footer: { gap: 24 },
-});

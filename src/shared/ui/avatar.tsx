@@ -1,5 +1,6 @@
-import { StyleSheet, View, ViewStyle } from 'react-native';
+import { View } from 'react-native';
 import { Image, ImageSource } from 'expo-image';
+import { cn } from '@/shared/lib/cn';
 import { colors } from '@/shared/theme/colors';
 interface AvatarProps {
   source: ImageSource | string | number;
@@ -13,11 +14,16 @@ interface AvatarProps {
    */
   ring?: 'none' | 'halo' | 'active' | 'idle';
   dimmed?: boolean;
-  style?: ViewStyle;
+  className?: string;
 }
 
-export function Avatar({ source, size = 52, ring = 'none', dimmed = false, style }: AvatarProps) {
+export function Avatar({ source, size = 52, ring = 'none', dimmed = false, className }: AvatarProps) {
   const img = typeof source === 'string' ? { uri: source } : source;
+  // Size is a prop, so the frame stays a style. The Image itself is styled
+  // entirely through `style`: on web, NativeWind cannot mix `className` with a
+  // numeric `style` on a registered third-party component.
+  const round = { borderRadius: size / 2 };
+  const opacity = dimmed ? 0.55 : 1;
 
   if (ring === 'active' || ring === 'idle') {
     // Mock: a coloured disc with 2.4px padding, and the photo carries a white
@@ -25,27 +31,15 @@ export function Avatar({ source, size = 52, ring = 'none', dimmed = false, style
     const ringWidth = size * 0.041;
     return (
       <View
-        style={[
-          {
-            width: size,
-            height: size,
-            borderRadius: size / 2,
-            padding: ringWidth,
-            backgroundColor: ring === 'active' ? colors.purple : colors.avatarRingIdle,
-          },
-          style,
-        ]}
+        className={cn(ring === 'active' ? 'bg-purple' : 'bg-avatar-ring-idle', className)}
+        style={[round, { width: size, height: size, padding: ringWidth }]}
       >
         <Image
           source={img}
-          style={{
-            width: '100%',
-            height: '100%',
-            borderRadius: size / 2,
-            borderWidth: ringWidth,
-            borderColor: colors.white,
-            opacity: dimmed ? 0.55 : 1,
-          }}
+          style={[
+            round,
+            { width: '100%', height: '100%', borderWidth: ringWidth, borderColor: colors.white, opacity },
+          ]}
           contentFit="cover"
         />
       </View>
@@ -53,28 +47,23 @@ export function Avatar({ source, size = 52, ring = 'none', dimmed = false, style
   }
 
   return (
-    <View style={style}>
+    <View className={className}>
       <Image
         source={img}
         style={[
-          { width: size, height: size, borderRadius: size / 2, opacity: dimmed ? 0.55 : 1 },
-          ring === 'halo' && styles.halo,
+          round,
+          { width: size, height: size, opacity },
+          ring === 'halo' && { borderWidth: 2, borderColor: colors.white },
         ]}
         contentFit="cover"
       />
       {ring === 'halo' ? (
         <View
-          style={[
-            StyleSheet.absoluteFill,
-            { borderRadius: size / 2, borderWidth: 1.5, borderColor: colors.purpleHalo, margin: -1.5 },
-          ]}
+          className="absolute inset-0 -m-[1.5px] border-[1.5px] border-purple-halo"
+          style={round}
           pointerEvents="none"
         />
       ) : null}
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  halo: { borderWidth: 2, borderColor: colors.white },
-});

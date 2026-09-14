@@ -1,10 +1,10 @@
 import { ReactNode } from 'react';
-import { Pressable, StyleSheet, View, ViewStyle } from 'react-native';
+import { Pressable, View } from 'react-native';
+import { Link2 } from 'lucide-react-native';
 import { Divider } from '@/shared/ui/divider';
-import { LinkIcon } from '@/shared/ui/icons';
 import { Text } from '@/shared/ui/text';
+import { cn } from '@/shared/lib/cn';
 import { colors } from '@/shared/theme/colors';
-import { controlHeight, radius } from '@/shared/theme/page-structure';
 export interface ShareAction {
   label: string;
   icon: ReactNode;
@@ -20,23 +20,23 @@ interface ShareRowProps {
   linkLabel: string;
   /** Round icon buttons to the right of the link. */
   actions: ShareAction[];
-  style?: ViewStyle;
+  className?: string;
 }
 
 /** "or share": your link plus a couple of round share actions (friend search, onboarding). */
-export function ShareRow({ dividerLabel, link, linkLabel, actions, style }: ShareRowProps) {
+export function ShareRow({ dividerLabel, link, linkLabel, actions, className }: ShareRowProps) {
   return (
-    <View style={[styles.section, style]}>
+    <View className={cn('gap-[18px]', className)}>
       <Divider label={dividerLabel} />
-      <View style={styles.row}>
-        <View style={styles.linkCol}>
-          <View style={styles.link}>
-            <LinkIcon size={16} />
-            <Text variant="subtitle" color={colors.inkSoft} numberOfLines={1} style={styles.flex}>
+      <View className="flex-row items-start gap-2.5">
+        <View className="min-w-0 flex-1 items-center gap-1.5">
+          <View className="h-field-sm w-full flex-row items-center gap-2 rounded-pill border-[1.6px] border-border px-3.5">
+            <Link2 size={16} color={colors.mutedLilac} strokeWidth={2} />
+            <Text variant="subtitle" className="flex-1 text-ink-soft" numberOfLines={1}>
               {link}
             </Text>
           </View>
-          <Text variant="captionXs" color={colors.muted}>
+          <Text variant="captionXs" className="text-muted">
             {linkLabel}
           </Text>
         </View>
@@ -44,14 +44,17 @@ export function ShareRow({ dividerLabel, link, linkLabel, actions, style }: Shar
         {actions.map((action) => (
           <Pressable
             key={action.label}
-            style={styles.action}
+            className="items-center gap-1.5"
             onPress={action.onPress}
             disabled={!action.onPress}
             accessibilityRole={action.onPress ? 'button' : undefined}
             accessibilityLabel={action.label}
           >
-            <View style={styles.circle}>{action.icon}</View>
-            <Text variant="captionXs" color={colors.muted}>
+            {/* `controlHeight.fieldSm` (42) is only a height token, so the width is spelled out. */}
+            <View className="h-field-sm w-[42px] items-center justify-center rounded-full bg-surface-lilac">
+              {action.icon}
+            </View>
+            <Text variant="captionXs" className="text-muted">
               {action.label}
             </Text>
           </Pressable>
@@ -60,30 +63,3 @@ export function ShareRow({ dividerLabel, link, linkLabel, actions, style }: Shar
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  flex: { flex: 1 },
-  section: { gap: 18 },
-  row: { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
-  linkCol: { flex: 1, minWidth: 0, alignItems: 'center', gap: 6 },
-  link: {
-    width: '100%',
-    height: controlHeight.fieldSm,
-    borderRadius: radius.pill,
-    borderWidth: 1.6,
-    borderColor: colors.border,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    paddingHorizontal: 14,
-  },
-  action: { alignItems: 'center', gap: 6 },
-  circle: {
-    width: controlHeight.fieldSm,
-    height: controlHeight.fieldSm,
-    borderRadius: controlHeight.fieldSm / 2,
-    backgroundColor: colors.surfaceLilac,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});

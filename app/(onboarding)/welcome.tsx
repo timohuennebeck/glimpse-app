@@ -1,4 +1,4 @@
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
@@ -6,7 +6,6 @@ import { Button } from '@/shared/ui/button';
 import { Screen } from '@/shared/ui/screen';
 import { StarRow } from '@/shared/ui/star-row';
 import { Text } from '@/shared/ui/text';
-import { colors } from '@/shared/theme/colors';
 import { spacing } from '@/shared/theme/page-structure';
 import { t } from '@/shared/i18n/i18n';
 import { ART } from '@/shared/lib/fixtures';
@@ -20,13 +19,13 @@ export default function WelcomeScreen() {
   return (
     <Screen
       footer={
-        <View style={styles.footer}>
-          <View style={styles.rating}>
+        <View className="items-center gap-[22px]">
+          <View className="flex-row items-center gap-2.5">
             <StarRow size={16} gap={2} />
-            <Text variant="bodyXs" color={colors.ink} style={styles.ratingText}>
+            <Text variant="bodyXs" weight="semibold" className="text-ink">
               {t('onboarding.welcome.rating')}
             </Text>
-            <Text variant="meta" color={colors.mutedLilac}>
+            <Text variant="meta" className="text-muted-lilac">
               {t('onboarding.welcome.ratingMeta')}
             </Text>
           </View>
@@ -37,12 +36,12 @@ export default function WelcomeScreen() {
             onPress={() => router.push('/(onboarding)/name')}
           />
 
-          <Text variant="body" color={colors.ink} center>
+          <Text variant="body" className="text-center text-ink">
             {t('onboarding.welcome.hasAccount')}{' '}
             <Text
               variant="body"
-              color={colors.ink}
-              style={styles.link}
+              weight="semibold"
+              className="text-ink"
               accessibilityRole="link"
               onPress={() => router.push('/(onboarding)/details')}
             >
@@ -50,56 +49,47 @@ export default function WelcomeScreen() {
             </Text>
           </Text>
 
-          <View style={styles.legal}>
-            <Text variant="subtitle" color={colors.mutedLilac}>
+          <View className="flex-row items-center gap-2.5">
+            <Text variant="subtitle" className="text-muted-lilac">
               {t('onboarding.welcome.legalPrivacy')}
             </Text>
-            <Text variant="subtitle" color={colors.mutedLilac}>
+            <Text variant="subtitle" className="text-muted-lilac">
               ·
             </Text>
-            <Text variant="subtitle" color={colors.mutedLilac}>
+            <Text variant="subtitle" className="text-muted-lilac">
               {t('onboarding.welcome.legalTerms')}
             </Text>
           </View>
         </View>
       }
       scroll
-
       gutter={spacing.gutterWide}
-      background="transparent"
+      className="bg-transparent"
       // Full-bleed: as a child it would be clipped to the padded content box
       // and leave a white band above the status bar.
       backdrop={
         <LinearGradient
           colors={['#E9DFFB', '#EEE6FC', '#F7F3FE', '#FFFFFF']}
           locations={[0, 0.32, 0.54, 0.66]}
-          style={StyleSheet.absoluteFill}
+          className="absolute inset-0"
         />
       }
     >
-      <View style={styles.body}>
-        <Image source={ART.welcomeHero} style={styles.hero} contentFit="contain" />
+      <View className="items-center">
+        {/* Fills the content box and scales down on narrow phones instead of overflowing it. */}
+        <Image
+          source={ART.welcomeHero}
+          className="mt-1.5 aspect-[348/300] w-full max-w-[348px]"
+          contentFit="contain"
+        />
 
-        <Text variant="displayLg" color={colors.ink} center style={styles.title}>
+        <Text variant="displayLg" className="mt-[18px] text-center text-ink">
           {t('onboarding.welcome.title')}
         </Text>
-        <Text variant="bodyMd" color={colors.mutedViolet} center style={styles.subtitle}>
+        <Text variant="bodyMd" className="mt-3.5 text-center text-muted-violet">
           {t('onboarding.welcome.subtitle')}
         </Text>
       </View>
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  body: { alignItems: 'center' },
-  // Fills the content box and scales down on narrow phones instead of overflowing it.
-  hero: { width: '100%', maxWidth: 348, aspectRatio: 348 / 300, marginTop: 6 },
-  title: { marginTop: 18 },
-  subtitle: { marginTop: 14 },
-  footer: { gap: 22, alignItems: 'center' },
-  rating: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  ratingText: { fontWeight: '600' },
-  link: { fontWeight: '600' },
-  legal: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-});

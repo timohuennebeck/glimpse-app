@@ -3,5 +3,9 @@
   "trailingComma": "all",
   "printWidth": 110,
   "semi": true,
-  "arrowParens": "always"
+  "arrowParens": "always",
+  "plugins": ["prettier-plugin-tailwindcss"],
+  "tailwindConfig": "./tailwind.config.js",
+  "tailwindFunctions": ["cn"],
+  "tailwindAttributes": ["className", "contentContainerClassName", "imageClassName"]
 }

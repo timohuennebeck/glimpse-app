@@ -1,6 +1,5 @@
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 import { Text } from '@/shared/ui/text';
-import { colors } from '@/shared/theme/colors';
 interface DividerProps {
   /** Centred label between the two hairlines ("or share"). */
   label: string;
@@ -8,18 +7,12 @@ interface DividerProps {
 
 export function Divider({ label }: DividerProps) {
   return (
-    <View style={styles.row}>
-      <View style={[styles.line, styles.flex]} />
-      <Text variant="meta" color={colors.mutedLilac}>
+    <View className="flex-row items-center gap-4">
+      <View className="h-px flex-1 bg-border-soft" />
+      <Text variant="meta" className="text-muted-lilac">
         {label}
       </Text>
-      <View style={[styles.line, styles.flex]} />
+      <View className="h-px flex-1 bg-border-soft" />
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  row: { flexDirection: 'row', alignItems: 'center', gap: 16 },
-  line: { height: 1, backgroundColor: colors.borderSoft },
-  flex: { flex: 1 },
-});

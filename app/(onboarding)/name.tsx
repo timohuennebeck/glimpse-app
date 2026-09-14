@@ -1,13 +1,13 @@
 import { useState } from 'react';
-import { Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { Pressable, TextInput, View } from 'react-native';
 import { router } from 'expo-router';
+import { cn } from '@/shared/lib/cn';
 import { CtaFooter } from '@/shared/ui/cta-footer';
 import { ProgressHeader } from '@/shared/ui/progress-header';
 import { Screen } from '@/shared/ui/screen';
 import { Text } from '@/shared/ui/text';
 import { colors } from '@/shared/theme/colors';
-import { fontFamily, type as typeScale } from '@/shared/theme/fonts';
-import { radius } from '@/shared/theme/page-structure';
+import { type as typeScale } from '@/shared/theme/fonts';
 import { t, tList } from '@/shared/i18n/i18n';
 /**
  * Screen `01 Name · 1 of 7`.
@@ -20,9 +20,9 @@ import { t, tList } from '@/shared/i18n/i18n';
  * interpolated with sentinel markers, then the sentence is tokenised into
  * words and pills so it wraps naturally in either language.
  */
-const FRIENDS_SLOT = '\u2063friends\u2063';
-const NAME_SLOT = '\u2063name\u2063';
-const TOKEN_SPLIT = /(\u2063friends\u2063|\u2063name\u2063|\s+)/;
+const FRIENDS_SLOT = '⁣friends⁣';
+const NAME_SLOT = '⁣name⁣';
+const TOKEN_SPLIT = /(⁣friends⁣|⁣name⁣|\s+)/;
 
 interface HeadlineToken {
   kind: 'word' | 'friends' | 'name' | 'break';
@@ -70,6 +70,17 @@ function group(tokens: HeadlineToken[]): HeadlineToken[][] {
   return groups;
 }
 
+/**
+ * The headline token is `headlineChips` (29px after SCALE). Tailwind's scanner
+ * only sees literal class names, so the values derived from it are spelled out:
+ *  - `leading-[35px]`: round(29 * 1.2) — tighter than the token's loose leading,
+ *    the pills set the line height here;
+ *  - `h-[39px]`: that line height plus the pill's 2 x 2px vertical padding;
+ *  - `mr-2`: round(29 * 0.28) = 8px, the word gap.
+ */
+const LINE = 'leading-[35px]';
+const CHIP = 'rounded-pill px-3.5 py-1';
+
 export default function NameScreen() {
   const [name, setName] = useState('');
   const suggestions = tList<string>('onboarding.name.suggestions');
@@ -90,18 +101,21 @@ export default function NameScreen() {
     >
       <ProgressHeader step={1} onClose={() => router.back()} />
 
-      <View style={styles.headline}>
+      <View className="mt-[34px] flex-row flex-wrap items-center gap-y-2.5">
         {groups.map((tokens, g) =>
           tokens[0].kind === 'break' ? (
-            <View key={g} style={styles.break} />
+            <View key={g} className="h-0 w-full" />
           ) : (
-            <View key={g} style={[styles.group, tokens[tokens.length - 1].spaceAfter && styles.space]}>
+            <View
+              key={g}
+              className={cn('flex-row items-center', tokens[tokens.length - 1].spaceAfter && 'mr-2')}
+            >
               {tokens.map((token, i) => {
                 switch (token.kind) {
                   case 'friends':
                     return (
-                      <View key={i} style={[styles.chip, styles.chipFilled]}>
-                        <Text variant="headlineChips" color={colors.purpleInkAlt} style={styles.line}>
+                      <View key={i} className={cn(CHIP, 'bg-surface-violet-chip')}>
+                        <Text variant="headlineChips" className={cn(LINE, 'text-purple-ink-alt')}>
                           {t('onboarding.name.friendsChip')}
                         </Text>
                       </View>
@@ -110,7 +124,7 @@ export default function NameScreen() {
                     return <NameChip key={i} value={name} onChange={setName} />;
                   default:
                     return (
-                      <Text key={i} variant="headlineChips" color={colors.ink} style={styles.line}>
+                      <Text key={i} variant="headlineChips" className={cn(LINE, 'text-ink')}>
                         {token.text}
                       </Text>
                     );
@@ -121,20 +135,20 @@ export default function NameScreen() {
         )}
       </View>
 
-      <Text variant="bodySm" color={colors.muted} style={styles.subtitle}>
+      <Text variant="bodySm" className="mt-[18px] text-muted">
         {t('onboarding.name.subtitle')}
       </Text>
 
-      <View style={styles.chips}>
+      <View className="mt-[26px] flex-row flex-wrap gap-2.5">
         {suggestions.map((s) => (
           <Pressable
             key={s}
-            style={styles.suggestion}
+            className="rounded-pill border-[1.4px] border-dashed border-border-dashed px-4 py-2.5"
             onPress={() => setName(s.replace('+ ', ''))}
             accessibilityRole="button"
             accessibilityLabel={s.replace('+ ', '')}
           >
-            <Text variant="bodyXs" color={colors.mutedChip}>
+            <Text variant="bodyXs" className="text-muted-chip">
               {s}
             </Text>
           </Pressable>
@@ -149,6 +163,9 @@ interface NameChipProps {
   onChange: (value: string) => void;
 }
 
+/** Size and tracking of the sentence the pill sits in, so the input matches it exactly. */
+const { fontSize, letterSpacing } = typeScale.headlineChips;
+
 /**
  * The name pill is the input. A TextInput does not size itself to its text
  * horizontally, so an invisible mirror of the current value (or placeholder)
@@ -159,10 +176,10 @@ function NameChip({ value, onChange }: NameChipProps) {
   const placeholder = t('onboarding.name.placeholderChip');
 
   return (
-    <View style={[styles.chip, styles.chipIdle]}>
+    <View className={cn(CHIP, 'bg-surface-violet')}>
       <Text
         variant="headlineChips"
-        style={[styles.line, styles.mirror]}
+        className={cn(LINE, 'absolute opacity-0')}
         onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
         accessibilityElementsHidden
         importantForAccessibility="no"
@@ -174,7 +191,11 @@ function NameChip({ value, onChange }: NameChipProps) {
         onChangeText={onChange}
         placeholder={placeholder}
         placeholderTextColor={colors.dashedIdle}
-        style={[styles.input, { width: Math.ceil(width) + 2 }]}
+        className="h-[39px] p-0 font-sans-semibold text-ink"
+        // Size and tracking come from the theme at runtime, the width from the
+        // mirror's measurement. The pill is the focus affordance; the web's
+        // default focus ring would draw a hard rectangle inside it.
+        style={{ fontSize, letterSpacing, width: Math.ceil(width) + 2, outlineWidth: 0 }}
         accessibilityLabel={placeholder}
         autoFocus
         autoCorrect={false}
@@ -185,40 +206,3 @@ function NameChip({ value, onChange }: NameChipProps) {
     </View>
   );
 }
-
-const { fontSize, letterSpacing } = typeScale.headlineChips;
-/** Tighter than the token's loose leading: the pills set the line height here. */
-const LINE = Math.round(fontSize * 1.2);
-
-const styles = StyleSheet.create({
-  headline: { marginTop: 34, flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', rowGap: 10 },
-  group: { flexDirection: 'row', alignItems: 'center' },
-  line: { lineHeight: LINE },
-  space: { marginRight: Math.round(fontSize * 0.28) },
-  break: { width: '100%', height: 0 },
-  chip: { borderRadius: radius.pill, paddingHorizontal: 14, paddingVertical: 4 },
-  chipFilled: { backgroundColor: colors.surfaceVioletChip },
-  chipIdle: { backgroundColor: colors.surfaceViolet },
-  mirror: { position: 'absolute', opacity: 0 },
-  input: {
-    height: LINE + 4,
-    padding: 0,
-    fontSize,
-    letterSpacing,
-    fontFamily: fontFamily.semibold,
-    color: colors.ink,
-    // The pill is the focus affordance; the web's default focus ring would
-    // draw a hard rectangle inside it.
-    outlineWidth: 0,
-  },
-  subtitle: { marginTop: 18 },
-  chips: { marginTop: 26, flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  suggestion: {
-    borderWidth: 1.4,
-    borderStyle: 'dashed',
-    borderColor: colors.borderDashed,
-    borderRadius: radius.pill,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-  },
-});

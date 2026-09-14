@@ -1,23 +1,15 @@
 import { useMemo } from 'react';
-import {
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  TextInput,
-  View,
-} from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, TextInput, View } from 'react-native';
 import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
+import { ArrowUp, MoreHorizontal, Paperclip, Plus, X } from 'lucide-react-native';
 import { Avatar } from '@/shared/ui/avatar';
-import { CloseIcon, MoreIcon, PaperclipIcon, PlusIcon, SendIcon } from '@/shared/ui/icons';
 import { GlassButton } from '@/shared/ui/glass-button';
 import { Screen } from '@/shared/ui/screen';
 import { Text } from '@/shared/ui/text';
+import { cn } from '@/shared/lib/cn';
 import { colors } from '@/shared/theme/colors';
-import { fontFamily } from '@/shared/theme/fonts';
-import { radius, shadow, spacing } from '@/shared/theme/page-structure';
+import { shadow } from '@/shared/theme/page-structure';
 import { t } from '@/shared/i18n/i18n';
 import { threadTime } from '@/shared/lib/format';
 import { demoMessages, demoProfiles, DEMO_USER_ID } from '@/shared/lib/fixtures';
@@ -38,31 +30,31 @@ export default function ChatScreen() {
 
   return (
     <Screen gutter={0} bottomInset={0}>
-      <View style={styles.header}>
+      <View className="h-[60px] flex-row items-center gap-3 px-gutter">
         <GlassButton size={34} onPress={() => router.back()} accessibilityLabel={t('common.close')}>
-          <CloseIcon size={12} />
+          <X size={12} color={colors.inkFaint} strokeWidth={2.2} />
         </GlassButton>
         <Avatar source={partner.photo} size={40} />
-        <View style={styles.headerText}>
-          <Text variant="rowTitle" color={colors.ink}>
+        <View className="flex-1 gap-px">
+          <Text variant="rowTitle" className="text-ink">
             {partner.display_name}
           </Text>
-          <Text variant="metaXs" color={colors.mutedLilac}>
+          <Text variant="metaXs" className="text-muted-lilac">
             {t('chat.online')}
           </Text>
         </View>
         <GlassButton size={34} accessibilityLabel={t('common.more')}>
-          <MoreIcon size={17} />
+          <MoreHorizontal size={17} color={colors.inkFaint} strokeWidth={2.4} />
         </GlassButton>
       </View>
 
       <ScrollView
-        style={styles.flex}
-        contentContainerStyle={styles.thread}
+        className="flex-1"
+        contentContainerClassName="gap-4 px-gutter pb-2 pt-[18px]"
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.dayChip}>
-          <Text variant="caption" color={colors.mutedLilac}>
+        <View className="self-center rounded-pill bg-surface-lilac px-3.5 py-1.5">
+          <Text variant="caption" className="text-muted-lilac">
             {t('chat.dayToday')}
           </Text>
         </View>
@@ -70,20 +62,29 @@ export default function ChatScreen() {
         {messages.map((message) => {
           const mine = message.sender_id === DEMO_USER_ID;
           return (
-            <View key={message.id} style={mine ? styles.rowMine : styles.rowTheirs}>
+            <View key={message.id} className={mine ? 'flex-row justify-end' : 'flex-row items-end gap-2.5'}>
               {!mine ? <Avatar source={partner.photo} size={30} /> : null}
 
-              <View style={mine ? styles.stackMine : styles.stackTheirs}>
-                <Text variant="caption" color={colors.mutedLilac}>
+              <View className={cn('shrink gap-1.5', mine && 'items-end')}>
+                <Text variant="caption" className="text-muted-lilac">
                   {threadTime(message.created_at)}
                 </Text>
-                <View style={styles.bubbleRow}>
+                <View className="flex-row items-end gap-2.5">
                   {message.photo ? (
-                    <Image source={message.photo} style={styles.attachment} contentFit="cover" />
+                    <Image
+                      source={message.photo}
+                      className="h-[104px] w-[78px] rounded-chip border-[1.5px] border-border-chip"
+                      contentFit="cover"
+                    />
                   ) : null}
                   {message.body ? (
-                    <View style={[styles.bubble, mine ? styles.bubbleMine : styles.bubbleTheirs]}>
-                      <Text variant="bodyXs" color={mine ? colors.white : colors.inkBody}>
+                    <View
+                      className={cn(
+                        'max-w-[264px] rounded-[22px] px-4 py-3',
+                        mine ? 'rounded-br-[8px] bg-purple' : 'rounded-bl-[8px] bg-surface-violet',
+                      )}
+                    >
+                      <Text variant="bodyXs" className={mine ? 'text-white' : 'text-ink-body'}>
                         {message.body}
                       </Text>
                     </View>
@@ -96,27 +97,31 @@ export default function ChatScreen() {
       </ScrollView>
 
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <View style={styles.composer}>
+        <View
+          className="m-4 mb-6 gap-[18px] rounded-lg border border-border-lilac-alt bg-white px-4 pb-3 pt-[15px]"
+          // Shadows stay as a style: RN's shadow props have no CSS equivalent NativeWind maps.
+          style={shadow.card}
+        >
           <TextInput
             placeholder={t('chat.inputPlaceholder')}
             placeholderTextColor={colors.placeholder}
-            style={styles.input}
+            className="max-h-[100px] p-0 font-sans text-[15.5px] text-ink-body"
             multiline
           />
           {/* Sending is not wired (no messages API on the client yet), so the
               controls are rendered but disabled rather than pretending. */}
-          <View style={styles.composerActions}>
-            <PlusIcon size={19} color={colors.inkBody} />
-            <PaperclipIcon size={19} />
-            <View style={styles.flex} />
+          <View className="flex-row items-center gap-3.5">
+            <Plus size={19} color={colors.inkBody} strokeWidth={2} />
+            <Paperclip size={19} color={colors.inkBody} strokeWidth={1.8} />
+            <View className="flex-1" />
             <Pressable
-              style={styles.send}
+              className="h-9 w-9 items-center justify-center rounded-[18px] bg-purple"
               disabled
               accessibilityRole="button"
               accessibilityLabel={t('chat.send')}
               accessibilityState={{ disabled: true }}
             >
-              <SendIcon size={17} />
+              <ArrowUp size={17} color={colors.white} strokeWidth={2.4} />
             </Pressable>
           </View>
         </View>
@@ -124,67 +129,3 @@ export default function ChatScreen() {
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  flex: { flex: 1 },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    paddingHorizontal: spacing.gutter,
-    height: 60,
-  },
-  headerText: { flex: 1, gap: 1 },
-  thread: { paddingHorizontal: spacing.gutter, paddingTop: 18, gap: 16, paddingBottom: 8 },
-  dayChip: {
-    alignSelf: 'center',
-    backgroundColor: colors.surfaceLilac,
-    borderRadius: radius.pill,
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-  },
-  rowTheirs: { flexDirection: 'row', alignItems: 'flex-end', gap: 10 },
-  rowMine: { flexDirection: 'row', justifyContent: 'flex-end' },
-  stackTheirs: { gap: 6, flexShrink: 1 },
-  stackMine: { gap: 6, alignItems: 'flex-end', flexShrink: 1 },
-  bubbleRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 10 },
-  bubble: { maxWidth: 264, borderRadius: 22, paddingHorizontal: 16, paddingVertical: 12 },
-  bubbleTheirs: { backgroundColor: colors.surfaceViolet, borderBottomLeftRadius: 8 },
-  bubbleMine: { backgroundColor: colors.purple, borderBottomRightRadius: 8 },
-  attachment: {
-    width: 78,
-    height: 104,
-    borderRadius: radius.chip,
-    borderWidth: 1.5,
-    borderColor: colors.borderChip,
-  },
-  composer: {
-    margin: 16,
-    marginBottom: 24,
-    borderWidth: 1,
-    borderColor: colors.borderLilacAlt,
-    borderRadius: 26,
-    backgroundColor: colors.white,
-    paddingHorizontal: 16,
-    paddingTop: 15,
-    paddingBottom: 12,
-    gap: 18,
-    ...shadow.card,
-  },
-  input: {
-    fontSize: 15.5,
-    color: colors.inkBody,
-    fontFamily: fontFamily.regular,
-    padding: 0,
-    maxHeight: 100,
-  },
-  composerActions: { flexDirection: 'row', alignItems: 'center', gap: 14 },
-  send: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: colors.purple,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});

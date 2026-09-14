@@ -1,13 +1,14 @@
 import { useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { router } from 'expo-router';
+import { Clock, Plus } from 'lucide-react-native';
 import { CtaFooter } from '@/shared/ui/cta-footer';
-import { ClockIcon, PlusIcon } from '@/shared/ui/icons';
 import { GlassButton } from '@/shared/ui/glass-button';
 import { SectionLabel } from '@/shared/ui/section-label';
 import { Text } from '@/shared/ui/text';
+import { cn } from '@/shared/lib/cn';
 import { colors } from '@/shared/theme/colors';
-import { avatarSize, radius } from '@/shared/theme/page-structure';
+import { avatarSize } from '@/shared/theme/page-structure';
 import { t } from '@/shared/i18n/i18n';
 import { relativeTime } from '@/shared/lib/format';
 import { useMutation } from '@tanstack/react-query';
@@ -53,8 +54,8 @@ export default function FriendsScreen() {
 
   return (
     <TabScreen>
-      <View style={styles.headerRow}>
-        <Text variant="screenTitle" color={colors.ink}>
+      <View className="h-10 flex-row items-center justify-between">
+        <Text variant="screenTitle" className="text-ink">
           {t('friends.title')}
         </Text>
         <GlassButton
@@ -62,29 +63,32 @@ export default function FriendsScreen() {
           onPress={() => router.push('/(app)/friends/search')}
           accessibilityLabel={t('friends.search.title')}
         >
-          <PlusIcon size={18} color={colors.purpleMuted} strokeWidth={2.4} />
+          <Plus size={18} color={colors.purpleMuted} strokeWidth={2.4} />
         </GlassButton>
       </View>
 
-      <View style={styles.segment}>
+      <View className="mt-4 flex-row gap-1 rounded-pill bg-surface-lilac p-1">
         {(['friends', 'chats'] as const).map((key) => (
           <Pressable
             key={key}
             onPress={() => setTab(key)}
             accessibilityRole="tab"
             accessibilityState={{ selected: tab === key }}
-            style={[styles.segmentItem, tab === key && styles.segmentItemActive]}
+            className={cn(
+              'flex-1 flex-row items-center justify-center gap-[7px] rounded-pill py-2',
+              tab === key && 'bg-white',
+            )}
           >
             <Text
               variant="bodyXs"
-              color={tab === key ? colors.purpleDeep : colors.mutedLilac}
-              style={styles.segmentLabel}
+              weight="semibold"
+              className={tab === key ? 'text-purple-deep' : 'text-muted-lilac'}
             >
               {t(key === 'friends' ? 'friends.tabFriends' : 'friends.tabChats')}
             </Text>
             {badges[key] > 0 ? (
-              <View style={styles.segmentBadge}>
-                <Text variant="captionXs" color={colors.white} style={styles.segmentBadgeText}>
+              <View className="h-5 min-w-[20px] items-center justify-center rounded-pill bg-purple px-1.5">
+                <Text variant="captionXs" weight="semibold" className="text-white">
                   {String(badges[key])}
                 </Text>
               </View>
@@ -97,7 +101,7 @@ export default function FriendsScreen() {
         <ChatsList />
       ) : (
         <>
-          <View style={styles.section}>
+          <View className="mt-[22px] gap-3.5">
             <SectionLabel trailing={waiting > 0 ? t('feed.storiesTrailing', { count: waiting }) : undefined}>
               {t('friends.storiesLabel')}
             </SectionLabel>
@@ -111,9 +115,9 @@ export default function FriendsScreen() {
             />
           </View>
 
-          <View style={styles.section}>
+          <View className="mt-[22px] gap-3.5">
             <SectionLabel>{t('friends.requestsSection', { count: requests.length })}</SectionLabel>
-            <View style={styles.list}>
+            <View className="gap-4">
               {requests.map((r) => (
                 <PersonRow
                   key={r.id}
@@ -132,23 +136,23 @@ export default function FriendsScreen() {
                 />
               ))}
               {accept.error ? (
-                <Text variant="meta" color={colors.purpleDeep}>
+                <Text variant="meta" className="text-purple-deep">
                   {errorMessage(accept.error)}
                 </Text>
               ) : null}
             </View>
           </View>
 
-          <View style={styles.section}>
+          <View className="mt-[22px] gap-3.5">
             <SectionLabel>{t('friends.sentSection', { count: demoSentRequests.length })}</SectionLabel>
-            <View style={styles.list}>
+            <View className="gap-4">
               {demoSentRequests.map((r) => (
                 <PersonRow
                   key={r.id}
                   avatar={r.profile.photo}
                   name={r.profile.display_name}
                   subtitle={t('friends.sentAgo', { time: relativeTime(r.sentAt) })}
-                  subtitleIcon={<ClockIcon size={14} />}
+                  subtitleIcon={<Clock size={14} color={colors.placeholderSoft} strokeWidth={2} />}
                   dimmed
                   trailing={<Pill label={t('friends.pending')} tone="muted" />}
                 />
@@ -162,43 +166,3 @@ export default function FriendsScreen() {
     </TabScreen>
   );
 }
-
-const styles = StyleSheet.create({
-  headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    height: 40,
-  },
-  segment: {
-    marginTop: 16,
-    flexDirection: 'row',
-    backgroundColor: colors.surfaceLilac,
-    borderRadius: radius.pill,
-    padding: 4,
-    gap: 4,
-  },
-  segmentItem: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 7,
-    paddingVertical: 8,
-    borderRadius: radius.pill,
-  },
-  segmentBadge: {
-    minWidth: 20,
-    height: 20,
-    borderRadius: radius.pill,
-    backgroundColor: colors.purple,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 6,
-  },
-  segmentBadgeText: { fontWeight: '600' },
-  segmentItemActive: { backgroundColor: colors.white },
-  segmentLabel: { fontWeight: '600' },
-  section: { marginTop: 22, gap: 14 },
-  list: { gap: 16 },
-});
