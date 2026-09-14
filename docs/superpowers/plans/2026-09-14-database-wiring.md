@@ -153,16 +153,40 @@ means stop and report it, because later tasks assume a clean baseline.
 Run:
 
 ```bash
-npx expo install expo-image-picker expo-crypto
+npm install expo-image-picker@~57.0.17 expo-crypto@~57.0.3
 npm install @tanstack/react-query-persist-client@5.102.8 @tanstack/query-async-storage-persister@5.102.8
 ```
 
 Expected: both exit 0; `package.json` lists the four packages.
 
+The two Expo pins are the SDK 57 versions from
+`node_modules/expo/bundledNativeModules.json` — the compatibility map the `expo`
+package ships, and the same answer `npx expo install expo-image-picker
+expo-crypto` would resolve to. Use that command instead wherever `api.expo.dev`
+is reachable; where it is not, it dies with `HTTP Proxy Network Error:
+Forbidden` before installing anything. If `expo` is ever upgraded, re-read that
+file rather than trusting these two numbers.
+
 - [ ] **Step 4: Add the test packages**
 
-Run: `npx expo install jest-expo jest @types/jest @react-native/jest-preset -- --save-dev`
+Run:
+
+```bash
+npm install --save-dev jest-expo@~57.0.5 @react-native/jest-preset@^0.86.3 jest@^29.7.0 @types/jest
+```
+
 Expected: exits 0; the four appear under `devDependencies`.
+
+Every version here is load-bearing, and `.npmrc` sets `legacy-peer-deps=true`, so
+a wrong one installs quietly and only surfaces as a baffling Step 7 failure:
+
+- `jest-expo@57.0.5` declares `@react-native/jest-preset: ^0.86.3` as a peer,
+  which is exactly this repo's `react-native@0.86.3`. Left unpinned, npm takes
+  the newest preset and nothing reports the mismatch.
+- `jest-expo` pulls the **jest 29** line throughout (`babel-jest@^29.2.1`,
+  `@jest/globals@^29.2.1`, `jest-environment-jsdom@^29.2.1`) but pins no `jest`
+  of its own. A bare `npm install jest` fetches the 30 line today and splits the
+  install across two major versions.
 
 - [ ] **Step 5: Configure Jest**
 
@@ -9394,6 +9418,7 @@ report rather than making an empty commit.
 - `supabase/tests/run.sh` needs a local Postgres server and `psql`. Where none exists, skip the local runs and rely on applying to the project plus the SQL checks inside each task.
 - "Confirm email" must be switched off in the dashboard before Task 5.
 - Task 21 needs the Chrome DevTools MCP.
+- **This sandbox's proxy denies `api.expo.dev` and `reactnative.directory`**; only `registry.npmjs.org` is reachable. That is why Task 1 Steps 3 and 4 install by explicit version instead of through `npx expo install`. Anything else that reaches for the Expo API degrades the same way — `npx expo start --web` in Task 21 prints "Unable to fetch compatibility data … Skipping check" and carries on, which is fine. Check `curl -sS "$HTTPS_PROXY/__agentproxy/status"` when a command fails with `HTTP Proxy Network Error: Forbidden`.
 - Local baseline before Task 1: `npm run typecheck` reported 6 errors, all from `nativewind` and `tailwind-merge` missing in `node_modules`. `npm install` clears those five; the sixth, TS2882 on `import '../global.css'`, needs the gitignored `expo-env.d.ts` that Task 1 Step 1 now generates.
 - **The tasks are strictly ordered.** Each one ends on a green `npm run typecheck` and a green `npm test`, and several of them deliberately patch a screen minimally — just enough to keep the tree compiling — before a later task rewrites that screen in full. Skipping a task, or doing two out of order, leaves the build red for reasons that look like bugs.
 - Five files are touched by more than one task on purpose: `app/_layout.tsx` (Tasks 8, 10, 16, 18), `app/(app)/feed.tsx` (10, 12, 13, 14, 15), `app/recipients.tsx` (11, 13, 14), `app/moment/[tradeId].tsx` (13, 15, 17) and `app/(onboarding)/details.tsx` (9, 10, 19). The task that gives a file its whole new content says so; the others show only the lines they touch.
