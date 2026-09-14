@@ -2,6 +2,9 @@
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "strict": true,
+    // TypeScript 6 no longer pulls in @types/* on its own, and the test files
+    // need Jest's globals.
+    "types": ["jest"],
     "paths": {
       "@/*": ["./src/*"],
       "@app/*": ["./app/*"]

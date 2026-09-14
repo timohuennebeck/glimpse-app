@@ -40,6 +40,12 @@
       "expo-secure-store",
       "expo-localization",
       [
+        "expo-image-picker",
+        {
+          "photosPermission": "Glimpse needs your photos so you can pick a profile picture."
+        }
+      ],
+      [
         "expo-camera",
         {
           "cameraPermission": "Glimpse needs the camera so you can capture a moment and trade it back."
