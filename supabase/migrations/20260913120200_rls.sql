@@ -29,6 +29,11 @@ create policy profiles_read on public.profiles
 create policy profiles_update_own on public.profiles
   for update to authenticated
   using (id = auth.uid()) with check (id = auth.uid());
+-- Column grant: everything a user may edit about themselves, and nothing
+-- else. is_plus is written by the RevenueCat webhook (service role) only.
+revoke update on public.profiles from authenticated;
+grant update (first_name, username, avatar_storage_path, tagline, locale, heard_about, onboarding_done_at)
+  on public.profiles to authenticated;
 
 -- INSERT is handled by the on_auth_user_created trigger, not by clients.
 -- Known low: heard_about / locale / onboarding_done_at are readable by any
@@ -58,17 +63,18 @@ create policy friendships_request on public.friendships
     and not public.is_blocked(auth.uid(), recipient_id)
   );
 
--- Only the person who received the request may accept or decline it, and
--- `status` is the only column they may touch (a row policy alone would let
--- them rewrite requester_id and befriend anyone).
+-- Only the person who received the request may accept it, and `status` is
+-- the only column they may touch (a row policy alone would let them rewrite
+-- requester_id and befriend anyone).
 create policy friendships_respond on public.friendships
   for update to authenticated
   using (recipient_id = auth.uid())
-  with check (recipient_id = auth.uid() and status in ('accepted', 'declined'));
+  with check (recipient_id = auth.uid() and status = 'accepted');
 revoke update on public.friendships from authenticated;
 grant update (status) on public.friendships to authenticated;
 
--- Either party may walk away.
+-- Declining a request, withdrawing one, or unfriending: either party deletes
+-- the row. Nothing is kept, so the requester never learns they were declined.
 create policy friendships_delete on public.friendships
   for delete to authenticated
   using (requester_id = auth.uid() or recipient_id = auth.uid());
@@ -184,3 +190,5 @@ create policy reports_insert on public.reports
 create policy invites_owner on public.invites
   for all to authenticated
   using (inviter_id = auth.uid()) with check (inviter_id = auth.uid());
+-- The visitor side (preview, claim) goes through invite_preview() and
+-- claim_invite(); the invites_moment_owner trigger keeps moment_id honest.

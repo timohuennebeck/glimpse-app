@@ -18,7 +18,10 @@ insert into public.app_config (key, value) values
   -- rather than nagging forever. 24h is the current answer.
   ('trade_auto_unlock_hours', '24'::jsonb),
   -- Positioning note, "What to cut": no large friend lists.
-  ('max_friends', '20'::jsonb)
+  ('max_friends', '20'::jsonb),
+  -- Paywall: "unlimited history instead of 30 days". Pairs older than this
+  -- are hidden from v_pairs for anyone without Plus; nothing is deleted.
+  ('free_history_days', '30'::jsonb)
 on conflict (key) do nothing;
 
 -- ---------------------------------------------------------------------------
@@ -31,7 +34,10 @@ create table public.profiles (
   first_name        text not null default '',
   avatar_storage_path text,
   tagline           text,
-  locale            text not null default 'de',
+  locale            text not null default 'en',
+  -- Entitlement mirror. RevenueCat is the source of truth; its webhook writes
+  -- this flag with the service role. Clients cannot update it (column grant).
+  is_plus           boolean not null default false,
   -- Onboarding screen 12 ("Wo hast du von Glimpse gehört?").
   heard_about       text,
   onboarding_done_at timestamptz,
@@ -41,6 +47,8 @@ create table public.profiles (
 
 comment on column public.profiles.avatar_storage_path is
   'Object key inside the public `avatars` bucket, not a URL.';
+comment on column public.profiles.username is
+  'Generated from first_name on signup (handle_new_user); the owner may change it.';
 
 -- ---------------------------------------------------------------------------
 -- user_blocks (checked by the friend/message policies below)
@@ -55,8 +63,12 @@ create table public.user_blocks (
 
 -- ---------------------------------------------------------------------------
 -- friendships: one row per directed request
+--
+-- There is no 'declined' state: declining deletes the row. A kept row would
+-- tell the requester they were declined, and the unique pair index below
+-- would block the pair from ever trying again.
 -- ---------------------------------------------------------------------------
-create type public.friendship_status as enum ('pending', 'accepted', 'declined');
+create type public.friendship_status as enum ('pending', 'accepted');
 
 create table public.friendships (
   id           uuid primary key default gen_random_uuid(),
@@ -64,6 +76,7 @@ create table public.friendships (
   recipient_id uuid not null references public.profiles(id) on delete cascade,
   status       public.friendship_status not null default 'pending',
   created_at   timestamptz not null default now(),
+  -- Stamped on accept.
   responded_at timestamptz,
   constraint friendship_not_self check (requester_id <> recipient_id)
 );

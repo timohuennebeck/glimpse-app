@@ -26,7 +26,7 @@ import {
   demoUnreadCount,
   DEMO_USER_ID,
 } from '@/shared/lib/fixtures';
-import { respondToFriendRequest } from '@/features/friends/data/friends-api';
+import { acceptFriendRequest } from '@/features/friends/data/friends-api';
 import { openProfile } from '@/features/profile/open-profile';
 type Tab = 'friends' | 'chats';
 
@@ -48,7 +48,7 @@ export default function FriendsScreen() {
   const waiting = rail.filter((item) => item.waiting).length;
 
   const accept = useMutation({
-    mutationFn: (id: string) => respondToFriendRequest(id, 'accepted'),
+    mutationFn: (id: string) => acceptFriendRequest(id),
     onSuccess: (_, id) => setRequests((rs) => rs.filter((r) => r.id !== id)),
   });
 

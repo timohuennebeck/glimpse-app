@@ -13,7 +13,7 @@
  * types are aliases for the same reason.
  */
 
-export type FriendshipStatus = 'pending' | 'accepted' | 'declined';
+export type FriendshipStatus = 'pending' | 'accepted';
 export type TradeStatus = 'pending' | 'unlocked' | 'expired';
 
 export type Profile = {
@@ -23,6 +23,8 @@ export type Profile = {
   avatar_storage_path: string | null;
   tagline: string | null;
   locale: string;
+  /** Mirrored from RevenueCat by its webhook; never writable by the client. */
+  is_plus: boolean;
   heard_about: string | null;
   onboarding_done_at: string | null;
   created_at: string;
@@ -122,7 +124,7 @@ export type Database = {
       profiles: {
         Row: Profile;
         Insert: Partial<Profile> & { id: string };
-        Update: Partial<Profile>;
+        Update: Partial<Omit<Profile, 'id' | 'is_plus' | 'created_at' | 'updated_at'>>;
         Relationships: [];
       };
       friendships: {
@@ -178,10 +180,23 @@ export type Database = {
         Args: { p_moment_ids: string[] };
         Returns: { moment_id: string; path: string | null }[];
       };
+      /** Marks the token used, befriends the two, and opens the trade for the frosted photo. */
       claim_invite: {
         Args: { p_token: string };
-        Returns: { inviter_id: string; moment_id: string | null }[];
+        Returns: { inviter_id: string; moment_id: string | null; trade_id: string | null }[];
       };
+      /** Callable without a session: what the deeplink screen shows. Empty for a dead token. */
+      invite_preview: {
+        Args: { p_token: string };
+        Returns: {
+          inviter_first_name: string;
+          inviter_avatar_storage_path: string | null;
+          moment_id: string | null;
+          blurred_storage_path: string | null;
+          created_at: string;
+        }[];
+      };
+      mutual_friends_count: { Args: { p_user_id: string }; Returns: number };
       register_device_token: { Args: { p_token: string; p_platform: 'ios' | 'android' }; Returns: undefined };
     };
   };

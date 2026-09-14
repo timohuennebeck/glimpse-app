@@ -22,13 +22,12 @@ create policy moments_upload_own on storage.objects
     and (storage.foldername(name))[2] = auth.uid()::text
   );
 
+-- Deleting your own original is allowed only while no trade names it; after
+-- that the other person's unlocked half depends on it. See
+-- storage_object_deletable(). Orphaned uploads with no row may be removed.
 create policy moments_delete_own on storage.objects
   for delete to authenticated
-  using (
-    bucket_id = 'moments'
-    and (storage.foldername(name))[1] = 'original'
-    and (storage.foldername(name))[2] = auth.uid()::text
-  );
+  using (bucket_id = 'moments' and public.storage_object_deletable(name));
 
 -- Reading is what makes the lock real. The Storage API consults this policy
 -- before creating a signed URL, so a client can only ever sign a path these
@@ -39,6 +38,12 @@ create policy moments_delete_own on storage.objects
 create policy moments_read_allowed_rendition on storage.objects
   for select to authenticated
   using (bucket_id = 'moments' and public.storage_object_readable(name));
+
+-- The invite deeplink: a visitor with no account may sign the blurred
+-- rendition of a moment that a live invite points at, and nothing else.
+create policy moments_read_invited_blurred on storage.objects
+  for select to anon, authenticated
+  using (bucket_id = 'moments' and public.invite_object_readable(name));
 
 create policy avatars_write_own on storage.objects
   for all to authenticated
@@ -95,6 +100,10 @@ order by t.created_at desc;
 
 -- ---------------------------------------------------------------------------
 -- v_pairs — completed trades as photo pairs, for the profile grid (screen 07b)
+--
+-- The paywall's "unlimited history instead of 30 days": without Plus the
+-- viewer sees only pairs younger than free_history_days. Rows are hidden, not
+-- deleted, so upgrading brings them back.
 -- ---------------------------------------------------------------------------
 create or replace view public.v_pairs
 with (security_invoker = true)
@@ -113,6 +122,11 @@ select
 from public.trades t
 where t.responder_moment_id is not null
   and (t.initiator_id = auth.uid() or t.responder_id = auth.uid())
+  and (
+    exists (select 1 from public.profiles p where p.id = auth.uid() and p.is_plus)
+    or coalesce(t.unlocked_at, t.created_at)
+       >= now() - make_interval(days => public.config_int('free_history_days', 30))
+  )
 order by t.created_at desc;
 
 -- ---------------------------------------------------------------------------

@@ -109,9 +109,13 @@ exist:
 unique (least(requester_id, recipient_id), greatest(requester_id, recipient_id))
 ```
 
-`status` is `pending | accepted | declined`. Screen `08 Freunde` reads this three
-ways: accepted list, incoming `pending` (where I am the recipient → "Anfragen"),
+`status` is `pending | accepted`. Screen `08 Freunde` reads this three ways:
+accepted list, incoming `pending` (where I am the recipient → "Anfragen"),
 outgoing `pending` (where I am the requester → "Gesendet").
+
+There is no `declined` state. Declining deletes the row, as does withdrawing a
+request or unfriending. A kept row would tell the requester they were declined,
+and the unique pair index would block the pair from ever trying again.
 
 The positioning note says to **cut large friend lists**. There is a
 `max_friends` value in `app_config` (default 20) enforced by a trigger, so the
@@ -124,10 +128,12 @@ product decision lives in data rather than in scattered client checks.
 Every table is `enable row level security` with no permissive default.
 
 - `profiles` — readable by anyone signed in (needed for search by `@username`);
-  writable only by the owner.
+  writable only by the owner, and not `is_plus`, which only the RevenueCat
+  webhook writes. `username` is generated from the first name on signup.
 - `friendships` — visible to either party; insertable only as the requester;
-  the recipient alone may move `pending → accepted/declined`, and `status` is the
-  only column they may write. A trigger also refuses to change the two parties.
+  the recipient alone may move `pending → accepted`, and `status` is the only
+  column they may write; either party may delete. A trigger also refuses to
+  change the two parties.
 - `moments` — the author always; a recipient only via a `trades` row that names
   the moment.
 - `trades` — visible to initiator and responder only, never across a block.
@@ -137,9 +143,16 @@ Every table is `enable row level security` with no permissive default.
 - `messages` — both parties of an accepted friendship, never blocked; a
   recipient may write only `read_at`; an attached photo must be one the two of
   you actually traded.
-- `invites` — owner-managed; there is no SELECT for anyone else. Claiming is
-  `claim_invite(token)`, an atomic update by token, because a row filter cannot
-  express "the one row whose token you know".
+- `invites` — owner-managed; there is no SELECT for anyone else, and a trigger
+  refuses an invite pointing at someone else's moment. The visitor side is two
+  RPCs keyed by the token, because a row filter cannot express "the one row
+  whose token you know": `invite_preview(token)` (callable by `anon`) returns
+  the inviter's name, avatar and the blurred path, and a storage policy lets
+  that one rendition be signed; `claim_invite(token)` marks the token used,
+  makes the two people friends and opens the trade for the frosted photo, so
+  the new account has something to send one back to.
+- `storage.objects` — a user may delete their own original only while no trade
+  names it; afterwards the other person's unlocked half depends on it.
 - everything else — owner-scoped. Every RPC is revoked from `anon`.
 
 Blocks are checked in `profiles`, `friendships`, `trades`, `messages` and inside
@@ -150,10 +163,11 @@ Blocks are checked in `profiles`, `friendships`, `trades`, `messages` and inside
 ## 6. Not modelled yet (deliberately)
 
 - **Payments.** There is deliberately no `subscriptions` table: RevenueCat is
-  the source of truth for entitlement. The client asks its SDK whether Plus is
-  active; the database never mirrors it. If the server ever needs to gate
-  something on Plus, add RevenueCat's webhook writing a single `is_plus` flag
-  rather than reimplementing their state machine.
+  the source of truth for entitlement. The database mirrors exactly one bit,
+  `profiles.is_plus`, written by RevenueCat's webhook with the service role,
+  because `v_pairs` needs it: without Plus the viewer sees only pairs younger
+  than `free_history_days` (30, in `app_config`). Older pairs are hidden, not
+  deleted, so upgrading brings them back.
 - **Promo and referral codes.** Removed on purpose. A code only unlocked Plus,
   never access, so it brought no new users; the invite deeplink (`invites`) is
   the growth loop. Partner deals use App Store / Play offer codes, which

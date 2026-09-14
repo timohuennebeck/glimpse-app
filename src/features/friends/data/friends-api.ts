@@ -45,15 +45,26 @@ function toFriend(
 }
 
 /**
- * Answer an incoming request. `status` is the only column the recipient may
+ * Accept an incoming request. `status` is the only column the recipient may
  * write (see the column grant in the RLS migration); the friend cap trigger
  * runs on the way in.
  */
-export async function respondToFriendRequest(
-  friendshipId: string,
-  status: 'accepted' | 'declined',
-): Promise<void> {
+export async function acceptFriendRequest(friendshipId: string): Promise<void> {
   if (!isSupabaseConfigured) return;
-  const { error } = await requireSupabase().from('friendships').update({ status }).eq('id', friendshipId);
+  const { error } = await requireSupabase()
+    .from('friendships')
+    .update({ status: 'accepted' })
+    .eq('id', friendshipId);
+  if (error) throw error;
+}
+
+/**
+ * Decline a request, withdraw one you sent, or unfriend: all three delete the
+ * row. There is no declined state on purpose — a kept row would tell the
+ * requester they were declined and block the pair from ever trying again.
+ */
+export async function removeFriendship(friendshipId: string): Promise<void> {
+  if (!isSupabaseConfigured) return;
+  const { error } = await requireSupabase().from('friendships').delete().eq('id', friendshipId);
   if (error) throw error;
 }

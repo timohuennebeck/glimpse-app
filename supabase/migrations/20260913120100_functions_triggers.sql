@@ -16,17 +16,49 @@ $$;
 -- ---------------------------------------------------------------------------
 -- Mirror auth.users -> profiles on signup
 -- ---------------------------------------------------------------------------
+-- A username is what friend search matches on, so every profile gets one at
+-- signup: the first name lowered and stripped to the allowed alphabet, with
+-- four digits appended if that is taken. The owner may change it later.
+create or replace function public.generate_username(p_first_name text)
+returns text
+language plpgsql
+volatile
+security definer
+set search_path = public
+as $$
+declare
+  base text := left(regexp_replace(lower(coalesce(p_first_name, '')), '[^a-z0-9_.]', '', 'g'), 14);
+  candidate text;
+begin
+  if char_length(base) < 3 then
+    base := 'user';
+  end if;
+  candidate := base;
+  for i in 1..20 loop
+    if not exists (select 1 from public.profiles where username = candidate) then
+      return candidate;
+    end if;
+    candidate := base || (1000 + floor(random() * 9000))::int::text;
+  end loop;
+  -- 20 collisions on random suffixes is not luck; fall back to something unique.
+  return left(base, 6) || replace(left(gen_random_uuid()::text, 13), '-', '');
+end;
+$$;
+
 create or replace function public.handle_new_user()
 returns trigger
 language plpgsql
 security definer
 set search_path = public
 as $$
+declare
+  v_first_name text := coalesce(new.raw_user_meta_data ->> 'first_name', '');
 begin
-  insert into public.profiles (id, first_name, locale)
+  insert into public.profiles (id, first_name, username, locale)
   values (
     new.id,
-    coalesce(new.raw_user_meta_data ->> 'first_name', ''),
+    v_first_name,
+    public.generate_username(v_first_name),
     coalesce(new.raw_user_meta_data ->> 'locale', 'en')
   )
   on conflict (id) do nothing;
@@ -75,6 +107,27 @@ as $$
   );
 $$;
 
+-- "3 mutual" on a search result. SECURITY DEFINER because a user can only
+-- read their own friendship rows; this returns a count, never the names.
+create or replace function public.mutual_friends_count(p_user_id uuid)
+returns int
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  with friends_of as (
+    select case when requester_id = u.id then recipient_id else requester_id end as friend_id, u.id as who
+    from public.friendships f
+    cross join (values (auth.uid()), (p_user_id)) as u(id)
+    where f.status = 'accepted' and u.id in (f.requester_id, f.recipient_id)
+  )
+  select case when auth.uid() is null or auth.uid() = p_user_id then 0
+         else (select count(*)::int from friends_of a join friends_of b on a.friend_id = b.friend_id
+               where a.who = auth.uid() and b.who = p_user_id)
+         end;
+$$;
+
 -- Enforce the "no large friend lists" product decision at the data layer.
 create or replace function public.enforce_friend_cap()
 returns trigger
@@ -94,7 +147,7 @@ begin
     raise exception 'friendship_parties_immutable' using errcode = 'check_violation';
   end if;
 
-  if new.status in ('accepted', 'declined') and (tg_op = 'INSERT' or old.status is distinct from new.status) then
+  if new.status = 'accepted' and (tg_op = 'INSERT' or old.status is distinct from new.status) then
     new.responded_at := coalesce(new.responded_at, now());
   end if;
 
@@ -335,6 +388,26 @@ as $$
   );
 $$;
 
+-- May the caller delete this object? Their own original, and only while no
+-- trade names the moment: once a photo is traded, the other person's unlocked
+-- half must not vanish. Orphaned uploads (no row at all) may be removed.
+create or replace function public.storage_object_deletable(p_name text)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select split_part(p_name, '/', 1) = 'original'
+     and split_part(p_name, '/', 2) = auth.uid()::text
+     and not exists (
+       select 1
+       from public.moments m
+       join public.trades t on t.initiator_moment_id = m.id or t.responder_moment_id = m.id
+       where m.original_storage_path = p_name
+     );
+$$;
+
 -- Is this moment part of a trade between exactly these two people? Used to
 -- validate a photo attached to a chat message.
 create or replace function public.moment_shared_between(p_moment_id uuid, a uuid, b uuid)
@@ -353,24 +426,129 @@ as $$
 $$;
 
 -- ---------------------------------------------------------------------------
--- Invites: the token is the capability, so it is never listable. Claiming is
--- an atomic UPDATE by token.
+-- Invites: the token is the capability, so it is never listable.
 -- ---------------------------------------------------------------------------
-create or replace function public.claim_invite(p_token text)
-returns table (inviter_id uuid, moment_id uuid)
+
+-- An invite may only show the inviter's own photo.
+create or replace function public.enforce_invite_moment_owner()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if new.moment_id is not null and not exists (
+    select 1 from public.moments m where m.id = new.moment_id and m.author_id = new.inviter_id
+  ) then
+    raise exception 'invite_moment_not_owned' using errcode = 'check_violation';
+  end if;
+  return new;
+end;
+$$;
+
+create trigger invites_moment_owner
+  before insert or update on public.invites
+  for each row execute function public.enforce_invite_moment_owner();
+
+-- What the deeplink screen shows before the visitor has an account: who sent
+-- it and the frosted rendition. Callable by anon; the token is the only key.
+-- Returns no row for an unknown, expired or claimed token.
+create or replace function public.invite_preview(p_token text)
+returns table (
+  inviter_first_name text,
+  inviter_avatar_storage_path text,
+  moment_id uuid,
+  blurred_storage_path text,
+  created_at timestamptz
+)
 language sql
+stable
+security definer
+set search_path = public
+as $$
+  select p.first_name, p.avatar_storage_path, m.id, m.blurred_storage_path, i.created_at
+  from public.invites i
+  join public.profiles p on p.id = i.inviter_id
+  left join public.moments m on m.id = i.moment_id
+  where i.token = p_token
+    and i.claimer_id is null
+    and i.expires_at > now();
+$$;
+
+-- Lets the Storage API sign the blurred rendition of a moment that a live
+-- invite points at, for anon and signed-in visitors alike. The path is only
+-- learnable through invite_preview(), i.e. through the token.
+create or replace function public.invite_object_readable(p_name text)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1
+    from public.invites i
+    join public.moments m on m.id = i.moment_id
+    where m.blurred_storage_path = p_name
+      and i.claimer_id is null
+      and i.expires_at > now()
+  );
+$$;
+
+-- Claiming is the whole growth loop in one call: mark the token used, make the
+-- two people friends, and open the trade for the frosted photo so the new
+-- account has something to send one back to. Returns no row when the token
+-- is unknown, expired, already claimed, the inviter's own, or across a block.
+create or replace function public.claim_invite(p_token text)
+returns table (inviter_id uuid, moment_id uuid, trade_id uuid)
+language plpgsql
 volatile
 security definer
 set search_path = public
 as $$
+declare
+  v_invite public.invites;
+  v_hours int := public.config_int('trade_auto_unlock_hours', 24);
+  v_trade_id uuid;
+begin
+  if auth.uid() is null then
+    return;
+  end if;
+
   update public.invites i
      set claimer_id = auth.uid(), claimed_at = now()
    where i.token = p_token
-     and auth.uid() is not null
      and i.claimer_id is null
      and i.expires_at > now()
      and i.inviter_id <> auth.uid()
-  returning i.inviter_id, i.moment_id;
+     and not public.is_blocked(i.inviter_id, auth.uid())
+  returning * into v_invite;
+
+  if v_invite.token is null then
+    return;
+  end if;
+
+  -- Friends, whichever direction a request may already be pending in. The
+  -- friend cap trigger still applies and surfaces as friend_cap_reached.
+  insert into public.friendships (requester_id, recipient_id, status)
+  values (v_invite.inviter_id, auth.uid(), 'accepted')
+  on conflict (least(requester_id, recipient_id), greatest(requester_id, recipient_id))
+  do update set status = 'accepted';
+
+  if v_invite.moment_id is not null
+     and exists (select 1 from public.moments m where m.id = v_invite.moment_id) then
+    insert into public.trades (initiator_id, responder_id, initiator_moment_id, auto_unlock_at)
+    values (v_invite.inviter_id, auth.uid(), v_invite.moment_id, now() + make_interval(hours => v_hours))
+    on conflict (initiator_moment_id, responder_id) do nothing
+    returning id into v_trade_id;
+    if v_trade_id is null then
+      select t.id into v_trade_id from public.trades t
+       where t.initiator_moment_id = v_invite.moment_id and t.responder_id = auth.uid();
+    end if;
+  end if;
+
+  return query select v_invite.inviter_id, v_invite.moment_id, v_trade_id;
+end;
 $$;
 
 -- ---------------------------------------------------------------------------
@@ -401,11 +579,14 @@ revoke execute on function
   public.visible_moment_paths(uuid[]),
   public.claim_invite(text),
   public.register_device_token(text, text),
+  public.mutual_friends_count(uuid),
+  public.generate_username(text),
   public.are_friends(uuid, uuid),
   public.is_blocked(uuid, uuid),
   public.can_see_moment(uuid),
   public.can_see_original(uuid),
   public.storage_object_readable(text),
+  public.storage_object_deletable(text),
   public.moment_shared_between(uuid, uuid, uuid)
 from public, anon;
 
@@ -415,13 +596,19 @@ grant execute on function
   public.visible_moment_paths(uuid[]),
   public.claim_invite(text),
   public.register_device_token(text, text),
+  public.mutual_friends_count(uuid),
   public.are_friends(uuid, uuid),
   public.is_blocked(uuid, uuid),
   public.can_see_moment(uuid),
   public.can_see_original(uuid),
   public.storage_object_readable(text),
+  public.storage_object_deletable(text),
   public.moment_shared_between(uuid, uuid, uuid)
 to authenticated;
+
+-- The two the deeplink needs before there is an account.
+revoke execute on function public.invite_preview(text), public.invite_object_readable(text) from public;
+grant execute on function public.invite_preview(text), public.invite_object_readable(text) to anon, authenticated;
 
 -- ---------------------------------------------------------------------------
 -- updated_at housekeeping
