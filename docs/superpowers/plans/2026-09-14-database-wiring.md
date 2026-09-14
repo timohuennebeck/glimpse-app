@@ -10,7 +10,7 @@
 
 **Spec:** `docs/superpowers/specs/2026-09-14-database-wiring-design.md`
 
-> **Status (2026-09-14):** Tasks 1–7 are written in full. Tasks 8–21 are outlined at the end of this file with the design decisions they depend on; expand each into full steps before executing it. **Nothing in this plan has been executed yet.** See "Handoff notes" at the end before starting in a new environment.
+> **Status (2026-09-14):** All 21 tasks are written in full, and reviewed against the spec for coverage, placeholders and type consistency. **Nothing in this plan has been executed yet.** See "Handoff notes" at the end before starting in a new environment.
 
 ## Global Constraints
 
@@ -59,12 +59,16 @@ Created:
 | `supabase/tests/app-wiring.test.sql` | Publication, batch mutual counts, presence policies |
 | `supabase/migrations/<version>_app_wiring.sql` | Realtime publication, `mutual_friends_counts`, presence policies, advisor fixes |
 | `supabase/functions/blur-moment/index.ts` | Server-side blurred rendition |
+| `scripts/smoke-blur.mjs` | End-to-end check of `blur-moment` against the real project |
 | `src/shared/lib/database.types.ts` | Row aliases over the generated schema, hand-typed view rows |
 | `src/shared/i18n/keys.ts` (+ test) | Typed SCREAMING_SNAKE key constants |
+| `src/shared/lib/format.test.ts` | The first Jest test, proving the harness runs |
+| `src/shared/lib/error-message.test.ts` | Database error codes to copy a person can read |
 | `src/shared/lib/optimistic.ts` (+ test) | Snapshot, patch, roll back, invalidate |
 | `src/shared/lib/signed-urls.ts` (+ test) | Signed URL cache with injectable store and signer |
 | `src/shared/lib/resize.ts` (+ test) | `fitWithin` and `resizeJpeg` |
 | `src/shared/lib/use-debounced-value.ts` | Debounce hook for search |
+| `src/shared/lib/prefetch.ts` | The four queries the first screen after sign-in reads |
 | `src/shared/ui/dotted-disc.tsx` | The dotted purple disc, shared by avatar step and placeholder |
 | `src/features/auth/hooks/use-session.ts` | Session store fed by Supabase auth |
 | `src/features/auth/entry-route.ts` (+ test) | Where the app opens for a session and profile |
@@ -91,6 +95,7 @@ Created:
 | `src/features/chat/interfaces.ts` | `ChatMessage`, `Thread` |
 | `src/features/chat/messages.ts` (+ test) | `appendMessage`, `pairKey` |
 | `src/features/chat/data/chat-api.ts`, `chat-queries.ts`, `chat-mutations.ts` | Threads, messages, send, mark read |
+| `src/features/chat/hooks/use-unread-total.ts` | Unread messages across every conversation |
 | `src/features/chat/hooks/use-partner-presence.ts` | Conversation presence |
 | `src/features/live/live-actions.ts` (+ test) | Realtime payload → semantic actions |
 | `src/features/live/use-live-updates.ts` | One channel per user, applies actions to the cache |
@@ -99,9 +104,11 @@ Created:
 | `src/features/invites/hooks/use-pending-invite.ts` | Token held while a signed-out visitor onboards |
 | `src/shared/lib/assets.ts` | Bundled design images that remain after fixtures go |
 
-Modified: `package.json`, `app.json`, `src/shared/lib/supabase.ts`, `src/shared/lib/database.interfaces.ts` (regenerated), `src/shared/lib/queries.ts`, `src/shared/lib/query-client.ts`, `src/shared/lib/error-message.ts`, `src/shared/i18n/i18n.ts`, both locale files, `src/shared/ui/avatar.tsx`, every screen under `app/`, `src/features/*/components/*` that render people or photos, `README.md`, `docs/database.md`.
+Rewritten in place: `src/shared/lib/supabase.ts`, `src/shared/lib/database.interfaces.ts` (regenerated), `src/shared/lib/query-client.ts`, `src/shared/lib/error-message.ts`, `src/features/moments/interfaces.ts`, `src/features/moments/data/moments-api.ts`, `src/features/moments/data/moments-queries.ts`, `src/features/friends/data/friends-api.ts`, `src/features/friends/data/friends-queries.ts`, `src/features/profile/open-profile.ts`, `src/features/profile/components/profile-view.tsx`, `src/features/profile/components/pair-grid.tsx`, `src/features/chat/components/chats-list.tsx`, and these screens: `app/_layout.tsx`, `app/index.tsx`, `app/(app)/feed.tsx`, `app/(app)/profile.tsx`, `app/(app)/friends/index.tsx`, `app/(app)/friends/search.tsx`, `app/(onboarding)/friends.tsx`, `app/(onboarding)/details.tsx`, `app/(onboarding)/avatar.tsx`, `app/compose.tsx`, `app/recipients.tsx`, `app/moment/[tradeId].tsx`, `app/chat/[partnerId].tsx`, `app/invite/[token].tsx`, `app/profile/[userId].tsx`.
 
-Deleted at the end: `src/shared/lib/fixtures.ts`, `src/features/onboarding/components/contacts-invite.tsx`, `src/features/friends/data/friends-queries.ts` (replaced), `src/features/moments/hooks/use-inbox.ts` (moved into `moments-queries.ts`).
+Modified in part: `package.json`, `app.json`, `src/shared/lib/queries.ts` (one factory per feature task), `src/shared/i18n/i18n.ts`, both locale files, `src/shared/ui/avatar.tsx`, `src/shared/lib/format.ts` call sites, `src/features/moments/hooks/use-composer.ts`, `src/features/moments/hooks/use-inbox.ts`, `src/features/feed/components/feed-header.tsx`, `src/features/feed/components/story-rail.tsx`, `src/features/feed/components/locked-moment-card.tsx`, `src/features/friends/components/person-row.tsx`, `app/(app)/_layout.tsx`, `app/(app)/friends/_layout.tsx`'s siblings, `app/(onboarding)/welcome.tsx`, `app/(onboarding)/name.tsx`, `app/(onboarding)/heard-about.tsx`, `app/photo/[momentId].tsx`, `README.md`, `docs/database.md`.
+
+Deleted: `src/features/moments/hooks/store.ts` (moved to `src/shared/lib/store.ts`, Task 8), `src/features/onboarding/components/contacts-invite.tsx` (Task 12), `src/shared/lib/fixtures.ts` (renamed to `src/shared/lib/assets.ts`, Task 20) and the bundled images nothing references any more (Task 20). `src/features/moments/hooks/use-inbox.ts` and `src/features/friends/data/friends-queries.ts` both **stay** — they are rewritten in place, not folded away.
 
 ---
 
@@ -1907,99 +1914,7462 @@ Claude-Session: https://claude.ai/code/session_01XKE3Z4Mi437u3iDrbumuSC"
 
 ---
 
-## Remaining tasks (outline)
+### Task 8: Session, protected routes and the persisted cache
 
-Each outline below fixes the files, names and decisions for that task. Expand it into full TDD steps in the same format as Tasks 1–7 before executing it.
+**Files:**
+- Create: `src/shared/lib/store.ts` (moved), `src/features/auth/hooks/use-session.ts`, `src/features/auth/current-user.ts`, `src/features/auth/entry-route.ts`, `src/features/auth/entry-route.test.ts`, `src/features/profile/data/profile-api.ts`, `src/features/profile/data/profile-queries.ts`, `src/features/profile/hooks/use-me.ts`
+- Delete: `src/features/moments/hooks/store.ts` (moved)
+- Modify: `src/features/moments/hooks/use-composer.ts`, `src/shared/lib/queries.ts`, `src/shared/lib/query-client.ts`, `app/_layout.tsx`, `app/index.tsx`
 
-### Task 8: Session, protected routes, persisted cache
-- Move `src/features/moments/hooks/store.ts` to `src/shared/lib/store.ts`; update the import in `use-composer.ts`.
-- `src/features/auth/hooks/use-session.ts`: store `{ status: 'loading' | 'signed-out' | 'signed-in'; userId: string | null }` and `startSessionSync(): () => void` (initial `auth.getSession()` plus `onAuthStateChange`; only sets state inside the callback).
-- `src/features/auth/current-user.ts`: `currentUserId(): string`, throws `not_authenticated` when signed out.
-- `src/features/auth/entry-route.ts` (+ test): `entryRoute({ status, onboardingDoneAt, profileFailed })` returns `null` while loading or while the profile is unknown, `'/(onboarding)/welcome'` signed out, `'/(app)/feed'` when done or when the profile failed to load, `'/(onboarding)/friends'` when not done.
-- Profile read side lands here: `profile-api.fetchProfile(userId): Promise<Profile | null>`; `profile-queries` has only `byId(userId)` — no user-less `me` key, so a persisted profile can never belong to a previous user; `hooks/use-me.ts` = `useQuery({ ...queries.profile.byId(userId ?? ''), enabled: userId !== null })`.
-- `src/shared/lib/query-client.ts`: default `gcTime` 24h; export `PERSIST_MAX_AGE`, `APP_VERSION` (from `expo-constants`), `queryPersister = createAsyncStoragePersister({ storage: AsyncStorage, key: 'glimpse.query-cache', throttleTime: 1000 })`.
-- `app/_layout.tsx`: `PersistQueryClientProvider` with `{ persister, maxAge, buster: APP_VERSION }`; `useEffect(() => startSessionSync(), [])`; keep the splash until fonts load and the session status is known; `Stack.Protected guard={signedIn}` around `(app)`, `camera`, `compose`, `recipients`, `moment/[tradeId]`, `photo/[momentId]`, `profile/[userId]`, `chat/[partnerId]`; `index`, `(onboarding)` and `invite/[token]` stay open.
-- `app/index.tsx`: `<Redirect href={entryRoute(...)} />`, render nothing while it is `null`.
+**Interfaces:**
+- Consumes: `supabase` and `Profile` (Task 4); the persistence packages (Task 1).
+- Produces:
+  - `create<T extends object>(initial: T)` from `@/shared/lib/store` — unchanged, new home.
+  - From `@/features/auth/hooks/use-session`: `type SessionStatus = 'loading' | 'signed-out' | 'signed-in'`, `interface SessionState { status: SessionStatus; userId: string | null }`, `useSession` (with the store's `set` / `reset` / `getState` statics) and `startSessionSync(): () => void`.
+  - `currentUserId(): string` from `@/features/auth/current-user`, throwing `Error('not_authenticated')`.
+  - `entryRoute(input: EntryInput): EntryRoute | null` from `@/features/auth/entry-route`.
+  - `fetchProfile(userId: string): Promise<Profile | null>` from `@/features/profile/data/profile-api`.
+  - `profileQueries`, merged into `queries` as `queries.profile.byId(userId)`.
+  - `useMe()` from `@/features/profile/hooks/use-me`.
+  - From `@/shared/lib/query-client`: `queryClient`, `queryPersister`, `PERSIST_MAX_AGE`, `APP_VERSION`.
+
+- [ ] **Step 1: Move the store out of the moments feature**
+
+It is about to hold the session, the onboarding draft and the outbox, none of
+which are moments.
+
+Run:
+
+```bash
+git mv src/features/moments/hooks/store.ts src/shared/lib/store.ts
+sed -i '' "s#@/features/moments/hooks/store#@/shared/lib/store#g" src/features/moments/hooks/use-composer.ts
+```
+
+Expected: `grep -rn "features/moments/hooks/store" app src` prints nothing.
+
+- [ ] **Step 2: Write the failing entry-route test**
+
+Create `src/features/auth/entry-route.test.ts`:
+
+```ts
+import { entryRoute, type EntryInput } from '@/features/auth/entry-route';
+
+const input = (over: Partial<EntryInput> = {}): EntryInput => ({
+  status: 'signed-in',
+  onboardingDoneAt: null,
+  profileFailed: false,
+  ...over,
+});
+
+describe('entryRoute', () => {
+  it('renders nothing while the session is still unknown', () => {
+    expect(entryRoute(input({ status: 'loading' }))).toBeNull();
+  });
+
+  it('starts the flow for a signed-out visitor', () => {
+    expect(entryRoute(input({ status: 'signed-out' }))).toBe('/(onboarding)/welcome');
+  });
+
+  it('waits for the profile before choosing between onboarding and the feed', () => {
+    expect(entryRoute(input({ onboardingDoneAt: undefined }))).toBeNull();
+  });
+
+  it('resumes onboarding when it was never finished', () => {
+    expect(entryRoute(input({ onboardingDoneAt: null }))).toBe('/(onboarding)/friends');
+  });
+
+  it('opens the feed once onboarding is done', () => {
+    expect(entryRoute(input({ onboardingDoneAt: '2026-09-14T10:00:00Z' }))).toBe('/(app)/feed');
+  });
+
+  it('opens the feed rather than hanging when the profile cannot be read', () => {
+    expect(entryRoute(input({ onboardingDoneAt: undefined, profileFailed: true }))).toBe('/(app)/feed');
+  });
+});
+```
+
+- [ ] **Step 3: Run it to see it fail**
+
+Run: `npx jest src/features/auth/entry-route.test.ts`
+Expected: FAIL, `Cannot find module '@/features/auth/entry-route'`.
+
+- [ ] **Step 4: Write the session store**
+
+Create `src/features/auth/hooks/use-session.ts`:
+
+```ts
+import { create } from '@/shared/lib/store';
+import { supabase } from '@/shared/lib/supabase';
+/**
+ * Who is signed in. A store rather than a context: the data modules call
+ * `currentUserId()` outside React, and the root layout needs the answer before
+ * it decides which routes exist at all.
+ */
+export type SessionStatus = 'loading' | 'signed-out' | 'signed-in';
+
+export interface SessionState {
+  status: SessionStatus;
+  userId: string | null;
+}
+
+export const useSession = create<SessionState>({ status: 'loading', userId: null });
+
+function sessionState(userId: string | null | undefined): SessionState {
+  return userId ? { status: 'signed-in', userId } : { status: 'signed-out', userId: null };
+}
+
+/**
+ * Keeps the store in step with Supabase. Mounted once by the root layout; the
+ * returned function unsubscribes.
+ *
+ * `getSession()` reads the session AsyncStorage already holds, so a relaunch
+ * resolves without a round trip. Everything after that — refresh, sign-in,
+ * sign-out, expiry — arrives through `onAuthStateChange`. The callback only
+ * writes to the store: calling back into `supabase.auth` from inside it
+ * deadlocks the auth lock.
+ */
+export function startSessionSync(): () => void {
+  let active = true;
+
+  void supabase.auth.getSession().then(({ data }) => {
+    // A state change may have answered first while this was in flight; it is
+    // the newer truth, so it wins.
+    if (!active || useSession.getState().status !== 'loading') return;
+    useSession.set(sessionState(data.session?.user.id));
+  });
+
+  const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+    useSession.set(sessionState(session?.user.id));
+  });
+
+  return () => {
+    active = false;
+    data.subscription.unsubscribe();
+  };
+}
+```
+
+- [ ] **Step 5: Write `currentUserId` and the entry route**
+
+Create `src/features/auth/current-user.ts`:
+
+```ts
+import { useSession } from '@/features/auth/hooks/use-session';
+/**
+ * The signed-in id, for the `data/` modules that run outside React.
+ *
+ * Throws rather than returning null: every caller sits behind a protected
+ * route, so no session there is a bug to surface, not a state to render.
+ */
+export function currentUserId(): string {
+  const { userId } = useSession.getState();
+  if (!userId) throw new Error('not_authenticated');
+  return userId;
+}
+```
+
+Create `src/features/auth/entry-route.ts`:
+
+```ts
+import type { SessionStatus } from '@/features/auth/hooks/use-session';
+/**
+ * Where the app opens. Pure, because the cold-start race between "is there a
+ * session" and "did this account ever finish onboarding" has four wrong
+ * answers and one right one, and none of them are visible in a router test.
+ */
+export type EntryRoute = '/(onboarding)/welcome' | '/(onboarding)/friends' | '/(app)/feed';
+
+export interface EntryInput {
+  status: SessionStatus;
+  /** `undefined` while the profile has not loaded; `null` when onboarding is unfinished. */
+  onboardingDoneAt: string | null | undefined;
+  /** The profile query failed. Better the feed than a splash that never ends. */
+  profileFailed: boolean;
+}
+
+export function entryRoute({ status, onboardingDoneAt, profileFailed }: EntryInput): EntryRoute | null {
+  if (status === 'loading') return null;
+  if (status === 'signed-out') return '/(onboarding)/welcome';
+  if (profileFailed) return '/(app)/feed';
+  if (onboardingDoneAt === undefined) return null;
+  return onboardingDoneAt === null ? '/(onboarding)/friends' : '/(app)/feed';
+}
+```
+
+- [ ] **Step 6: Run the test**
+
+Run: `npx jest src/features/auth/entry-route.test.ts`
+Expected: PASS (6 tests).
+
+- [ ] **Step 7: Read the profile**
+
+Create `src/features/profile/data/profile-api.ts`:
+
+```ts
+import { supabase } from '@/shared/lib/supabase';
+import type { Profile } from '@/shared/lib/database.types';
+/** Reads and writes for `public.profiles`. Screens go through the queries and mutations. */
+
+/** `null` when there is no such row, or a block hides it. */
+export async function fetchProfile(userId: string): Promise<Profile | null> {
+  const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle();
+  if (error) throw error;
+  return data;
+}
+```
+
+Create `src/features/profile/data/profile-queries.ts`:
+
+```ts
+import { createQueryKeys } from '@lukemorales/query-key-factory';
+import { fetchProfile } from '@/features/profile/data/profile-api';
+/**
+ * One key, and it always carries the user id. There is deliberately no
+ * user-less `me` key: the cache is persisted to disk, and a `me` entry would
+ * be handed straight to whoever signs in next on this phone.
+ */
+export const profileQueries = createQueryKeys('profile', {
+  byId: (userId: string) => ({
+    queryKey: [userId],
+    queryFn: () => fetchProfile(userId),
+  }),
+});
+```
+
+Create `src/features/profile/hooks/use-me.ts`:
+
+```ts
+import { useQuery } from '@tanstack/react-query';
+import { queries } from '@/shared/lib/queries';
+import { useSession } from '@/features/auth/hooks/use-session';
+/** The signed-in person's own profile. Disabled, not guessed at, while signed out. */
+export function useMe() {
+  const { userId } = useSession();
+  return useQuery({ ...queries.profile.byId(userId ?? ''), enabled: userId !== null });
+}
+```
+
+In `src/shared/lib/queries.ts`, add the import and the third factory:
+
+```ts
+import { profileQueries } from '@/features/profile/data/profile-queries';
+```
+
+```ts
+export const queries = mergeQueryKeys(momentsQueries, friendsQueries, profileQueries);
+```
+
+- [ ] **Step 8: Persist the cache**
+
+Replace `src/shared/lib/query-client.ts` with:
+
+```ts
+import { AppState, Platform } from 'react-native';
+import { QueryClient, focusManager } from '@tanstack/react-query';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
+import Constants from 'expo-constants';
+/**
+ * One client for the app. Server state (inbox, pairs, friends) lives here;
+ * screens read it with `useQuery` and change it with `useMutation`, never
+ * with a fetch inside a `useEffect`.
+ */
+
+/** A day-old feed is worth drawing for the half second before the refetch lands. */
+export const PERSIST_MAX_AGE = 24 * 3_600_000;
+
+/**
+ * Cache buster. A new build may change the shape of what is cached, so the
+ * persisted cache is dropped whenever the app version changes.
+ */
+export const APP_VERSION = Constants.expoConfig?.version ?? '0.0.0';
+
+export const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // A moment that was fresh half a minute ago still is; refetch on
+      // foreground and after mutations, not on every mount.
+      staleTime: 30_000,
+      // At least PERSIST_MAX_AGE, or a restored query is collected before the
+      // screen that wants it has mounted.
+      gcTime: PERSIST_MAX_AGE,
+      retry: 1,
+    },
+  },
+});
+
+/** Written on every cache change, so a cold start has yesterday's data to draw. */
+export const queryPersister = createAsyncStoragePersister({
+  storage: AsyncStorage,
+  key: 'glimpse.query-cache',
+  throttleTime: 1000,
+});
+
+// "Window focus" is a browser idea. On a phone it is the app returning to
+// the foreground, which is exactly when the inbox should refresh.
+if (Platform.OS !== 'web') {
+  focusManager.setEventListener((handleFocus) => {
+    const subscription = AppState.addEventListener('change', (state) => handleFocus(state === 'active'));
+    return () => subscription.remove();
+  });
+}
+```
+
+- [ ] **Step 9: Guard the signed-in routes**
+
+Replace `app/_layout.tsx` with:
+
+```tsx
+import { useEffect } from 'react';
+import { Stack } from 'expo-router';
+import {
+  useFonts,
+  TikTokSans_400Regular,
+  TikTokSans_500Medium,
+  TikTokSans_600SemiBold,
+} from '@expo-google-fonts/tiktok-sans';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import * as SplashScreen from 'expo-splash-screen';
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
+import { colors } from '@/shared/theme/colors';
+import { APP_VERSION, PERSIST_MAX_AGE, queryClient, queryPersister } from '@/shared/lib/query-client';
+import { startSessionSync, useSession } from '@/features/auth/hooks/use-session';
+// Side-effect imports: locale, Tailwind stylesheet, className support for third-party views.
+import '@/shared/i18n/i18n';
+import '../global.css';
+import '@/shared/lib/css-interop';
+
+void SplashScreen.preventAutoHideAsync();
+
+export default function RootLayout() {
+  // Keys here must match `fontFamily` in src/shared/theme/fonts.ts.
+  const [fontsLoaded] = useFonts({
+    TikTokSans_400Regular,
+    TikTokSans_500Medium,
+    TikTokSans_600SemiBold,
+  });
+  const { status } = useSession();
+  const ready = fontsLoaded && status !== 'loading';
+
+  // Once, before any render that could route somewhere.
+  useEffect(() => startSessionSync(), []);
+
+  useEffect(() => {
+    // Hold the splash until the type is ready and we know who is signed in.
+    // Otherwise the first frame renders in the system face, or lands on the
+    // welcome screen of an account that was signed in all along.
+    if (ready) void SplashScreen.hideAsync();
+  }, [ready]);
+
+  if (!ready) return null;
+
+  return (
+    <GestureHandlerRootView className="flex-1">
+      <PersistQueryClientProvider
+        client={queryClient}
+        persistOptions={{ persister: queryPersister, maxAge: PERSIST_MAX_AGE, buster: APP_VERSION }}
+      >
+        <SafeAreaProvider>
+          <RootStack signedIn={status === 'signed-in'} />
+        </SafeAreaProvider>
+      </PersistQueryClientProvider>
+    </GestureHandlerRootView>
+  );
+}
+
+interface RootStackProps {
+  signedIn: boolean;
+}
+
+/**
+ * `Stack.Protected` takes the guarded routes out of the navigator rather than
+ * redirecting away from them, so a deep link into `/moment/…` while signed out
+ * cannot render the screen for a frame before bouncing.
+ *
+ * `invite/[token]` is deliberately open: the whole point of the link is that
+ * the visitor has no account yet.
+ */
+function RootStack({ signedIn }: RootStackProps) {
+  return (
+    <Stack
+      screenOptions={{
+        headerShown: false,
+        contentStyle: { backgroundColor: colors.white },
+        // The mock shows a modal sheet for capture and viewing.
+        animation: 'slide_from_right',
+      }}
+    >
+      <Stack.Screen name="index" />
+      <Stack.Screen name="(onboarding)" />
+      <Stack.Screen name="invite/[token]" />
+
+      <Stack.Protected guard={signedIn}>
+        <Stack.Screen name="(app)" />
+        <Stack.Screen name="camera" options={{ animation: 'slide_from_bottom' }} />
+        <Stack.Screen name="compose" options={{ animation: 'slide_from_bottom' }} />
+        <Stack.Screen name="recipients" options={{ animation: 'slide_from_bottom' }} />
+        <Stack.Screen name="moment/[tradeId]" options={{ animation: 'fade' }} />
+        <Stack.Screen name="photo/[momentId]" options={{ animation: 'fade' }} />
+        <Stack.Screen name="profile/[userId]" />
+        <Stack.Screen name="chat/[partnerId]" />
+      </Stack.Protected>
+    </Stack>
+  );
+}
+```
+
+- [ ] **Step 10: Branch the entry point**
+
+Replace `app/index.tsx` with:
+
+```tsx
+import { Redirect } from 'expo-router';
+import { entryRoute } from '@/features/auth/entry-route';
+import { useSession } from '@/features/auth/hooks/use-session';
+import { useMe } from '@/features/profile/hooks/use-me';
+/**
+ * Entry point: signed out it starts the flow, signed in it opens the feed — or
+ * drops back into onboarding for an account that never finished it.
+ */
+export default function Index() {
+  const { status } = useSession();
+  const { data: me, isError } = useMe();
+
+  const route = entryRoute({
+    status,
+    // `undefined` means the profile has not answered yet; a row with no stamp
+    // means onboarding was never finished.
+    onboardingDoneAt: me === undefined ? undefined : (me?.onboarding_done_at ?? null),
+    profileFailed: isError,
+  });
+
+  if (!route) return null;
+  return <Redirect href={route} />;
+}
+```
+
+- [ ] **Step 11: Typecheck and run the tests**
+
+Run: `npm run typecheck`
+Expected: exits 0. If `Stack.Protected` is not exported by this expo-router build, stop and report it rather than hand-rolling a redirect guard; the route table is the security boundary here.
+
+Run: `npm test`
+Expected: all pass.
+
+- [ ] **Step 12: Commit**
+
+```bash
+git add app src
+git commit -m "feat: session store, protected routes and a persisted query cache" -m "Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01XKE3Z4Mi437u3iDrbumuSC"
+```
+
+---
 
 ### Task 9: Sign up and sign in
-- `src/shared/lib/resize.ts` (+ test, mock `expo-image-manipulator` in the test): `fitWithin(width, height, max)` never scales up; `resizeJpeg(uri, { width, height }, max)` uses `ImageManipulator.manipulate(uri)`, `.resize(target)` when needed, `.renderAsync()`, then `saveAsync({ compress: 0.85, format: SaveFormat.JPEG })`.
-- `src/features/auth/interpret-sign-up.ts` (+ test): `SignUpOutcome = { kind: 'signed-in'; userId } | { kind: 'confirmation-required' } | { kind: 'already-registered' }`. Error with `code === 'user_already_exists'` or message matching "already registered" → already registered; other errors rethrow; user and session → signed in; user with `identities` of length 0 → already registered; otherwise confirmation required.
-- `src/features/auth/data/auth-api.ts`: `signUp({ email, password, firstName, locale })` passes `options.data = { first_name, locale }`; `signIn({ email, password })`. Both call `useSession.set({ status: 'signed-in', userId })` on success so `currentUserId()` works before `onAuthStateChange` fires.
-- `src/features/onboarding/hooks/use-onboarding-draft.ts`: `{ firstName: string; avatar: { uri: string; width: number; height: number } | null }`.
-- Name screen reads and writes `firstName`. Avatar screen opens `ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], allowsEditing: true, aspect: [1, 1], quality: 1 })` and stores the asset. Welcome "Sign in" pushes details with `params: { mode: 'signin' }`.
-- Details screen: one form with `mode` state (from params, toggled by the footer link); sign-up with no draft name pushes the name step; `already-registered` and `confirmation-required` show `ONBOARDING.DETAILS.ERRORS.*` and switch to sign-in; sign-up success → `router.replace('/(onboarding)/friends')`; sign-in success → `router.replace('/')`. The button shows `loading` while pending: authentication is the one request that cannot be optimistic.
 
-### Task 10: Profile
-- `profile-api`: `updateProfile(patch)`, `uploadAvatar({ uri, width, height })` (resize to 512, upload `avatars/{uid}/{Date.now()}.jpg` as an `ArrayBuffer` from `fetch(uri)`, update `avatar_storage_path`, delete the previous object), `avatarUrl(path: string | null): string | null` (public URL).
-- `profile-mutations`: `useUpdateProfile()` merges the patch into `profile.byId(me)` optimistically.
-- `src/shared/ui/dotted-disc.tsx` (moved out of the avatar step). `Avatar` accepts `source: string | number | null` and `name?: string`; without a source it draws the disc with the name's first letter.
-- `hooks/use-stamp-onboarding-done.ts`, called in `app/(app)/_layout.tsx`: stamps `onboarding_done_at` once when the profile has none.
-- `src/features/auth/sign-out.ts`: `clearUserData(queryClient)` (remove all Realtime channels, `queryClient.clear()`, `queryPersister.removeClient()`, reset composer and onboarding draft, clear the signed URL cache) and `signOut(queryClient)`. The root layout calls `clearUserData` whenever `userId` changes away from a previous non-null id, which also covers an expired session.
-- `profile-actions-sheet.tsx`: React Native `Modal` with one `PROFILE.SIGN_OUT` row, opened by the own profile's more button (Alert is unusable on web).
-- Details sign-up uploads `draft.avatar` right after a signed-in outcome. Heard-about writes `heard_about`. Feed header, own profile and friend profile read real profiles.
+**Files:**
+- Create: `src/shared/lib/resize.ts`, `src/shared/lib/resize.test.ts`, `src/features/auth/interpret-sign-up.ts`, `src/features/auth/interpret-sign-up.test.ts`, `src/features/auth/data/auth-api.ts`, `src/features/onboarding/hooks/use-onboarding-draft.ts`
+- Modify: `app/(onboarding)/welcome.tsx`, `app/(onboarding)/name.tsx`, `app/(onboarding)/avatar.tsx`, `app/(onboarding)/details.tsx`
+
+**Interfaces:**
+- Consumes: `useSession` and `create` (Task 8); the key constants and the new `ONBOARDING.DETAILS.*` strings (Task 6); `expo-image-picker` (Task 1).
+- Produces:
+  - From `@/shared/lib/resize`: `interface Size { width: number; height: number }`, `interface ResizedImage extends Size { uri: string }`, `fitWithin(width: number, height: number, max: number): Size`, `resizeJpeg(uri: string, source: Size, max: number): Promise<ResizedImage>`, `MAX_CAPTURE_EDGE = 1600`, `MAX_AVATAR_EDGE = 512`.
+  - From `@/features/auth/interpret-sign-up`: `type SignUpOutcome = { kind: 'signed-in'; userId: string } | { kind: 'confirmation-required' } | { kind: 'already-registered' }`, `interface SignUpResponseLike`, `interpretSignUp(response: SignUpResponseLike): SignUpOutcome`.
+  - From `@/features/auth/data/auth-api`: `interface SignUpInput { email: string; password: string; firstName: string; locale: string }`, `signUp(input: SignUpInput): Promise<SignUpOutcome>`, `signIn(input: { email: string; password: string }): Promise<string>`.
+  - From `@/features/onboarding/hooks/use-onboarding-draft`: `interface DraftAvatar { uri: string; width: number; height: number }`, `interface OnboardingDraft { firstName: string; avatar: DraftAvatar | null }`, `useOnboardingDraft`.
+
+- [ ] **Step 1: Write the failing resize test**
+
+Create `src/shared/lib/resize.test.ts`:
+
+```ts
+import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
+import { fitWithin, resizeJpeg } from '@/shared/lib/resize';
+
+// Names must start with `mock`: jest hoists the factory above these consts.
+const mockSaveAsync = jest.fn(async () => ({ uri: 'file:///out.jpg', width: 1600, height: 1200 }));
+const mockRenderAsync = jest.fn(async () => ({ saveAsync: mockSaveAsync }));
+const mockResize = jest.fn();
+const mockManipulate = jest.fn(() => ({ resize: mockResize, renderAsync: mockRenderAsync }));
+
+jest.mock('expo-image-manipulator', () => ({
+  ImageManipulator: { manipulate: (uri: string) => mockManipulate(uri) },
+  SaveFormat: { JPEG: 'jpeg' },
+}));
+
+beforeEach(() => jest.clearAllMocks());
+
+describe('fitWithin', () => {
+  it('never scales a small photo up', () => {
+    expect(fitWithin(800, 600, 1600)).toEqual({ width: 800, height: 600 });
+  });
+
+  it('fits the longest edge, landscape or portrait', () => {
+    expect(fitWithin(4032, 3024, 1600)).toEqual({ width: 1600, height: 1200 });
+    expect(fitWithin(3024, 4032, 1600)).toEqual({ width: 1200, height: 1600 });
+  });
+
+  it('fits a square avatar', () => {
+    expect(fitWithin(2000, 2000, 512)).toEqual({ width: 512, height: 512 });
+  });
+});
+
+describe('resizeJpeg', () => {
+  it('resizes a phone capture and saves it as JPEG', async () => {
+    const result = await resizeJpeg('file:///capture.heic', { width: 4032, height: 3024 }, 1600);
+
+    expect(mockManipulate).toHaveBeenCalledWith('file:///capture.heic');
+    expect(mockResize).toHaveBeenCalledWith({ width: 1600, height: 1200 });
+    expect(mockSaveAsync).toHaveBeenCalledWith({ compress: 0.85, format: SaveFormat.JPEG });
+    expect(result).toEqual({ uri: 'file:///out.jpg', width: 1600, height: 1200 });
+  });
+
+  it('re-encodes without resizing when the photo already fits', async () => {
+    await resizeJpeg('file:///small.jpg', { width: 900, height: 900 }, 1600);
+
+    expect(mockResize).not.toHaveBeenCalled();
+    expect(mockSaveAsync).toHaveBeenCalled();
+  });
+
+  it('is the only place the manipulator is reached', () => {
+    expect(ImageManipulator.manipulate).toBeDefined();
+  });
+});
+```
+
+- [ ] **Step 2: Run to see it fail**
+
+Run: `npx jest src/shared/lib/resize.test.ts`
+Expected: FAIL, `Cannot find module '@/shared/lib/resize'`.
+
+- [ ] **Step 3: Implement the resize**
+
+Create `src/shared/lib/resize.ts`:
+
+```ts
+import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
+/**
+ * Everything the app uploads goes through here first.
+ *
+ * A phone capture is twelve megapixels and several megabytes. Uploading that
+ * costs the sender a wait and costs the blur function more CPU than an Edge
+ * Function is given, for a rendition that ends up 48px wide.
+ */
+
+/** Longest edge of an uploaded capture. */
+export const MAX_CAPTURE_EDGE = 1600;
+/** Avatars are drawn at 164px at most; 512 covers every screen density. */
+export const MAX_AVATAR_EDGE = 512;
+
+export interface Size {
+  width: number;
+  height: number;
+}
+
+export interface ResizedImage extends Size {
+  uri: string;
+}
+
+/** Fits a size inside a square of `max`, never scaling up. */
+export function fitWithin(width: number, height: number, max: number): Size {
+  const longest = Math.max(width, height);
+  if (longest <= max || longest === 0) return { width, height };
+  const scale = max / longest;
+  return { width: Math.round(width * scale), height: Math.round(height * scale) };
+}
+
+/**
+ * JPEG at quality 0.85, at most `max` on the longest edge. The returned size is
+ * what goes on the moment row, so a card can reserve the aspect ratio before
+ * the image loads.
+ */
+export async function resizeJpeg(uri: string, source: Size, max: number): Promise<ResizedImage> {
+  const target = fitWithin(source.width, source.height, max);
+  const context = ImageManipulator.manipulate(uri);
+  // Re-encode either way: the camera may hand back HEIC, and the bucket and
+  // the blur function both expect JPEG.
+  if (target.width !== source.width || target.height !== source.height) context.resize(target);
+  const image = await context.renderAsync();
+  const saved = await image.saveAsync({ compress: 0.85, format: SaveFormat.JPEG });
+  return { uri: saved.uri, width: saved.width, height: saved.height };
+}
+```
+
+- [ ] **Step 4: Run the resize test**
+
+Run: `npx jest src/shared/lib/resize.test.ts`
+Expected: PASS (6 tests).
+
+- [ ] **Step 5: Write the failing sign-up test**
+
+Create `src/features/auth/interpret-sign-up.test.ts`:
+
+```ts
+import { interpretSignUp, type SignUpResponseLike } from '@/features/auth/interpret-sign-up';
+
+const response = (over: Partial<SignUpResponseLike['data']> = {}, error: SignUpResponseLike['error'] = null) => ({
+  data: { user: null, session: null, ...over },
+  error,
+});
+
+describe('interpretSignUp', () => {
+  it('is signed in when the response carries both a user and a session', () => {
+    expect(interpretSignUp(response({ user: { id: 'u1', identities: [{}] }, session: {} }))).toEqual({
+      kind: 'signed-in',
+      userId: 'u1',
+    });
+  });
+
+  it('reads an empty identities array as an address that already has an account', () => {
+    expect(interpretSignUp(response({ user: { id: 'u1', identities: [] } }))).toEqual({
+      kind: 'already-registered',
+    });
+  });
+
+  it('reads a user without a session as email confirmation still being on', () => {
+    expect(interpretSignUp(response({ user: { id: 'u1', identities: [{}] } }))).toEqual({
+      kind: 'confirmation-required',
+    });
+  });
+
+  it('reads the already-registered error code', () => {
+    expect(interpretSignUp(response({}, { code: 'user_already_exists', message: 'whatever' }))).toEqual({
+      kind: 'already-registered',
+    });
+  });
+
+  it('reads the already-registered message when there is no code', () => {
+    expect(interpretSignUp(response({}, { message: 'User already registered' }))).toEqual({
+      kind: 'already-registered',
+    });
+  });
+
+  it('rethrows anything else, so the form can show it', () => {
+    expect(() => interpretSignUp(response({}, { message: 'Password is too short' }))).toThrow();
+  });
+});
+```
+
+- [ ] **Step 6: Run to see it fail**
+
+Run: `npx jest src/features/auth/interpret-sign-up.test.ts`
+Expected: FAIL, `Cannot find module '@/features/auth/interpret-sign-up'`.
+
+- [ ] **Step 7: Implement the reading, then the auth calls**
+
+Create `src/features/auth/interpret-sign-up.ts`:
+
+```ts
+/**
+ * What Supabase's sign-up response actually means.
+ *
+ * Two answers look like success and are not. With "Confirm email" on, sign-up
+ * returns a user and no session. For an address that already has an account,
+ * Supabase deliberately returns a fabricated user with an empty `identities`
+ * array rather than confirming to a stranger that the address exists. Neither
+ * is an error, and neither may let the flow walk on into the app.
+ */
+export type SignUpOutcome =
+  | { kind: 'signed-in'; userId: string }
+  | { kind: 'confirmation-required' }
+  | { kind: 'already-registered' };
+
+/** Structural subset of supabase-js's `AuthResponse` — only what is read here. */
+export interface SignUpResponseLike {
+  data: {
+    user: { id: string; identities?: unknown[] | null } | null;
+    session: unknown | null;
+  };
+  error: { code?: string | null; message: string } | null;
+}
+
+export function interpretSignUp({ data, error }: SignUpResponseLike): SignUpOutcome {
+  if (error) {
+    if (error.code === 'user_already_exists' || /already\s+registered/i.test(error.message)) {
+      return { kind: 'already-registered' };
+    }
+    throw error;
+  }
+  if (data.user && data.session) return { kind: 'signed-in', userId: data.user.id };
+  if (data.user?.identities?.length === 0) return { kind: 'already-registered' };
+  return { kind: 'confirmation-required' };
+}
+```
+
+Create `src/features/auth/data/auth-api.ts`:
+
+```ts
+import { supabase } from '@/shared/lib/supabase';
+import { interpretSignUp, type SignUpOutcome } from '@/features/auth/interpret-sign-up';
+import { useSession } from '@/features/auth/hooks/use-session';
+/** Email and password. Google sign-in stays inert; see docs/database.md §6. */
+
+export interface SignUpInput {
+  email: string;
+  password: string;
+  firstName: string;
+  locale: string;
+}
+
+/**
+ * `options.data` lands in `auth.users.raw_user_meta_data`, which the
+ * `handle_new_user` trigger reads to create the profile row and generate the
+ * username. Nothing here writes to `profiles` directly.
+ */
+export async function signUp({ email, password, firstName, locale }: SignUpInput): Promise<SignUpOutcome> {
+  const outcome = interpretSignUp(
+    await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { first_name: firstName, locale } },
+    }),
+  );
+  // `onAuthStateChange` fires a tick later, and the avatar upload that follows
+  // this call needs `currentUserId()` now.
+  if (outcome.kind === 'signed-in') useSession.set({ status: 'signed-in', userId: outcome.userId });
+  return outcome;
+}
+
+/** Returns the user id. Throws Supabase's error, which the form shows as it is. */
+export async function signIn({ email, password }: { email: string; password: string }): Promise<string> {
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) throw error;
+  useSession.set({ status: 'signed-in', userId: data.user.id });
+  return data.user.id;
+}
+```
+
+- [ ] **Step 8: Run the sign-up test**
+
+Run: `npx jest src/features/auth/interpret-sign-up.test.ts`
+Expected: PASS (6 tests).
+
+- [ ] **Step 9: Hold the name and the avatar until the account exists**
+
+Create `src/features/onboarding/hooks/use-onboarding-draft.ts`:
+
+```ts
+import { create } from '@/shared/lib/store';
+/**
+ * The name and the avatar are chosen on steps 2 and 3, but the account only
+ * exists after step 4 — so they wait here rather than in a profile row with no
+ * owner. Reset once sign-up has written them.
+ */
+export interface DraftAvatar {
+  uri: string;
+  width: number;
+  height: number;
+}
+
+export interface OnboardingDraft {
+  firstName: string;
+  avatar: DraftAvatar | null;
+}
+
+export const useOnboardingDraft = create<OnboardingDraft>({ firstName: '', avatar: null });
+```
+
+- [ ] **Step 10: Write the name into the draft**
+
+In `app/(onboarding)/name.tsx`, add the import:
+
+```ts
+import { useOnboardingDraft } from '@/features/onboarding/hooks/use-onboarding-draft';
+```
+
+and inside `NameScreen`, replace the `useState` line and the footer with:
+
+```tsx
+  const draft = useOnboardingDraft();
+  const [name, setName] = useState(draft.firstName);
+```
+
+```tsx
+        <CtaFooter
+          label={t(ONBOARDING.NAME.CTA)}
+          onPress={() => {
+            draft.set({ firstName: name.trim() });
+            router.push('/(onboarding)/camera');
+          }}
+          disabled={name.trim().length === 0}
+        />
+```
+
+- [ ] **Step 11: Pick a real photo on the avatar step**
+
+Replace the body of `app/(onboarding)/avatar.tsx` above the `DottedDisc` definition (keep `DottedDisc` and its comment exactly as they are; Task 10 moves them) with:
+
+```tsx
+import { Pressable, View } from 'react-native';
+import { Image } from 'expo-image';
+import { router } from 'expo-router';
+import * as ImagePicker from 'expo-image-picker';
+import { Plus } from 'lucide-react-native';
+import Svg, { Circle, Defs, Pattern } from 'react-native-svg';
+import { Text } from '@/shared/ui/text';
+import { colors } from '@/shared/theme/colors';
+import { t } from '@/shared/i18n/i18n';
+import { ONBOARDING } from '@/shared/i18n/keys';
+import { OnboardingScreen } from '@/features/onboarding/components/onboarding-screen';
+import { useOnboardingDraft } from '@/features/onboarding/hooks/use-onboarding-draft';
+/**
+ * Screen `03 Avatar · 3 of 7`.
+ *
+ * The picked photo is held on the onboarding draft, not uploaded: there is no
+ * account to hang it on until step 4. The details screen uploads it after
+ * sign-up returns a session.
+ */
+export default function AvatarScreen() {
+  const draft = useOnboardingDraft();
+
+  async function pick() {
+    // Cropped square here rather than centre-cropped later, so the person
+    // chooses which part of the photo is their face.
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+    if (result.canceled) return;
+    const asset = result.assets[0];
+    draft.set({ avatar: { uri: asset.uri, width: asset.width, height: asset.height } });
+  }
+
+  return (
+    <OnboardingScreen
+      step={3}
+      title={t(ONBOARDING.AVATAR.TITLE)}
+      subtitle={t(ONBOARDING.AVATAR.SUBTITLE)}
+      cta={t(ONBOARDING.AVATAR.CTA)}
+      onNext={() => router.push('/(onboarding)/signup')}
+      secondary={t(ONBOARDING.AVATAR.SKIP)}
+      onSecondary={() => {
+        // "Add later" means without one — not with whatever was picked and
+        // then reconsidered.
+        draft.set({ avatar: null });
+        router.push('/(onboarding)/signup');
+      }}
+    >
+      <View className="mt-[22px] h-[276px] items-center justify-center gap-5 rounded-lg bg-surface-violet-deep">
+        <Pressable
+          className="h-[164px] w-[164px]"
+          onPress={() => void pick()}
+          accessibilityRole="button"
+          accessibilityLabel={t(ONBOARDING.AVATAR.PICK)}
+        >
+          {draft.avatar ? (
+            <Image
+              source={{ uri: draft.avatar.uri }}
+              className="h-[164px] w-[164px] rounded-[82px]"
+              contentFit="cover"
+            />
+          ) : (
+            <DottedDisc size={164} />
+          )}
+          <View className="absolute bottom-2 right-0.5 h-11 w-11 items-center justify-center rounded-[22px] border-[3px] border-surface-violet-deep bg-purple">
+            <Plus size={20} color={colors.white} strokeWidth={2.6} />
+          </View>
+        </Pressable>
+
+        <Text variant="body" className="text-ink-faint">
+          {t(ONBOARDING.AVATAR.PICK)}
+        </Text>
+      </View>
+    </OnboardingScreen>
+  );
+}
+```
+
+- [ ] **Step 12: Open the form in sign-in mode from the welcome screen**
+
+In `app/(onboarding)/welcome.tsx`, change the "Sign in" link's `onPress` to:
+
+```tsx
+              onPress={() =>
+                router.push({ pathname: '/(onboarding)/details', params: { mode: 'signin' } })
+              }
+```
+
+- [ ] **Step 13: Wire the details form**
+
+Replace `app/(onboarding)/details.tsx` with:
+
+```tsx
+import { useState } from 'react';
+import { Pressable, TextInput, View } from 'react-native';
+import { router, useLocalSearchParams } from 'expo-router';
+import { useMutation } from '@tanstack/react-query';
+import { Check, Eye, Mail } from 'lucide-react-native';
+import { cn } from '@/shared/lib/cn';
+import { Button } from '@/shared/ui/button';
+import { CloseRow } from '@/shared/ui/close-row';
+import { ProgressHeader } from '@/shared/ui/progress-header';
+import { Screen } from '@/shared/ui/screen';
+import { Text } from '@/shared/ui/text';
+import { colors } from '@/shared/theme/colors';
+import { spacing } from '@/shared/theme/page-structure';
+import { getLocale, t } from '@/shared/i18n/i18n';
+import { ONBOARDING } from '@/shared/i18n/keys';
+import { errorMessage } from '@/shared/lib/error-message';
+import { signIn, signUp } from '@/features/auth/data/auth-api';
+import { useOnboardingDraft } from '@/features/onboarding/hooks/use-onboarding-draft';
+/**
+ * Screen `04a Your details · 4 of 7`, and the sign-in form.
+ *
+ * One form in two modes: they differ by four strings and one request, and a
+ * separate screen would duplicate the field layout and the strength meter.
+ *
+ * This is the one action in the app that is not optimistic. Everywhere else the
+ * UI can assume the write lands; here there is nothing to assume until the
+ * server has said who this is.
+ */
+type Mode = 'signup' | 'signin';
+
+export default function DetailsScreen() {
+  const params = useLocalSearchParams<{ mode?: string }>();
+  const [mode, setMode] = useState<Mode>(params.mode === 'signin' ? 'signin' : 'signup');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [reveal, setReveal] = useState(false);
+  const [consent, setConsent] = useState(true);
+  /** Set for the two sign-up answers that are neither success nor an error. */
+  const [notice, setNotice] = useState<string | null>(null);
+  const draft = useOnboardingDraft();
+
+  const signingUp = mode === 'signup';
+  const strength = passwordStrength(password);
+  const valid = email.includes('@') && password.length >= 9 && (!signingUp || consent);
+
+  const submit = useMutation({
+    mutationFn: async (): Promise<'signed-in' | 'confirmation-required' | 'already-registered'> => {
+      if (!signingUp) {
+        await signIn({ email, password });
+        return 'signed-in';
+      }
+      const outcome = await signUp({ email, password, firstName: draft.firstName, locale: getLocale() });
+      return outcome.kind;
+    },
+    onSuccess: (kind) => {
+      if (kind !== 'signed-in') {
+        setNotice(
+          t(
+            kind === 'already-registered'
+              ? ONBOARDING.DETAILS.ERRORS.ALREADY_REGISTERED
+              : ONBOARDING.DETAILS.ERRORS.CONFIRMATION_REQUIRED,
+          ),
+        );
+        setMode('signin');
+        return;
+      }
+      // A new account carries on at step 5. An existing one goes through the
+      // entry point, which knows whether it ever finished onboarding.
+      router.replace(signingUp ? '/(onboarding)/friends' : '/');
+    },
+  });
+
+  function onSubmit() {
+    setNotice(null);
+    if (signingUp && draft.firstName.trim().length === 0) {
+      // Reached by deep link or a reload. The signup trigger needs a name to
+      // build the profile row and generate the username.
+      router.push('/(onboarding)/name');
+      return;
+    }
+    submit.mutate();
+  }
+
+  function switchMode() {
+    setNotice(null);
+    submit.reset();
+    setMode(signingUp ? 'signin' : 'signup');
+  }
+
+  const copy = signingUp
+    ? {
+        title: ONBOARDING.DETAILS.TITLE,
+        subtitle: ONBOARDING.DETAILS.SUBTITLE,
+        cta: ONBOARDING.DETAILS.CTA,
+        prompt: ONBOARDING.DETAILS.HAS_ACCOUNT,
+        action: ONBOARDING.DETAILS.SIGN_IN,
+      }
+    : {
+        title: ONBOARDING.DETAILS.SIGN_IN_TITLE,
+        subtitle: ONBOARDING.DETAILS.SIGN_IN_SUBTITLE,
+        cta: ONBOARDING.DETAILS.SIGN_IN_CTA,
+        prompt: ONBOARDING.DETAILS.NO_ACCOUNT,
+        action: ONBOARDING.DETAILS.CREATE_ACCOUNT,
+      };
+
+  const message = notice ?? (submit.error ? errorMessage(submit.error) : null);
+
+  return (
+    <Screen
+      footer={
+        <View className="gap-[18px]">
+          {message ? (
+            <Text variant="subtitle" className="text-center text-purple-deep">
+              {message}
+            </Text>
+          ) : null}
+          <Button
+            label={t(copy.cta)}
+            size="xl"
+            disabled={!valid}
+            loading={submit.isPending}
+            onPress={onSubmit}
+          />
+          <Text variant="subtitle" className="text-center text-muted-lilac">
+            {t(copy.prompt)}{' '}
+            <Text
+              variant="subtitle"
+              weight="semibold"
+              className="text-ink-body"
+              accessibilityRole="link"
+              onPress={switchMode}
+            >
+              {t(copy.action)}
+            </Text>
+          </Text>
+        </View>
+      }
+      className="bg-surface-alt"
+      gutter={spacing.gutterWide}
+      scroll
+    >
+      {/* Signing in is not step 4 of anything — it is reached from the welcome
+          screen as often as from the flow. */}
+      {signingUp ? (
+        <ProgressHeader step={4} onClose={() => router.back()} />
+      ) : (
+        <CloseRow onPress={() => router.back()} />
+      )}
+
+      <Text variant="display" className="mt-[22px] text-ink">
+        {t(copy.title)}
+      </Text>
+      <Text variant="bodySm" className="mt-3 text-muted">
+        {t(copy.subtitle)}
+      </Text>
+
+      <View className="mt-7 gap-[18px]">
+        <View className="gap-2">
+          <Text variant="meta" className="text-muted">
+            {t(ONBOARDING.DETAILS.EMAIL_LABEL)}
+          </Text>
+          <View className={cn(INPUT, email.length > 0 && 'border-purple')}>
+            <Mail size={21} color={colors.purple} strokeWidth={1.6} />
+            <TextInput
+              value={email}
+              onChangeText={setEmail}
+              placeholder={t(ONBOARDING.DETAILS.EMAIL_PLACEHOLDER)}
+              placeholderTextColor={colors.placeholder}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoComplete="email"
+              className={INPUT_TEXT}
+            />
+          </View>
+        </View>
+
+        <View className="gap-2">
+          <Text variant="meta" className="text-muted">
+            {t(ONBOARDING.DETAILS.PASSWORD_LABEL)}
+          </Text>
+          <View className={cn(INPUT, 'bg-surface-violet-warm')}>
+            <TextInput
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry={!reveal}
+              autoCapitalize="none"
+              autoComplete={signingUp ? 'new-password' : 'current-password'}
+              className={INPUT_TEXT}
+            />
+            <Pressable
+              onPress={() => setReveal((r) => !r)}
+              hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel={
+                reveal ? t(ONBOARDING.DETAILS.HIDE_PASSWORD) : t(ONBOARDING.DETAILS.SHOW_PASSWORD)
+              }
+            >
+              <Eye size={21} color={colors.muted} strokeWidth={1.6} />
+            </Pressable>
+          </View>
+
+          {/* A strength meter on the way in would be rating a password that is
+              already set. */}
+          {signingUp ? (
+            <View className="flex-row items-center gap-2.5 pl-0.5">
+              <View className="flex-row gap-1">
+                {[0, 1, 2, 3].map((i) => (
+                  <View
+                    key={i}
+                    className={cn(
+                      'h-[5px] w-[34px] rounded-[3px]',
+                      i < strength ? 'bg-purple' : 'bg-border-lilac',
+                    )}
+                  />
+                ))}
+              </View>
+              <Text variant="metaSm" className="text-muted">
+                {t(ONBOARDING.DETAILS.PASSWORD_HINT)}
+              </Text>
+            </View>
+          ) : null}
+        </View>
+      </View>
+
+      {signingUp ? (
+        <Pressable
+          className="mt-[22px] flex-row items-start gap-3"
+          onPress={() => setConsent((c) => !c)}
+          accessibilityRole="checkbox"
+          accessibilityState={{ checked: consent }}
+        >
+          <View
+            className={cn(
+              'mt-px h-6 w-6 items-center justify-center rounded-[8px]',
+              consent ? 'bg-purple' : 'border-[1.8px] border-swatch-grey bg-transparent',
+            )}
+          >
+            {consent ? <Check size={14} color={colors.white} strokeWidth={2.2} /> : null}
+          </View>
+          <Text variant="subtitle" className="flex-1 text-muted-lilac">
+            {t(ONBOARDING.DETAILS.CONSENT, {
+              terms: t(ONBOARDING.SIGN_UP.TERMS),
+              privacy: t(ONBOARDING.SIGN_UP.PRIVACY),
+            })}
+          </Text>
+        </Pressable>
+      ) : null}
+    </Screen>
+  );
+}
+
+/** 0-4, mapped onto the four segments the mock draws. */
+function passwordStrength(value: string): number {
+  let score = 0;
+  if (value.length >= 9) score++;
+  if (/[A-Z]/.test(value)) score++;
+  if (/[0-9]/.test(value)) score++;
+  if (/[^A-Za-z0-9]/.test(value)) score++;
+  return score;
+}
+
+const INPUT =
+  'h-[62px] flex-row items-center gap-3 rounded-input border-[1.5px] border-border-input bg-white px-[18px]';
+const INPUT_TEXT = 'flex-1 p-0 font-sans text-[17.5px] text-ink-body';
+```
+
+- [ ] **Step 14: Typecheck, format and test**
+
+Run: `npm run typecheck`
+Expected: exits 0.
+
+Run: `npx prettier --write app src && npm test`
+Expected: Prettier rewrites nothing unexpected; all tests pass.
+
+- [ ] **Step 15: Commit**
+
+```bash
+git add app src
+git commit -m "feat: email and password sign up and sign in" -m "Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01XKE3Z4Mi437u3iDrbumuSC"
+```
+
+---
+
+### Task 10: Profile reads, writes, the avatar placeholder and sign-out
+
+**Files:**
+- Create: `src/shared/ui/dotted-disc.tsx`, `src/features/profile/data/profile-mutations.ts`, `src/features/profile/hooks/use-stamp-onboarding-done.ts`, `src/features/profile/components/profile-actions-sheet.tsx`, `src/features/auth/sign-out.ts`
+- Modify: `src/features/profile/data/profile-api.ts`, `src/shared/ui/avatar.tsx`, `src/features/feed/components/feed-header.tsx`, `src/features/profile/components/profile-view.tsx`, `app/_layout.tsx`, `app/(app)/_layout.tsx`, `app/(app)/profile.tsx`, `app/(app)/feed.tsx`, `app/profile/[userId].tsx`, `app/(onboarding)/avatar.tsx`, `app/(onboarding)/details.tsx`, `app/(onboarding)/heard-about.tsx`
+
+**Interfaces:**
+- Consumes: `optimistic` / `patch` (Task 7), `queries.profile.byId` and `useMe` (Task 8), `resizeJpeg` / `MAX_AVATAR_EDGE` and the onboarding draft (Task 9), `PROFILE.SIGN_OUT` (Task 6).
+- Produces:
+  - `DottedDisc({ size, letter?, gapColor? })` from `@/shared/ui/dotted-disc`.
+  - `Avatar` now takes `source: ImageSource | string | number | null` and `name?: string`; a falsy source draws the disc with the name's first letter.
+  - From `@/features/profile/data/profile-api`: `updateProfile(patch: TablesUpdate<'profiles'>): Promise<Profile>`, `uploadAvatar(asset: { uri: string; width: number; height: number }): Promise<Profile>`, `avatarUrl(path: string | null): string | null`.
+  - `useUpdateProfile()` and `type ProfilePatch = TablesUpdate<'profiles'>` from `@/features/profile/data/profile-mutations`.
+  - `useStampOnboardingDone(): void`.
+  - `ProfileActionsSheet({ visible, onClose })`.
+  - From `@/features/auth/sign-out`: `clearUserData(queryClient: QueryClient): Promise<void>`, `signOut(queryClient: QueryClient): Promise<void>`.
+  - `ProfileView` now takes `{ profile: Profile; subtitle: string; leading: ReactNode; pairs: MomentPair[]; onPressTrade: () => void; onPressMore?: () => void }` — it no longer fetches, and no longer wants a bundled `photo`.
+
+- [ ] **Step 1: Move the dotted disc and make it scale**
+
+Create `src/shared/ui/dotted-disc.tsx`:
+
+```tsx
+import { useId } from 'react';
+import { View } from 'react-native';
+import Svg, { Circle, Defs, Pattern } from 'react-native-svg';
+import { Text } from '@/shared/ui/text';
+import { colors } from '@/shared/theme/colors';
+/**
+ * The mock's empty avatar: a purple disc carrying a fine dot pattern.
+ *   background-image: radial-gradient(rgba(255,255,255,.55) 1.6px, transparent 1.7px)
+ *   background-size: 13px 13px
+ * React Native has no background-image, so it is drawn as an SVG pattern.
+ *
+ * Two callers: the avatar step's picker at 164px, and every avatar of someone
+ * who has not set a photo, down to 30px in a chat bubble — hence the insets
+ * and the dot grid being fractions of the size rather than the mock's literal
+ * pixel values.
+ */
+interface DottedDiscProps {
+  size: number;
+  /** Centred initial, drawn when this stands in for a person. */
+  letter?: string;
+  /** The ring between the dots and the outline: the colour behind the disc. */
+  gapColor?: string;
+}
+
+export function DottedDisc({ size, letter, gapColor = colors.surfaceVioletDeep }: DottedDiscProps) {
+  // Pattern ids are document-global on web, and a story rail draws a dozen of
+  // these at once.
+  const patternId = `dots-${useId()}`;
+  const r = size / 2;
+  // 13px and 1.6px at the mock's 164px, in proportion everywhere else.
+  const grid = Math.max(6, Math.round(size * 0.079));
+  const dot = grid * 0.123;
+
+  return (
+    <View className="items-center justify-center" style={{ width: size, height: size }}>
+      <Svg width={size} height={size} className="absolute">
+        <Defs>
+          <Pattern id={patternId} width={grid} height={grid} patternUnits="userSpaceOnUse">
+            <Circle cx={grid / 2} cy={grid / 2} r={dot} fill="rgba(255,255,255,.55)" />
+          </Pattern>
+        </Defs>
+        {/* Disc fill, then the dots on top of it. Radii are inset so the
+            outermost stroke sits inside the viewport instead of being clipped. */}
+        <Circle cx={r} cy={r} r={r * 0.902} fill={colors.purple} />
+        <Circle cx={r} cy={r} r={r * 0.902} fill={`url(#${patternId})`} />
+        {/* The mock's gap ring in the surface colour, then the purple outline. */}
+        <Circle cx={r} cy={r} r={r * 0.927} stroke={gapColor} strokeWidth={r * 0.049} fill="none" />
+        <Circle cx={r} cy={r} r={r * 0.966} stroke={colors.purple} strokeWidth={r * 0.0305} fill="none" />
+      </Svg>
+      {letter ? (
+        <Text
+          variant="rowTitle"
+          weight="semibold"
+          className="text-white"
+          style={{ fontSize: Math.round(size * 0.38) }}
+        >
+          {letter}
+        </Text>
+      ) : null}
+    </View>
+  );
+}
+```
+
+In `app/(onboarding)/avatar.tsx`, delete the local `DottedDisc` function, its `DottedDiscProps` interface and its comment block, drop the now-unused `Svg`, `Circle`, `Defs`, `Pattern` and `colors` imports if nothing else on the screen uses them (`colors` is still used by the `+` badge, so keep it), and add:
+
+```ts
+import { DottedDisc } from '@/shared/ui/dotted-disc';
+```
+
+Run: `npm run typecheck`
+Expected: exits 0.
+
+- [ ] **Step 2: Let an avatar be absent**
+
+Replace `src/shared/ui/avatar.tsx` with:
+
+```tsx
+import { View } from 'react-native';
+import { Image, ImageSource } from 'expo-image';
+import { cn } from '@/shared/lib/cn';
+import { DottedDisc } from '@/shared/ui/dotted-disc';
+import { colors } from '@/shared/theme/colors';
+interface AvatarProps {
+  /** `null` — or the empty string a profile with no avatar resolves to — draws the placeholder. */
+  source: ImageSource | string | number | null;
+  /** Its first letter goes in the placeholder. */
+  name?: string;
+  size?: number;
+  /**
+   * Ring styles from the mock:
+   *  - `none`    plain circle
+   *  - `halo`    2px white border + 1.5px #DCD0F7 outer ring (feed header, profile)
+   *  - `active`  solid purple ring with a white gap (you / unread story)
+   *  - `idle`    grey ring with a white gap (read story)
+   */
+  ring?: 'none' | 'halo' | 'active' | 'idle';
+  dimmed?: boolean;
+  className?: string;
+}
+
+export function Avatar({ source, name, size = 52, ring = 'none', dimmed = false, className }: AvatarProps) {
+  const img = typeof source === 'string' ? { uri: source } : source;
+  // Size is a prop, so the frame stays a style. The Image itself is styled
+  // entirely through `style`: on web, NativeWind cannot mix `className` with a
+  // numeric `style` on a registered third-party component.
+  const round = { borderRadius: size / 2 };
+  const opacity = dimmed ? 0.55 : 1;
+  const letter = name?.trim().charAt(0).toUpperCase() || undefined;
+
+  if (ring === 'active' || ring === 'idle') {
+    // Mock: a coloured disc with 2.4px padding, and the photo carries a white
+    // border of the same thickness.
+    const ringWidth = size * 0.041;
+    return (
+      <View
+        className={cn(ring === 'active' ? 'bg-purple' : 'bg-avatar-ring-idle', className)}
+        style={[round, { width: size, height: size, padding: ringWidth }]}
+      >
+        {source ? (
+          <Image
+            source={img}
+            style={[
+              round,
+              { width: '100%', height: '100%', borderWidth: ringWidth, borderColor: colors.white, opacity },
+            ]}
+            contentFit="cover"
+          />
+        ) : (
+          // The disc draws its own white gap ring, so it replaces the border.
+          <View style={{ opacity }}>
+            <DottedDisc size={size - ringWidth * 2} letter={letter} gapColor={colors.white} />
+          </View>
+        )}
+      </View>
+    );
+  }
+
+  return (
+    <View className={className}>
+      {source ? (
+        <Image
+          source={img}
+          style={[
+            round,
+            { width: size, height: size, opacity },
+            ring === 'halo' && { borderWidth: 2, borderColor: colors.white },
+          ]}
+          contentFit="cover"
+        />
+      ) : (
+        <View style={{ opacity }}>
+          <DottedDisc size={size} letter={letter} gapColor={colors.white} />
+        </View>
+      )}
+      {ring === 'halo' ? (
+        <View
+          className="absolute inset-0 -m-[1.5px] border-[1.5px] border-purple-halo"
+          style={round}
+          pointerEvents="none"
+        />
+      ) : null}
+    </View>
+  );
+}
+```
+
+- [ ] **Step 3: Write the profile**
+
+Append to `src/features/profile/data/profile-api.ts`:
+
+```ts
+/** The public URL of an avatar object. The bucket is public, so no signing. */
+export function avatarUrl(path: string | null): string | null {
+  if (!path) return null;
+  return supabase.storage.from('avatars').getPublicUrl(path).data.publicUrl;
+}
+
+/** Only the columns the RLS column grant allows; anything else fails at the database. */
+export async function updateProfile(values: TablesUpdate<'profiles'>): Promise<Profile> {
+  const { data, error } = await supabase
+    .from('profiles')
+    .update(values)
+    .eq('id', currentUserId())
+    .select('*')
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+/**
+ * Resize to 512, upload under a fresh timestamped key, point the profile at it,
+ * then remove the old object.
+ *
+ * A new avatar therefore has a new URL, so no image cache anywhere — expo-image
+ * on the phone, the browser on the web build — can go on serving the old one.
+ */
+export async function uploadAvatar(asset: { uri: string; width: number; height: number }): Promise<Profile> {
+  const userId = currentUserId();
+  const resized = await resizeJpeg(asset.uri, asset, MAX_AVATAR_EDGE);
+  // Object key inside the `avatars` bucket; the storage policy requires the
+  // first folder to be the caller's id.
+  const path = `${userId}/${Date.now()}.jpg`;
+
+  // `fetch(file://…).arrayBuffer()` rather than a Blob: React Native's Blob has
+  // no data the Storage client can read.
+  const body = await (await fetch(resized.uri)).arrayBuffer();
+  const { error } = await supabase.storage
+    .from('avatars')
+    .upload(path, body, { contentType: 'image/jpeg', upsert: false });
+  if (error) throw error;
+
+  const previous = (await fetchProfile(userId))?.avatar_storage_path ?? null;
+  const profile = await updateProfile({ avatar_storage_path: path });
+  // Best effort, and deliberately after the row is updated: an orphaned object
+  // costs a few kilobytes, a premature delete costs the person their picture.
+  if (previous && previous !== path) await supabase.storage.from('avatars').remove([previous]);
+  return profile;
+}
+```
+
+and extend its imports to:
+
+```ts
+import { supabase } from '@/shared/lib/supabase';
+import { MAX_AVATAR_EDGE, resizeJpeg } from '@/shared/lib/resize';
+import { currentUserId } from '@/features/auth/current-user';
+import type { Profile, TablesUpdate } from '@/shared/lib/database.types';
+```
+
+Create `src/features/profile/data/profile-mutations.ts`:
+
+```ts
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { optimistic, patch } from '@/shared/lib/optimistic';
+import { queries } from '@/shared/lib/queries';
+import { useSession } from '@/features/auth/hooks/use-session';
+import { updateProfile } from '@/features/profile/data/profile-api';
+import type { Profile, TablesUpdate } from '@/shared/lib/database.types';
+
+export type ProfilePatch = TablesUpdate<'profiles'>;
+
+/** Merges the patch into the cached profile at once; the refetch confirms it. */
+export function useUpdateProfile() {
+  const queryClient = useQueryClient();
+  const { userId } = useSession();
+
+  return useMutation({
+    mutationFn: (values: ProfilePatch) => updateProfile(values),
+    ...optimistic(queryClient, [
+      patch<Profile | null, ProfilePatch>(queries.profile.byId(userId ?? '').queryKey, (old, values) =>
+        old ? { ...old, ...values } : old,
+      ),
+    ]),
+  });
+}
+```
+
+- [ ] **Step 4: Stamp onboarding as done when the tabs mount**
+
+Create `src/features/profile/hooks/use-stamp-onboarding-done.ts`:
+
+```ts
+import { useEffect } from 'react';
+import { useMe } from '@/features/profile/hooks/use-me';
+import { useUpdateProfile } from '@/features/profile/data/profile-mutations';
+/**
+ * Onboarding counts as finished the first time the signed-in tabs mount, not on
+ * the thank-you screen: "Look around first" leaves the flow too, and a relaunch
+ * must not drop that person back into step 5.
+ */
+export function useStampOnboardingDone() {
+  const { data: me } = useMe();
+  const { mutate, isPending, isSuccess } = useUpdateProfile();
+  // Primitive deps only: every refetch hands back a new object for the same
+  // profile, which must not stamp it a second time.
+  const needsStamp = me != null && me.onboarding_done_at === null;
+
+  useEffect(() => {
+    if (needsStamp && !isPending && !isSuccess) mutate({ onboarding_done_at: new Date().toISOString() });
+  }, [needsStamp, isPending, isSuccess, mutate]);
+}
+```
+
+In `app/(app)/_layout.tsx`, add the import and call it at the top of `AppLayout`:
+
+```ts
+import { useStampOnboardingDone } from '@/features/profile/hooks/use-stamp-onboarding-done';
+```
+
+```ts
+  useStampOnboardingDone();
+```
+
+- [ ] **Step 5: Sign out**
+
+Create `src/features/auth/sign-out.ts`:
+
+```ts
+import { router } from 'expo-router';
+import type { QueryClient } from '@tanstack/react-query';
+import { supabase } from '@/shared/lib/supabase';
+import { queryPersister } from '@/shared/lib/query-client';
+import { useComposer } from '@/features/moments/hooks/use-composer';
+import { useOnboardingDraft } from '@/features/onboarding/hooks/use-onboarding-draft';
+/**
+ * Everything on this device that belongs to whoever was signed in.
+ *
+ * Called on sign-out, and by the root layout whenever the user id changes away
+ * from a previous one — an expired session that comes back as somebody else
+ * must not inherit the last person's cached feed, and the cache is on disk.
+ *
+ * Tasks 13 and 14 add the signed-URL cache and the outbox to this list.
+ */
+export async function clearUserData(queryClient: QueryClient): Promise<void> {
+  supabase.removeAllChannels();
+  useComposer.reset();
+  useOnboardingDraft.reset();
+  queryClient.clear();
+  await queryPersister.removeClient();
+}
+
+export async function signOut(queryClient: QueryClient): Promise<void> {
+  await supabase.auth.signOut();
+  await clearUserData(queryClient);
+  // `Stack.Protected` drops the signed-in routes as soon as the session flips;
+  // this says where to land rather than leaving it to the fallback.
+  router.replace('/(onboarding)/welcome');
+}
+```
+
+In `app/_layout.tsx`, add to the imports:
+
+```ts
+import { useEffect, useRef } from 'react';
+```
+
+```ts
+import { clearUserData } from '@/features/auth/sign-out';
+```
+
+change the session read to `const { status, userId } = useSession();` and add, next to the other effects in `RootLayout`:
+
+```tsx
+  // A session that ends, expires, or returns as somebody else.
+  const previousUserId = useRef<string | null>(null);
+  useEffect(() => {
+    if (previousUserId.current && previousUserId.current !== userId) void clearUserData(queryClient);
+    previousUserId.current = userId;
+  }, [userId]);
+```
+
+- [ ] **Step 6: The sheet behind the "more" button**
+
+Create `src/features/profile/components/profile-actions-sheet.tsx`:
+
+```tsx
+import { Modal, Pressable, View } from 'react-native';
+import { useQueryClient } from '@tanstack/react-query';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { LogOut } from 'lucide-react-native';
+import { Text } from '@/shared/ui/text';
+import { colors } from '@/shared/theme/colors';
+import { t } from '@/shared/i18n/i18n';
+import { COMMON, PROFILE } from '@/shared/i18n/keys';
+import { signOut } from '@/features/auth/sign-out';
+interface ProfileActionsSheetProps {
+  visible: boolean;
+  onClose: () => void;
+}
+
+/**
+ * The "more" menu on your own profile. An in-app sheet rather than React
+ * Native's `Alert`, which does nothing at all on web — and the web build is how
+ * this work is verified.
+ */
+export function ProfileActionsSheet({ visible, onClose }: ProfileActionsSheetProps) {
+  const queryClient = useQueryClient();
+  const insets = useSafeAreaInsets();
+
+  return (
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+      <Pressable
+        className="flex-1 justify-end bg-[rgba(12,10,18,.45)]"
+        onPress={onClose}
+        accessibilityRole="button"
+        accessibilityLabel={t(COMMON.CLOSE)}
+      >
+        {/* Swallows the press, so tapping the sheet itself does not dismiss it. */}
+        <Pressable
+          className="rounded-t-lg bg-white px-5 pt-2"
+          style={{ paddingBottom: insets.bottom + 12 }}
+          onPress={() => {}}
+        >
+          <View className="mb-3 h-1 w-10 self-center rounded-pill bg-border-lilac" />
+          <Pressable
+            className="h-14 flex-row items-center gap-3.5 active:opacity-70"
+            onPress={() => {
+              onClose();
+              void signOut(queryClient);
+            }}
+            accessibilityRole="button"
+          >
+            <LogOut size={20} color={colors.inkBody} strokeWidth={2} />
+            <Text variant="rowTitleSm" className="text-ink">
+              {t(PROFILE.SIGN_OUT)}
+            </Text>
+          </Pressable>
+        </Pressable>
+      </Pressable>
+    </Modal>
+  );
+}
+```
+
+- [ ] **Step 7: Profile view on real data**
+
+Replace `src/features/profile/components/profile-view.tsx` with:
+
+```tsx
+import { ReactNode } from 'react';
+import { View } from 'react-native';
+import { router } from 'expo-router';
+import { MoreHorizontal } from 'lucide-react-native';
+import { Avatar } from '@/shared/ui/avatar';
+import { Button } from '@/shared/ui/button';
+import { CameraIcon } from '@/shared/ui/icons';
+import { GlassButton } from '@/shared/ui/glass-button';
+import { SectionHeading } from '@/shared/ui/section-heading';
+import { Text } from '@/shared/ui/text';
+import { colors } from '@/shared/theme/colors';
+import { t } from '@/shared/i18n/i18n';
+import { COMMON, PROFILE } from '@/shared/i18n/keys';
+import type { Profile } from '@/shared/lib/database.types';
+import type { MomentPair } from '@/features/moments/interfaces';
+import { avatarUrl } from '@/features/profile/data/profile-api';
+import { PairGrid } from '@/features/profile/components/pair-grid';
+interface ProfileViewProps {
+  profile: Profile;
+  /** Line under the name: a tagline, or "Trading since …". */
+  subtitle: string;
+  /** Top-left control: a close button on a friend's profile, a spacer on your own. */
+  leading: ReactNode;
+  /** Passed in rather than fetched: the two screens ask different questions. */
+  pairs: MomentPair[];
+  onPressTrade: () => void;
+  /** Only your own profile has anything behind "more". */
+  onPressMore?: () => void;
+}
+
+/**
+ * Header, identity, trade CTA and pair grid — shared by your own profile (the
+ * tab) and a friend's profile (pushed from the feed). The two artboards differ
+ * only in the top-left control, what the grid holds, and where the CTA sends you.
+ */
+export function ProfileView({ profile, subtitle, leading, pairs, onPressTrade, onPressMore }: ProfileViewProps) {
+  return (
+    <>
+      <View className="flex-row items-start justify-between">
+        {leading}
+        <Avatar
+          source={avatarUrl(profile.avatar_storage_path)}
+          name={profile.first_name}
+          size={104}
+          ring="halo"
+          className="-mt-1"
+        />
+        <GlassButton size={44} onPress={onPressMore} accessibilityLabel={t(COMMON.MORE)}>
+          <MoreHorizontal size={20} color={colors.inkSoft} strokeWidth={2.4} />
+        </GlassButton>
+      </View>
+
+      <View className="mt-3.5 items-center gap-1">
+        <Text variant="title" className="text-ink">
+          {profile.first_name}
+        </Text>
+        <Text variant="body" className="text-muted-grey">
+          {subtitle}
+        </Text>
+      </View>
+
+      <Button
+        label={t(PROFILE.TRADE_CTA)}
+        size="md"
+        className="mt-4"
+        icon={<CameraIcon size={22} lensColor={colors.ink} />}
+        onPress={onPressTrade}
+      />
+
+      <SectionHeading title={t(PROFILE.MOMENTS_TITLE)} className="mb-3.5 mt-4" />
+
+      {pairs.length > 0 ? (
+        <PairGrid pairs={pairs} onPressPhoto={(momentId) => router.push(`/photo/${momentId}`)} />
+      ) : (
+        <Text variant="bodySm" className="mt-8 text-center text-muted-lilac">
+          {t(PROFILE.PAIRS_EMPTY)}
+        </Text>
+      )}
+    </>
+  );
+}
+```
+
+- [ ] **Step 8: The two profile screens**
+
+Replace `app/(app)/profile.tsx` with:
+
+```tsx
+import { useState } from 'react';
+import { View } from 'react-native';
+import { useQuery } from '@tanstack/react-query';
+import { router } from 'expo-router';
+import { spacing } from '@/shared/theme/page-structure';
+import { memberSince } from '@/shared/lib/format';
+import { queries } from '@/shared/lib/queries';
+import { useMe } from '@/features/profile/hooks/use-me';
+import { ProfileView } from '@/features/profile/components/profile-view';
+import { ProfileActionsSheet } from '@/features/profile/components/profile-actions-sheet';
+import { TabScreen } from '@/features/navigation/tab-screen';
+/** Your own profile — the Profile tab. */
+export default function OwnProfileScreen() {
+  const { data: me } = useMe();
+  const [actionsOpen, setActionsOpen] = useState(false);
+  const { data: pairs = [] } = useQuery({
+    ...queries.moments.pairs(me?.id ?? ''),
+    enabled: me != null,
+  });
+
+  return (
+    <TabScreen gutter={spacing.gutterTight}>
+      {me ? (
+        <>
+          <ProfileView
+            profile={me}
+            subtitle={memberSince(me.created_at)}
+            // Balances the "more" button on the right so the avatar stays centred.
+            leading={<View className="w-11" />}
+            pairs={pairs}
+            onPressTrade={() => router.push('/camera')}
+            onPressMore={() => setActionsOpen(true)}
+          />
+          <ProfileActionsSheet visible={actionsOpen} onClose={() => setActionsOpen(false)} />
+        </>
+      ) : null}
+    </TabScreen>
+  );
+}
+```
+
+Replace `app/profile/[userId].tsx` with:
+
+```tsx
+import { useQuery } from '@tanstack/react-query';
+import { router, useLocalSearchParams } from 'expo-router';
+import { X } from 'lucide-react-native';
+import { GlassButton } from '@/shared/ui/glass-button';
+import { Screen } from '@/shared/ui/screen';
+import { colors } from '@/shared/theme/colors';
+import { spacing } from '@/shared/theme/page-structure';
+import { t } from '@/shared/i18n/i18n';
+import { COMMON } from '@/shared/i18n/keys';
+import { memberSince } from '@/shared/lib/format';
+import { queries } from '@/shared/lib/queries';
+import { ProfileView } from '@/features/profile/components/profile-view';
+import { useComposer } from '@/features/moments/hooks/use-composer';
+/**
+ * Screen `07b Profil` — a friend's profile, pushed from the feed or a list.
+ * Trading from here pre-selects them as the recipient.
+ */
+export default function ProfileScreen() {
+  const { userId } = useLocalSearchParams<{ userId: string }>();
+  const composer = useComposer();
+  const { data: profile } = useQuery({
+    ...queries.profile.byId(userId ?? ''),
+    enabled: Boolean(userId),
+  });
+  const { data: pairs = [] } = useQuery({
+    ...queries.moments.pairs(userId ?? ''),
+    enabled: Boolean(userId),
+  });
+
+  return (
+    <Screen scroll gutter={spacing.gutterTight} bottomInset={spacing.contentBottom}>
+      {profile ? (
+        <ProfileView
+          profile={profile}
+          subtitle={profile.tagline || memberSince(profile.created_at)}
+          leading={
+            <GlassButton size={44} onPress={() => router.back()} accessibilityLabel={t(COMMON.CLOSE)}>
+              <X size={15} color={colors.inkSoft} strokeWidth={2.2} />
+            </GlassButton>
+          }
+          pairs={pairs}
+          onPressTrade={() => {
+            composer.set({ recipientIds: [profile.id] });
+            router.push('/camera');
+          }}
+        />
+      ) : null}
+    </Screen>
+  );
+}
+```
+
+- [ ] **Step 9: The feed header is a real person**
+
+In `src/features/feed/components/feed-header.tsx`, widen the prop and pass the name through:
+
+```ts
+  avatar: string | number | null;
+```
+
+```tsx
+        <Avatar source={avatar} name={name} size={52} ring="halo" />
+```
+
+In `app/(app)/feed.tsx`, add:
+
+```ts
+import { avatarUrl } from '@/features/profile/data/profile-api';
+import { useMe } from '@/features/profile/hooks/use-me';
+```
+
+```ts
+  const { data: me } = useMe();
+```
+
+and replace the three fixture props on `<FeedHeader>`:
+
+```tsx
+          avatar={avatarUrl(me?.avatar_storage_path ?? null)}
+          name={me?.first_name ?? ''}
+          subtitle={me ? memberSince(me.created_at) : ''}
+```
+
+The story rail, the empty state and the cards still read fixtures; Task 15 finishes this screen.
+
+- [ ] **Step 10: Upload the draft avatar after sign-up**
+
+In `app/(onboarding)/details.tsx`, add:
+
+```ts
+import { uploadAvatar } from '@/features/profile/data/profile-api';
+import { useOnboardingDraft } from '@/features/onboarding/hooks/use-onboarding-draft';
+```
+
+(the draft import is already there) and replace the sign-up branch of `mutationFn` with:
+
+```ts
+      const outcome = await signUp({ email, password, firstName: draft.firstName, locale: getLocale() });
+      if (outcome.kind === 'signed-in') {
+        // The account exists now, so the picture finally has somewhere to go.
+        if (draft.avatar) await uploadAvatar(draft.avatar);
+        useOnboardingDraft.reset();
+      }
+      return outcome.kind;
+```
+
+- [ ] **Step 11: Record where they heard about Glimpse**
+
+In `app/(onboarding)/heard-about.tsx`, add:
+
+```ts
+import { useUpdateProfile } from '@/features/profile/data/profile-mutations';
+```
+
+```ts
+  const update = useUpdateProfile();
+```
+
+change the initial choice from the mock's pre-selected state to none — a
+pre-ticked radio would write "tiktok" as the answer of everyone who taps Next
+without reading:
+
+```ts
+  const [choice, setChoice] = useState<ChannelKey | null>(null);
+```
+
+and write the answer on the way out:
+
+```tsx
+        <CtaFooter
+          label={t(ONBOARDING.HEARD_ABOUT.CTA)}
+          disabled={!choice}
+          onPress={() => {
+            // Optimistic like everything else: attribution input is not
+            // something the next screen depends on.
+            if (choice) update.mutate({ heard_about: choice });
+            router.replace('/(onboarding)/thank-you');
+          }}
+          secondary={t(ONBOARDING.HEARD_ABOUT.SKIP)}
+          onSecondary={() => router.replace('/(onboarding)/thank-you')}
+        />
+```
+
+- [ ] **Step 12: Typecheck, format and test**
+
+Run: `npm run typecheck`
+Expected: exits 0. Remaining errors will be call sites still handing `ProfileView` a fixture profile; there should be none.
+
+Run: `npx prettier --write app src && npm test`
+Expected: all tests pass.
+
+- [ ] **Step 13: Commit**
+
+```bash
+git add app src
+git commit -m "feat: real profiles, avatar uploads, the avatar placeholder and sign out" -m "Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01XKE3Z4Mi437u3iDrbumuSC"
+```
+
+---
 
 ### Task 11: Friends data
-- `interfaces.ts`: `PersonSummary { id; name; username: string | null; tagline: string | null; avatarUrl: string | null }`, `FriendshipWithPeople { id; status; createdAt; requester: PersonSummary; recipient: PersonSummary }`, `Relationship = { kind: 'none' } | { kind: 'friends' | 'sent' | 'received'; friendshipId: string }`.
-- `relationships.ts` (+ test): `otherParty(f, me)`, `friendsOf(list, me)`, `incomingRequests(list, me)`, `sentRequests(list, me)`, `relationshipWith(list, me, otherId)`.
-- `friends-api` (rewrite): `fetchFriendships()` is one select embedding `requester:profiles!friendships_requester_id_fkey(id, first_name, username, tagline, avatar_storage_path)` and the same for `recipient`; `searchProfiles(q)` strips `@`, matches `username.ilike.<q>%` or `first_name.ilike.<q>%`, excludes me, limit 20; `fetchMutualCounts(ids)` via `mutual_friends_counts`; `sendFriendRequest(userId)`, `acceptFriendRequest(id)`, `removeFriendship(id)`.
-- `friends-queries` (replaces the old file): `all`, `search(query)`, `mutual(sortedIds)`.
-- `friends-mutations`: `useSendFriendRequest` appends a pending row built from my profile and the person; `useAcceptFriendRequest` sets `accepted`; `useRemoveFriendship` filters the row out. All patch `friends.all` through `optimistic()`.
+
+**Files:**
+- Create: `src/features/friends/interfaces.ts`, `src/features/friends/relationships.ts`, `src/features/friends/relationships.test.ts`, `src/features/friends/data/friends-mutations.ts`
+- Replace: `src/features/friends/data/friends-api.ts`, `src/features/friends/data/friends-queries.ts`
+- Modify: `src/features/friends/components/person-row.tsx`, `app/recipients.tsx`
+
+**Interfaces:**
+- Consumes: `optimistic` / `patch` (Task 7), `currentUserId` (Task 8), `avatarUrl` and `useMe` (Task 10), `mutual_friends_counts` (Task 3).
+- Produces:
+  - From `@/features/friends/interfaces`: `PersonSummary { id; name; username: string | null; tagline: string | null; avatarUrl: string | null }`, `FriendshipWithPeople { id; status: FriendshipStatus; createdAt: string; requester: PersonSummary; recipient: PersonSummary }`, `Relationship = { kind: 'none' } | { kind: 'friends' | 'sent' | 'received'; friendshipId: string }`.
+  - From `@/features/friends/relationships`: `otherParty`, `friendsOf`, `incomingRequests`, `sentRequests`, `relationshipWith`.
+  - From `@/features/friends/data/friends-api`: `fetchFriendships()`, `searchProfiles(query)`, `fetchMutualCounts(userIds)`, `sendFriendRequest(userId)`, `acceptFriendRequest(friendshipId)`, `removeFriendship(friendshipId)`.
+  - Keys `queries.friends.all`, `queries.friends.search(query)`, `queries.friends.mutual(sortedIds)`. **`queries.friends.list` is gone.**
+  - From `@/features/friends/data/friends-mutations`: `useSendFriendRequest()`, `useAcceptFriendRequest()`, `useRemoveFriendship()`.
+  - `PersonRow` now takes `avatar: string | number | null` and passes `name` through to `Avatar`.
+
+- [ ] **Step 1: Write the shapes**
+
+Create `src/features/friends/interfaces.ts`:
+
+```ts
+import type { FriendshipStatus } from '@/shared/lib/database.types';
+/** A person as every row, rail and picker in the app needs them. */
+export interface PersonSummary {
+  id: string;
+  name: string;
+  username: string | null;
+  tagline: string | null;
+  avatarUrl: string | null;
+}
+
+/** One `friendships` row with both profiles resolved. */
+export interface FriendshipWithPeople {
+  id: string;
+  status: FriendshipStatus;
+  createdAt: string;
+  requester: PersonSummary;
+  recipient: PersonSummary;
+}
+
+/** Where I stand with someone, and the row that says so. */
+export type Relationship =
+  | { kind: 'none' }
+  | { kind: 'friends'; friendshipId: string }
+  | { kind: 'sent'; friendshipId: string }
+  | { kind: 'received'; friendshipId: string };
+```
+
+- [ ] **Step 2: Write the failing selector test**
+
+Create `src/features/friends/relationships.test.ts`:
+
+```ts
+import {
+  friendsOf,
+  incomingRequests,
+  otherParty,
+  relationshipWith,
+  sentRequests,
+} from '@/features/friends/relationships';
+import type { FriendshipWithPeople, PersonSummary } from '@/features/friends/interfaces';
+
+const person = (id: string): PersonSummary => ({
+  id,
+  name: id,
+  username: id,
+  tagline: null,
+  avatarUrl: null,
+});
+
+const link = (
+  id: string,
+  requester: string,
+  recipient: string,
+  status: FriendshipWithPeople['status'],
+): FriendshipWithPeople => ({
+  id,
+  status,
+  createdAt: '2026-09-14T10:00:00Z',
+  requester: person(requester),
+  recipient: person(recipient),
+});
+
+const ME = 'me';
+const list = [
+  link('f1', ME, 'mia', 'accepted'),
+  link('f2', 'ben', ME, 'accepted'),
+  link('f3', 'lina', ME, 'pending'),
+  link('f4', ME, 'noah', 'pending'),
+];
+
+describe('relationships', () => {
+  it('reads the other person whichever side asked', () => {
+    expect(otherParty(list[0], ME).id).toBe('mia');
+    expect(otherParty(list[1], ME).id).toBe('ben');
+  });
+
+  it('counts only accepted rows as friends', () => {
+    expect(friendsOf(list, ME).map((p) => p.id)).toEqual(['mia', 'ben']);
+  });
+
+  it('splits the pending rows by direction', () => {
+    expect(incomingRequests(list, ME).map((f) => f.id)).toEqual(['f3']);
+    expect(sentRequests(list, ME).map((f) => f.id)).toEqual(['f4']);
+  });
+
+  it('names the relationship with one person', () => {
+    expect(relationshipWith(list, ME, 'mia')).toEqual({ kind: 'friends', friendshipId: 'f1' });
+    expect(relationshipWith(list, ME, 'noah')).toEqual({ kind: 'sent', friendshipId: 'f4' });
+    expect(relationshipWith(list, ME, 'lina')).toEqual({ kind: 'received', friendshipId: 'f3' });
+    expect(relationshipWith(list, ME, 'stranger')).toEqual({ kind: 'none' });
+  });
+});
+```
+
+- [ ] **Step 3: Run to see it fail**
+
+Run: `npx jest src/features/friends/relationships.test.ts`
+Expected: FAIL, `Cannot find module '@/features/friends/relationships'`.
+
+- [ ] **Step 4: Write the selectors**
+
+Create `src/features/friends/relationships.ts`:
+
+```ts
+import type { FriendshipWithPeople, PersonSummary, Relationship } from '@/features/friends/interfaces';
+/**
+ * Friends, incoming requests and sent requests are three readings of one list
+ * of friendship rows, not three queries. That is what lets a single optimistic
+ * patch keep the rail, the request list and the search results in step.
+ */
+
+export function otherParty(friendship: FriendshipWithPeople, me: string): PersonSummary {
+  return friendship.requester.id === me ? friendship.recipient : friendship.requester;
+}
+
+export function friendsOf(list: FriendshipWithPeople[], me: string): PersonSummary[] {
+  return list.filter((f) => f.status === 'accepted').map((f) => otherParty(f, me));
+}
+
+/** Waiting on me to accept. */
+export function incomingRequests(list: FriendshipWithPeople[], me: string): FriendshipWithPeople[] {
+  return list.filter((f) => f.status === 'pending' && f.recipient.id === me);
+}
+
+/** Waiting on them. */
+export function sentRequests(list: FriendshipWithPeople[], me: string): FriendshipWithPeople[] {
+  return list.filter((f) => f.status === 'pending' && f.requester.id === me);
+}
+
+/** What a search result's pill should say, and which row it would act on. */
+export function relationshipWith(
+  list: FriendshipWithPeople[],
+  me: string,
+  otherId: string,
+): Relationship {
+  const found = list.find((f) => otherParty(f, me).id === otherId);
+  if (!found) return { kind: 'none' };
+  if (found.status === 'accepted') return { kind: 'friends', friendshipId: found.id };
+  return { kind: found.requester.id === me ? 'sent' : 'received', friendshipId: found.id };
+}
+```
+
+- [ ] **Step 5: Run the test**
+
+Run: `npx jest src/features/friends/relationships.test.ts`
+Expected: PASS (4 tests).
+
+- [ ] **Step 6: Rewrite the API**
+
+Replace `src/features/friends/data/friends-api.ts` with:
+
+```ts
+import { supabase } from '@/shared/lib/supabase';
+import { currentUserId } from '@/features/auth/current-user';
+import { avatarUrl } from '@/features/profile/data/profile-api';
+import type { FriendshipWithPeople, PersonSummary } from '@/features/friends/interfaces';
+/** Everything the friends feature reads and writes. Screens go through the queries and mutations. */
+
+/** The profile columns every person row needs. */
+const PERSON_COLUMNS = 'id, first_name, username, tagline, avatar_storage_path';
+
+interface PersonColumns {
+  id: string;
+  first_name: string;
+  username: string | null;
+  tagline: string | null;
+  avatar_storage_path: string | null;
+}
+
+function toPerson(row: PersonColumns): PersonSummary {
+  return {
+    id: row.id,
+    name: row.first_name,
+    username: row.username,
+    tagline: row.tagline,
+    avatarUrl: avatarUrl(row.avatar_storage_path),
+  };
+}
+
+/**
+ * Every friendship I am in, pending or accepted, with both profiles embedded.
+ *
+ * One query, not three: friends, incoming requests and sent requests are
+ * selectors over these rows (see `relationships.ts`). The `!…_fkey` hints are
+ * required — there are two foreign keys from `friendships` to `profiles`, and
+ * PostgREST will not guess which embed is which.
+ */
+export async function fetchFriendships(): Promise<FriendshipWithPeople[]> {
+  const { data, error } = await supabase
+    .from('friendships')
+    .select(
+      `id, status, created_at,
+       requester:profiles!friendships_requester_id_fkey(${PERSON_COLUMNS}),
+       recipient:profiles!friendships_recipient_id_fkey(${PERSON_COLUMNS})`,
+    )
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+
+  return (data ?? []).map((row) => ({
+    id: row.id,
+    status: row.status,
+    createdAt: row.created_at,
+    requester: toPerson(row.requester),
+    recipient: toPerson(row.recipient),
+  }));
+}
+
+/**
+ * Add-friend search. Handles are the point, so `@` is stripped and both the
+ * handle and the first name are matched from the start.
+ */
+export async function searchProfiles(query: string): Promise<PersonSummary[]> {
+  const needle = query.trim().replace(/^@/, '');
+  if (needle.length === 0) return [];
+  // `,` and `)` are structural inside a PostgREST `or`, so the value is quoted;
+  // `%` is stripped so a stray one cannot turn this into a full scan.
+  const escaped = needle.replace(/["\\%]/g, '');
+  if (escaped.length === 0) return [];
+
+  const { data, error } = await supabase
+    .from('profiles')
+    .select(PERSON_COLUMNS)
+    .or(`username.ilike."${escaped}%",first_name.ilike."${escaped}%"`)
+    .neq('id', currentUserId())
+    .limit(20);
+  if (error) throw error;
+  return (data ?? []).map(toPerson);
+}
+
+/** "3 mutual" for a whole list of results or requests in one call. */
+export async function fetchMutualCounts(userIds: string[]): Promise<Record<string, number>> {
+  if (userIds.length === 0) return {};
+  const { data, error } = await supabase.rpc('mutual_friends_counts', { p_user_ids: userIds });
+  if (error) throw error;
+  return Object.fromEntries((data ?? []).map((row) => [row.user_id, row.mutual]));
+}
+
+/** The pair index means a second request in either direction is a unique violation. */
+export async function sendFriendRequest(userId: string): Promise<string> {
+  const { data, error } = await supabase
+    .from('friendships')
+    .insert({ requester_id: currentUserId(), recipient_id: userId })
+    .select('id')
+    .single();
+  if (error) throw error;
+  return data.id;
+}
+
+/**
+ * Accept an incoming request. `status` is the only column the recipient may
+ * write (see the column grant in the RLS migration); the friend cap trigger
+ * runs on the way in.
+ */
+export async function acceptFriendRequest(friendshipId: string): Promise<void> {
+  const { error } = await supabase.from('friendships').update({ status: 'accepted' }).eq('id', friendshipId);
+  if (error) throw error;
+}
+
+/**
+ * Decline a request, withdraw one you sent, or unfriend: all three delete the
+ * row. There is no declined state on purpose — a kept row would tell the
+ * requester they were declined and block the pair from ever trying again.
+ */
+export async function removeFriendship(friendshipId: string): Promise<void> {
+  const { error } = await supabase.from('friendships').delete().eq('id', friendshipId);
+  if (error) throw error;
+}
+```
+
+Replace `src/features/friends/data/friends-queries.ts` with:
+
+```ts
+import { createQueryKeys } from '@lukemorales/query-key-factory';
+import { fetchFriendships, fetchMutualCounts, searchProfiles } from '@/features/friends/data/friends-api';
+/**
+ * `all` is every friendship I am in. Friends, requests and sent requests are
+ * selectors over it, so one optimistic patch keeps all three in step.
+ */
+export const friendsQueries = createQueryKeys('friends', {
+  all: {
+    queryKey: null,
+    queryFn: fetchFriendships,
+  },
+  search: (query: string) => ({
+    queryKey: [query],
+    queryFn: () => searchProfiles(query),
+  }),
+  /** Ids sorted by the caller, so two lists of the same people share one entry. */
+  mutual: (sortedIds: string[]) => ({
+    queryKey: [sortedIds],
+    queryFn: () => fetchMutualCounts(sortedIds),
+  }),
+});
+```
+
+- [ ] **Step 7: Write the optimistic mutations**
+
+Create `src/features/friends/data/friends-mutations.ts`:
+
+```ts
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { optimistic, patch } from '@/shared/lib/optimistic';
+import { queries } from '@/shared/lib/queries';
+import { avatarUrl } from '@/features/profile/data/profile-api';
+import { useMe } from '@/features/profile/hooks/use-me';
+import {
+  acceptFriendRequest,
+  removeFriendship,
+  sendFriendRequest,
+} from '@/features/friends/data/friends-api';
+import type { FriendshipWithPeople, PersonSummary } from '@/features/friends/interfaces';
+import type { Profile } from '@/shared/lib/database.types';
+/**
+ * All three patch the one `friends.all` list, so the rail, the request lists
+ * and every search result agree the instant the pill is tapped.
+ */
+const ALL = queries.friends.all.queryKey;
+
+function asPerson(me: Profile): PersonSummary {
+  return {
+    id: me.id,
+    name: me.first_name,
+    username: me.username,
+    tagline: me.tagline,
+    avatarUrl: avatarUrl(me.avatar_storage_path),
+  };
+}
+
+/**
+ * The row the server is about to create, built here so the result flips to
+ * "Requested" on the tap. Its id is a placeholder until the refetch replaces
+ * it — nothing navigates on it, and the withdraw action only appears in the
+ * sent list, which the refetch has reached by then.
+ */
+export function useSendFriendRequest() {
+  const queryClient = useQueryClient();
+  const { data: me } = useMe();
+
+  return useMutation({
+    mutationFn: (person: PersonSummary) => sendFriendRequest(person.id),
+    ...optimistic(queryClient, [
+      patch<FriendshipWithPeople[], PersonSummary>(ALL, (old, person) =>
+        me
+          ? [
+              {
+                id: `pending-${person.id}`,
+                status: 'pending' as const,
+                createdAt: new Date().toISOString(),
+                requester: asPerson(me),
+                recipient: person,
+              },
+              ...old,
+            ]
+          : old,
+      ),
+    ]),
+  });
+}
+
+export function useAcceptFriendRequest() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (friendshipId: string) => acceptFriendRequest(friendshipId),
+    ...optimistic(queryClient, [
+      patch<FriendshipWithPeople[], string>(ALL, (old, friendshipId) =>
+        old.map((f) => (f.id === friendshipId ? { ...f, status: 'accepted' as const } : f)),
+      ),
+    ]),
+  });
+}
+
+/** Decline, withdraw and unfriend are the same delete, so they are one hook. */
+export function useRemoveFriendship() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (friendshipId: string) => removeFriendship(friendshipId),
+    ...optimistic(queryClient, [
+      patch<FriendshipWithPeople[], string>(ALL, (old, friendshipId) =>
+        old.filter((f) => f.id !== friendshipId),
+      ),
+    ]),
+  });
+}
+```
+
+- [ ] **Step 8: Let a person row have no avatar**
+
+In `src/features/friends/components/person-row.tsx`, widen the prop and hand the
+name to the placeholder:
+
+```ts
+  avatar: string | number | null;
+```
+
+```tsx
+      <Avatar source={avatar} name={name} size={size} dimmed={dimmed} ring="halo" />
+```
+
+- [ ] **Step 9: Keep the recipients screen compiling**
+
+`queries.friends.list` no longer exists. In `app/recipients.tsx` replace the
+friends query and the rendering of each row (Task 14 rewrites this screen in
+full):
+
+```ts
+import { useMemo } from 'react';
+import { friendsOf } from '@/features/friends/relationships';
+import { useMe } from '@/features/profile/hooks/use-me';
+```
+
+```ts
+  const { data: me } = useMe();
+  const { data: friendships = [], error: friendsError } = useQuery(queries.friends.all);
+  const friends = useMemo(() => friendsOf(friendships, me?.id ?? ''), [friendships, me?.id]);
+```
+
+```tsx
+              <PersonRow
+                key={f.id}
+                avatar={f.avatarUrl}
+                name={f.name}
+                subtitle={f.tagline ?? undefined}
+                size={46}
+                onPress={() => toggle(f.id)}
+                accessibilityRole="checkbox"
+                accessibilityState={{ checked: selected.includes(f.id) }}
+                trailing={<Checkbox checked={selected.includes(f.id)} />}
+              />
+```
+
+- [ ] **Step 10: Typecheck, format and test**
+
+Run: `npm run typecheck`
+Expected: exits 0.
+
+If the two embedded profiles come back typed as arrays rather than objects, the
+generated `Relationships` metadata did not survive the regeneration: re-run
+Task 4 Step 2 rather than casting. If `mutual_friends_counts` rows are typed
+nullable, add `.overrideTypes<Array<{ user_id: string; mutual: number }>, { merge: false }>()`
+to that call, the same way Task 4 Step 6 types the views.
+
+Run: `npx prettier --write app src && npm test`
+Expected: all tests pass.
+
+- [ ] **Step 11: Commit**
+
+```bash
+git add app src
+git commit -m "feat: friendships, search and mutual counts with optimistic mutations" -m "Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01XKE3Z4Mi437u3iDrbumuSC"
+```
+
+---
 
 ### Task 12: Friends screens
-- `components/relationship-pill.tsx`: Add / Requested / Friends / Accept, wired to the mutations.
-- `src/shared/lib/use-debounced-value.ts` (250ms).
-- Onboarding step 5: real search input and results with pills; delete `ContactsInvite`; share row shows `@username`.
-- Add friend screen: real search, `@username · N mutual` subtitles.
-- Friends tab: rail from `friendsOf`, `waiting` when that friend has a frosted moment in my inbox; requests with mutual counts and Accept; sent requests where the first tap on Pending shows `FRIENDS.WITHDRAW` and the second removes; badges from the request count and the unread total (0 until Task 16).
-- `openProfile(userId, myId)` replaces the `DEMO_USER_ID` check.
+
+**Files:**
+- Create: `src/shared/lib/use-debounced-value.ts`, `src/features/friends/components/relationship-pill.tsx`
+- Delete: `src/features/onboarding/components/contacts-invite.tsx`
+- Replace: `app/(onboarding)/friends.tsx`, `app/(app)/friends/search.tsx`, `app/(app)/friends/index.tsx`, `src/features/profile/open-profile.ts`
+- Modify: `src/features/feed/components/story-rail.tsx`, `app/(app)/feed.tsx`
+
+**Interfaces:**
+- Consumes: the friends data layer (Task 11), `useMe` (Task 10), `useInbox` (existing), `FRIENDS.WITHDRAW` (Task 6).
+- Produces:
+  - `useDebouncedValue<T>(value: T, delay?: number): T` from `@/shared/lib/use-debounced-value` (default 250ms).
+  - `RelationshipPill({ person: PersonSummary; relationship: Relationship; compact?: boolean })`.
+  - `openProfile(userId: string, myId: string): void` — **the signature gains `myId`**.
+  - `StoryItem.avatar` widens to `string | number | null`; `StoryRail` passes the name through for the placeholder.
+
+- [ ] **Step 1: Debounce the search box**
+
+Create `src/shared/lib/use-debounced-value.ts`:
+
+```ts
+import { useEffect, useState } from 'react';
+/**
+ * A search field fires on every keystroke; the query behind it should not.
+ * 250ms skips the middle of a word without feeling laggy.
+ */
+export function useDebouncedValue<T>(value: T, delay = 250): T {
+  const [debounced, setDebounced] = useState(value);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(timer);
+  }, [value, delay]);
+
+  return debounced;
+}
+```
+
+- [ ] **Step 2: One pill for every relationship**
+
+Create `src/features/friends/components/relationship-pill.tsx`:
+
+```tsx
+import { t } from '@/shared/i18n/i18n';
+import { FRIENDS } from '@/shared/i18n/keys';
+import { Pill } from '@/features/friends/components/pill';
+import {
+  useAcceptFriendRequest,
+  useSendFriendRequest,
+} from '@/features/friends/data/friends-mutations';
+import type { PersonSummary, Relationship } from '@/features/friends/interfaces';
+interface RelationshipPillProps {
+  person: PersonSummary;
+  relationship: Relationship;
+  compact?: boolean;
+}
+
+/**
+ * The trailing control on a person row: what I can do about them right now.
+ * Add and Accept are mutations; Requested and Friends are states. Both
+ * mutations patch `friends.all`, so the pill it sits in re-renders on the tap.
+ */
+export function RelationshipPill({ person, relationship, compact = false }: RelationshipPillProps) {
+  const send = useSendFriendRequest();
+  const accept = useAcceptFriendRequest();
+
+  switch (relationship.kind) {
+    case 'friends':
+      return <Pill label={t(FRIENDS.SEARCH.ALREADY_FRIENDS)} tone="outline" compact={compact} />;
+    case 'sent':
+      return <Pill label={t(FRIENDS.SEARCH.SENT)} tone="quiet" compact={compact} />;
+    case 'received':
+      return (
+        <Pill
+          label={t(FRIENDS.ACCEPT)}
+          tone="filled"
+          compact={compact}
+          onPress={() => accept.mutate(relationship.friendshipId)}
+        />
+      );
+    default:
+      return (
+        <Pill
+          label={t(FRIENDS.SEARCH.ADD)}
+          tone="filled"
+          compact={compact}
+          onPress={() => send.mutate(person)}
+        />
+      );
+  }
+}
+```
+
+- [ ] **Step 3: A rail avatar may be absent**
+
+In `src/features/feed/components/story-rail.tsx`, widen the item and pass the name on:
+
+```ts
+  avatar: string | number | null;
+```
+
+```tsx
+          <Avatar source={item.avatar} name={item.name} size={size} ring={item.waiting ? 'active' : 'idle'} />
+```
+
+- [ ] **Step 4: Your own avatar leads to your own tab**
+
+Replace `src/features/profile/open-profile.ts` with:
+
+```ts
+import { router } from 'expo-router';
+/**
+ * Your own avatar in a rail leads to the profile tab, not to a "friend" page
+ * with a close button and a trade CTA that pre-selects yourself.
+ */
+export function openProfile(userId: string, myId: string) {
+  if (userId === myId) router.push('/(app)/profile');
+  else router.push(`/profile/${userId}`);
+}
+```
+
+In `app/(app)/feed.tsx`, the rail's handler now needs to know who I am (`me` is
+already read there after Task 10):
+
+```tsx
+            onPressItem={(id) => openProfile(id, me?.id ?? '')}
+```
+
+- [ ] **Step 5: Real search in onboarding step 5**
+
+Delete the contacts card — contacts import is not built, and a card that fakes
+it is the one thing on this screen that cannot lead to a trade:
+
+```bash
+git rm src/features/onboarding/components/contacts-invite.tsx
+```
+
+Replace `app/(onboarding)/friends.tsx` with:
+
+```tsx
+import { useState } from 'react';
+import { Share, TextInput, View } from 'react-native';
+import { router } from 'expo-router';
+import * as Clipboard from 'expo-clipboard';
+import { useQuery } from '@tanstack/react-query';
+import { Copy, MoreHorizontal, Search } from 'lucide-react-native';
+import { CtaFooter } from '@/shared/ui/cta-footer';
+import { ProgressHeader } from '@/shared/ui/progress-header';
+import { Screen } from '@/shared/ui/screen';
+import { SectionLabel } from '@/shared/ui/section-label';
+import { Text } from '@/shared/ui/text';
+import { colors } from '@/shared/theme/colors';
+import { t } from '@/shared/i18n/i18n';
+import { FRIENDS, ONBOARDING } from '@/shared/i18n/keys';
+import { queries } from '@/shared/lib/queries';
+import { useDebouncedValue } from '@/shared/lib/use-debounced-value';
+import { PersonRow } from '@/features/friends/components/person-row';
+import { RelationshipPill } from '@/features/friends/components/relationship-pill';
+import { ShareRow } from '@/features/friends/components/share-row';
+import { relationshipWith } from '@/features/friends/relationships';
+import { useMe } from '@/features/profile/hooks/use-me';
+/**
+ * Screen `05 Friends · 5 of 7`.
+ *
+ * The positioning note is emphatic that a pair is the unit of value, so this is
+ * the most important step in the flow: it is the only one that can end with two
+ * people able to trade. Artboard `05a`'s contacts card is gone — contacts
+ * import is out of scope, and a card that mimics it leads nowhere.
+ */
+export default function OnboardingFriendsScreen() {
+  const [query, setQuery] = useState('');
+  const debounced = useDebouncedValue(query);
+  const { data: me } = useMe();
+  const { data: friendships = [] } = useQuery(queries.friends.all);
+  const searching = debounced.trim().length > 0;
+  const { data: results = [] } = useQuery({ ...queries.friends.search(debounced), enabled: searching });
+  const handle = me?.username ? `@${me.username}` : '';
+
+  return (
+    <Screen
+      footer={
+        <CtaFooter
+          label={t(ONBOARDING.FRIENDS.CTA)}
+          onPress={() => router.push('/(onboarding)/notifications')}
+          secondary={t(ONBOARDING.FRIENDS.SKIP)}
+          onSecondary={() => router.push('/(onboarding)/notifications')}
+        />
+      }
+      scroll
+    >
+      <ProgressHeader step={5} onClose={() => router.back()} />
+
+      <Text variant="displaySm" className="mt-[26px] text-ink">
+        {t(ONBOARDING.FRIENDS.TITLE)}
+      </Text>
+      <Text variant="bodySm" className="mt-3 text-muted">
+        {t(ONBOARDING.FRIENDS.SUBTITLE)}
+      </Text>
+
+      <View className="mt-5 h-field flex-row items-center gap-3 rounded-pill bg-surface-lilac px-[18px]">
+        <Search size={20} color={colors.mutedLilac} strokeWidth={2.2} />
+        <TextInput
+          value={query}
+          onChangeText={setQuery}
+          placeholder={t(ONBOARDING.FRIENDS.SEARCH_PLACEHOLDER)}
+          placeholderTextColor={colors.mutedCool}
+          autoCapitalize="none"
+          autoCorrect={false}
+          className="flex-1 p-0 font-sans text-[16.5px] text-ink"
+        />
+      </View>
+
+      {searching ? (
+        <View className="mt-6 gap-3.5">
+          <SectionLabel>{t(FRIENDS.SEARCH.RESULTS_SECTION, { count: results.length })}</SectionLabel>
+          <View className="gap-3.5">
+            {results.map((person) => (
+              <PersonRow
+                key={person.id}
+                avatar={person.avatarUrl}
+                name={person.name}
+                subtitle={person.username ? `@${person.username}` : undefined}
+                trailing={
+                  <RelationshipPill
+                    person={person}
+                    relationship={relationshipWith(friendships, me?.id ?? '', person.id)}
+                    compact
+                  />
+                }
+              />
+            ))}
+            {results.length === 0 ? (
+              <Text variant="bodySm" className="text-muted-lilac">
+                {t(FRIENDS.SEARCH.EMPTY)}
+              </Text>
+            ) : null}
+          </View>
+        </View>
+      ) : null}
+
+      {/* The actions still copy and share the handle; Task 19 makes them mint a
+          real invite link. */}
+      <ShareRow
+        className="mt-[22px]"
+        dividerLabel={t(ONBOARDING.FRIENDS.DIVIDER_SHARE)}
+        link={handle}
+        linkLabel={t(ONBOARDING.FRIENDS.SHARE_LINK)}
+        actions={[
+          {
+            label: t(ONBOARDING.FRIENDS.SHARE_COPY),
+            icon: <Copy size={22} color={colors.inkFaint} strokeWidth={2} />,
+            onPress: () => void Clipboard.setStringAsync(handle),
+          },
+          {
+            label: t(ONBOARDING.FRIENDS.SHARE_MORE),
+            icon: <MoreHorizontal size={22} color={colors.inkFaint} strokeWidth={2.4} />,
+            onPress: () => void Share.share({ message: handle }),
+          },
+        ]}
+      />
+    </Screen>
+  );
+}
+```
+
+- [ ] **Step 6: Real search on the add-friend screen**
+
+Replace `app/(app)/friends/search.tsx` with:
+
+```tsx
+import { useMemo, useState } from 'react';
+import { Pressable, Share, TextInput, View } from 'react-native';
+import { router } from 'expo-router';
+import { useQuery } from '@tanstack/react-query';
+import { MoreHorizontal, QrCode, Search, X } from 'lucide-react-native';
+import { GlassButton } from '@/shared/ui/glass-button';
+import { Screen } from '@/shared/ui/screen';
+import { SectionLabel } from '@/shared/ui/section-label';
+import { Text } from '@/shared/ui/text';
+import { cn } from '@/shared/lib/cn';
+import { colors } from '@/shared/theme/colors';
+import { spacing } from '@/shared/theme/page-structure';
+import { t } from '@/shared/i18n/i18n';
+import { COMMON, FRIENDS } from '@/shared/i18n/keys';
+import { queries } from '@/shared/lib/queries';
+import { useDebouncedValue } from '@/shared/lib/use-debounced-value';
+import { PersonRow } from '@/features/friends/components/person-row';
+import { RelationshipPill } from '@/features/friends/components/relationship-pill';
+import { ShareRow } from '@/features/friends/components/share-row';
+import { relationshipWith } from '@/features/friends/relationships';
+import type { PersonSummary } from '@/features/friends/interfaces';
+import { useMe } from '@/features/profile/hooks/use-me';
+/** Screen `D Freund suchen` — search by @username, or share your link. */
+export default function FriendSearchScreen() {
+  const [query, setQuery] = useState('');
+  const debounced = useDebouncedValue(query);
+  const { data: me } = useMe();
+  const { data: friendships = [] } = useQuery(queries.friends.all);
+  const searching = debounced.trim().length > 0;
+  const { data: results = [] } = useQuery({ ...queries.friends.search(debounced), enabled: searching });
+
+  // Sorted, so the same set of people is one cache entry however it was found.
+  const ids = useMemo(() => results.map((p) => p.id).sort(), [results]);
+  const { data: mutual = {} } = useQuery({ ...queries.friends.mutual(ids), enabled: ids.length > 0 });
+  const handle = me?.username ? `@${me.username}` : '';
+
+  return (
+    <Screen scroll bottomInset={spacing.contentBottom}>
+      <View className="h-10 flex-row items-center gap-3">
+        <GlassButton size={34} onPress={() => router.back()} accessibilityLabel={t(COMMON.CLOSE)}>
+          <X size={13} color={colors.inkFaint} strokeWidth={2.2} />
+        </GlassButton>
+        <Text variant="sheetTitle" className="text-ink">
+          {t(FRIENDS.SEARCH.TITLE)}
+        </Text>
+      </View>
+
+      <View
+        className={cn(
+          'mt-5 h-field flex-row items-center gap-2.5 rounded-pill border-[1.5px] border-transparent bg-surface-lilac-alt px-[18px]',
+          query.length > 0 && 'border-purple',
+        )}
+      >
+        <Search size={19} color={colors.mutedViolet} strokeWidth={2} />
+        <TextInput
+          value={query}
+          onChangeText={setQuery}
+          placeholder={t(FRIENDS.SEARCH.PLACEHOLDER)}
+          placeholderTextColor={colors.mutedCool}
+          autoCapitalize="none"
+          autoCorrect={false}
+          className="flex-1 p-0 font-sans text-[16.5px] text-ink"
+        />
+        {query.length > 0 ? (
+          <Pressable
+            onPress={() => setQuery('')}
+            className="h-[22px] w-[22px] items-center justify-center rounded-[11px] bg-dot-idle-soft"
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel={t(COMMON.CLEAR)}
+          >
+            <X size={9} color={colors.white} strokeWidth={2.2} />
+          </Pressable>
+        ) : null}
+      </View>
+
+      {searching ? (
+        <View className="mt-[26px] gap-3.5">
+          <SectionLabel>{t(FRIENDS.SEARCH.RESULTS_SECTION, { count: results.length })}</SectionLabel>
+          <View className="gap-[18px]">
+            {results.map((person) => (
+              <PersonRow
+                key={person.id}
+                avatar={person.avatarUrl}
+                name={person.name}
+                subtitle={subtitleFor(person, mutual[person.id] ?? 0)}
+                onPress={() => router.push(`/profile/${person.id}`)}
+                trailing={
+                  <RelationshipPill
+                    person={person}
+                    relationship={relationshipWith(friendships, me?.id ?? '', person.id)}
+                  />
+                }
+              />
+            ))}
+            {results.length === 0 ? (
+              <Text variant="bodySm" className="text-muted-lilac">
+                {t(FRIENDS.SEARCH.EMPTY)}
+              </Text>
+            ) : null}
+          </View>
+        </View>
+      ) : null}
+
+      {/* QR is designed but inert; Task 19 wires the two share actions. */}
+      <ShareRow
+        className="mt-[30px]"
+        dividerLabel={t(FRIENDS.SEARCH.DIVIDER_SHARE)}
+        link={handle}
+        linkLabel={t(FRIENDS.SEARCH.LINK)}
+        actions={[
+          {
+            label: t(FRIENDS.SEARCH.QR),
+            icon: <QrCode size={22} color={colors.inkFaint} strokeWidth={2} />,
+          },
+          {
+            label: t(FRIENDS.SEARCH.MORE),
+            icon: <MoreHorizontal size={22} color={colors.inkFaint} strokeWidth={2.4} />,
+            onPress: () => void Share.share({ message: handle }),
+          },
+        ]}
+      />
+    </Screen>
+  );
+}
+
+/** "@miahartmann · 3 mutual", with either half left out when there is none. */
+function subtitleFor(person: PersonSummary, mutual: number): string | undefined {
+  const parts = [
+    person.username ? `@${person.username}` : null,
+    mutual > 0 ? t(FRIENDS.SEARCH.MUTUAL, { count: mutual }) : null,
+  ].filter((part): part is string => part !== null);
+  return parts.length > 0 ? parts.join(' · ') : undefined;
+}
+```
+
+- [ ] **Step 7: The friends tab on real rows**
+
+Replace `app/(app)/friends/index.tsx` with:
+
+```tsx
+import { useMemo, useState } from 'react';
+import { Pressable, View } from 'react-native';
+import { router } from 'expo-router';
+import { useQuery } from '@tanstack/react-query';
+import { Clock, Plus } from 'lucide-react-native';
+import { CtaFooter } from '@/shared/ui/cta-footer';
+import { GlassButton } from '@/shared/ui/glass-button';
+import { SectionLabel } from '@/shared/ui/section-label';
+import { Text } from '@/shared/ui/text';
+import { cn } from '@/shared/lib/cn';
+import { colors } from '@/shared/theme/colors';
+import { avatarSize } from '@/shared/theme/page-structure';
+import { t } from '@/shared/i18n/i18n';
+import { COMMON, FEED, FRIENDS } from '@/shared/i18n/keys';
+import { relativeTime } from '@/shared/lib/format';
+import { errorMessage } from '@/shared/lib/error-message';
+import { queries } from '@/shared/lib/queries';
+import { PersonRow } from '@/features/friends/components/person-row';
+import { Pill } from '@/features/friends/components/pill';
+import { useAcceptFriendRequest, useRemoveFriendship } from '@/features/friends/data/friends-mutations';
+import {
+  friendsOf,
+  incomingRequests,
+  otherParty,
+  sentRequests,
+} from '@/features/friends/relationships';
+import { StoryRail } from '@/features/feed/components/story-rail';
+import { ChatsList } from '@/features/chat/components/chats-list';
+import { avatarUrl } from '@/features/profile/data/profile-api';
+import { TabScreen } from '@/features/navigation/tab-screen';
+import { useInbox } from '@/features/moments/hooks/use-inbox';
+import { useMe } from '@/features/profile/hooks/use-me';
+import { openProfile } from '@/features/profile/open-profile';
+type Tab = 'friends' | 'chats';
+
+/**
+ * Screen `08 Freunde` — the story rail, incoming requests, and outgoing
+ * requests still waiting. The three sections are three readings of one list of
+ * `friendships` rows (see `relationships.ts`).
+ */
+export default function FriendsScreen() {
+  const [tab, setTab] = useState<Tab>('friends');
+  /** Withdrawing takes two taps; there is no undo for a deleted row. */
+  const [confirmWithdraw, setConfirmWithdraw] = useState<string | null>(null);
+
+  const { data: me } = useMe();
+  const myId = me?.id ?? '';
+  const { data: friendships = [] } = useQuery(queries.friends.all);
+  const { pending } = useInbox();
+
+  const accept = useAcceptFriendRequest();
+  const remove = useRemoveFriendship();
+
+  const requests = useMemo(() => incomingRequests(friendships, myId), [friendships, myId]);
+  const sent = useMemo(() => sentRequests(friendships, myId), [friendships, myId]);
+  // "3 mutual" is what makes a request from a near-stranger legible. Sorted, so
+  // it shares its cache entry with the search screen's copy of the same ask.
+  const requestIds = useMemo(
+    () => requests.map((friendship) => otherParty(friendship, myId).id).sort(),
+    [requests, myId],
+  );
+  const { data: mutual = {} } = useQuery({
+    ...queries.friends.mutual(requestIds),
+    enabled: requestIds.length > 0,
+  });
+  const rail = useMemo(
+    () => [
+      { id: myId, name: t(COMMON.YOU), avatar: avatarUrl(me?.avatar_storage_path ?? null), waiting: true },
+      ...friendsOf(friendships, myId).map((person) => ({
+        id: person.id,
+        name: person.name,
+        avatar: person.avatarUrl,
+        // A purple ring means they are waiting on me.
+        waiting: pending.some((moment) => moment.from.id === person.id),
+      })),
+    ],
+    [friendships, myId, me, pending],
+  );
+  const waiting = rail.filter((item) => item.waiting).length;
+
+  // Counts on the toggle, so it says how much is waiting behind each tab.
+  // Chats stays 0 until Task 16 has the thread totals.
+  const unreadTotal = 0;
+  const badges: Record<Tab, number> = { friends: requests.length, chats: unreadTotal };
+  const error = accept.error ?? remove.error;
+
+  return (
+    <TabScreen>
+      <View className="h-10 flex-row items-center justify-between">
+        <Text variant="screenTitle" className="text-ink">
+          {t(FRIENDS.TITLE)}
+        </Text>
+        <GlassButton
+          size={38}
+          onPress={() => router.push('/(app)/friends/search')}
+          accessibilityLabel={t(FRIENDS.SEARCH.TITLE)}
+        >
+          <Plus size={18} color={colors.purpleMuted} strokeWidth={2.4} />
+        </GlassButton>
+      </View>
+
+      <View className="mt-4 flex-row gap-1 rounded-pill bg-surface-lilac p-1">
+        {(['friends', 'chats'] as const).map((key) => (
+          <Pressable
+            key={key}
+            onPress={() => setTab(key)}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: tab === key }}
+            className={cn(
+              'flex-1 flex-row items-center justify-center gap-[7px] rounded-pill py-2',
+              tab === key && 'bg-white',
+            )}
+          >
+            <Text
+              variant="bodyXs"
+              weight="semibold"
+              className={tab === key ? 'text-purple-deep' : 'text-muted-lilac'}
+            >
+              {t(key === 'friends' ? FRIENDS.TAB_FRIENDS : FRIENDS.TAB_CHATS)}
+            </Text>
+            {badges[key] > 0 ? (
+              <View className="h-5 min-w-[20px] items-center justify-center rounded-pill bg-purple px-1.5">
+                <Text variant="captionXs" weight="semibold" className="text-white">
+                  {String(badges[key])}
+                </Text>
+              </View>
+            ) : null}
+          </Pressable>
+        ))}
+      </View>
+
+      {tab === 'chats' ? (
+        <ChatsList />
+      ) : (
+        <>
+          <View className="mt-[22px] gap-3.5">
+            <SectionLabel trailing={waiting > 0 ? t(FEED.STORIES_TRAILING, { count: waiting }) : undefined}>
+              {t(FRIENDS.STORIES_LABEL)}
+            </SectionLabel>
+            <StoryRail
+              size={avatarSize.ring}
+              items={rail}
+              placeholders={Math.max(0, 3 - rail.length)}
+              placeholderLabel={t(FEED.ADD_FRIEND)}
+              onPressItem={(id) => openProfile(id, myId)}
+              onPressPlaceholder={() => router.push('/(app)/friends/search')}
+            />
+          </View>
+
+          <View className="mt-[22px] gap-3.5">
+            <SectionLabel>{t(FRIENDS.REQUESTS_SECTION, { count: requests.length })}</SectionLabel>
+            <View className="gap-4">
+              {requests.map((friendship) => {
+                const person = otherParty(friendship, myId);
+                return (
+                  <PersonRow
+                    key={friendship.id}
+                    avatar={person.avatarUrl}
+                    name={person.name}
+                    subtitle={t(FRIENDS.SEARCH.MUTUAL, { count: mutual[person.id] ?? 0 })}
+                    trailing={
+                      <Pill
+                        label={t(FRIENDS.ACCEPT)}
+                        tone="filled"
+                        onPress={() => accept.mutate(friendship.id)}
+                      />
+                    }
+                    onPress={() => router.push(`/profile/${person.id}`)}
+                  />
+                );
+              })}
+            </View>
+          </View>
+
+          <View className="mt-[22px] gap-3.5">
+            <SectionLabel>{t(FRIENDS.SENT_SECTION, { count: sent.length })}</SectionLabel>
+            <View className="gap-4">
+              {sent.map((friendship) => {
+                const person = otherParty(friendship, myId);
+                const confirming = confirmWithdraw === friendship.id;
+                return (
+                  <PersonRow
+                    key={friendship.id}
+                    avatar={person.avatarUrl}
+                    name={person.name}
+                    subtitle={t(FRIENDS.SENT_AGO, { time: relativeTime(friendship.createdAt) })}
+                    subtitleIcon={<Clock size={14} color={colors.placeholderSoft} strokeWidth={2} />}
+                    dimmed
+                    trailing={
+                      <Pill
+                        label={confirming ? t(FRIENDS.WITHDRAW) : t(FRIENDS.PENDING)}
+                        tone={confirming ? 'filled' : 'muted'}
+                        onPress={() =>
+                          confirming ? remove.mutate(friendship.id) : setConfirmWithdraw(friendship.id)
+                        }
+                      />
+                    }
+                  />
+                );
+              })}
+            </View>
+          </View>
+
+          {error ? (
+            <Text variant="meta" className="mt-4 text-center text-purple-deep">
+              {errorMessage(error)}
+            </Text>
+          ) : null}
+
+          <CtaFooter label={t(FRIENDS.ADD_CTA)} onPress={() => router.push('/(app)/friends/search')} />
+        </>
+      )}
+    </TabScreen>
+  );
+}
+```
+
+- [ ] **Step 8: Typecheck, format and test**
+
+Run: `npm run typecheck`
+Expected: exits 0. Any remaining error should be a `demo*` import in a screen
+this task rewrote; there should be none left in `app/(onboarding)/friends.tsx`,
+`app/(app)/friends/search.tsx` or `app/(app)/friends/index.tsx`.
+
+Run: `grep -rn "demoOthers\|demoFriendRequests\|demoSentRequests" app src`
+Expected: no output.
+
+Run: `npx prettier --write app src && npm test`
+Expected: all tests pass.
+
+- [ ] **Step 9: Commit**
+
+```bash
+git add -A app src
+git commit -m "feat: real friend search, requests and the friends tab" -m "Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01XKE3Z4Mi437u3iDrbumuSC"
+```
+
+---
 
 ### Task 13: Moments data
-- `data/moment-urls.ts`: `createSignedUrlCache(AsyncStorage, signer)` where the signer calls `storage.from('moments').createSignedUrls(paths, ttl)`. `signedMomentUrls(momentIds)` asks `visible_moment_paths` for the allowed path per moment, then reads URLs through the cache.
-- `moments-api` (rewrite): inbox maps to `InboxMoment` with `from.avatarUrl` and `photo: string` (`''` when withheld); `fetchPairs(withUserId: string | null)`; `fetchOutgoingLocked()` (my trades as initiator with `responder_moment_id is null` and `status = 'pending'`); `fetchMomentPhoto`; `createMoment({ localUri, width, height, caption })` = resize to 1600 → upload `original/{uid}/{ts}.jpg` as `ArrayBuffer` → insert → `functions.invoke('blur-moment', { body: { moment_id } })` → id; `sendMoment`; `respondToTrade`; `markTradeSeen`.
-- `selectors.ts` (+ test): `nextUnlockDelay(inbox, now): number | null`; `lockedTiles(trades, urls)` one tile per photo; `waitingBySender(inbox)` → `{ person, tradeId }` using each sender's oldest unanswered trade; `splitSelection(selectedIds, waiting)` → `{ replyToTradeIds, recipientIds }`.
-- `moments-queries`: `inbox` with `refetchInterval: (query) => nextUnlockDelay(query.state.data ?? [], Date.now()) ?? false`; `pairs(withUserId)`; `outgoingLocked`; `photo(momentId)`. `use-inbox.ts` keeps its `pending` / `open` split on top.
-- `moments-mutations`: `useMarkTradeSeen()` sets `seenAt` optimistically.
 
-### Task 14: Outbox and the capture flow
-- `outbox.ts` (+ test): `OutboxEntry { id; localUri; width; height; caption; replyToTradeIds; recipientIds; names; status: 'sending' | 'failed'; error: string | null; momentId: string | null; answeredTradeIds: string[] }`; `runEntry(entry, deps, onProgress)` creates the moment once, answers each trade once and sends once, recording progress so a retry skips finished steps (`send_moment` is already idempotent).
-- `hooks/use-outbox.ts`: store plus `enqueueSend(input, queryClient)` (patches answered inbox items to `isOpen: true` at once) and `retrySend(id, queryClient)`; on success invalidate the `moments` keys, on failure restore the inbox and keep the entry as `failed`. Sign-out resets it.
-- Compose: reply mode enqueues and opens `/moment/<tradeId>` immediately; fresh mode saves the caption and opens recipients.
-- Recipients: "Waiting on you" from `waitingBySender`; the friends list excludes those people; selection is one list of person ids; send enqueues with `splitSelection` and returns to the feed.
-- `src/features/feed/components/outbox-line.tsx` above the feed cards: `FEED.OUTBOX.SENDING` or `FEED.OUTBOX.FAILED` with `FEED.OUTBOX.RETRY`.
+**Files:**
+- Create: `src/features/moments/data/moment-urls.ts`, `src/features/moments/selectors.ts`, `src/features/moments/selectors.test.ts`, `src/features/moments/data/moments-mutations.ts`
+- Replace: `src/features/moments/interfaces.ts`, `src/features/moments/data/moments-api.ts`, `src/features/moments/data/moments-queries.ts`
+- Modify: `src/features/moments/hooks/use-inbox.ts`, `src/features/auth/sign-out.ts`, `src/features/feed/components/locked-moment-card.tsx`, `src/features/profile/components/pair-grid.tsx`, `app/(app)/feed.tsx`, `app/moment/[tradeId].tsx`, `app/photo/[momentId].tsx`, `app/compose.tsx`, `app/recipients.tsx`
+
+**Interfaces:**
+- Consumes: `createSignedUrlCache` (Task 7), `currentUserId` (Task 8), `resizeJpeg` / `MAX_CAPTURE_EDGE` (Task 9), `avatarUrl` (Task 10), the `blur-moment` function (Task 5).
+- Produces:
+  - From `@/features/moments/interfaces`: `MomentSender { id; name; username: string | null; avatarUrl: string | null }`, `InboxMoment` (with `from: MomentSender` and `photo: string`), `MomentPair` (with `rightMomentId: string | null` meaning "nobody has traded back yet", `left`/`right` as `string`, and **no `locked` flag**), `MomentPhoto { photo: string; fromName: string; fromAvatarUrl: string | null; capturedAt: string }`, `WaitingSender { person: MomentSender; tradeId: string }`, `OutgoingLockedTrade { tradeId; momentId; createdAt }`.
+  - From `@/features/moments/data/moment-urls`: `momentUrlCache`, `signedMomentUrls(momentIds: string[]): Promise<Map<string, string>>`.
+  - From `@/features/moments/selectors`: `nextUnlockDelay(inbox, now): number | null`, `lockedTiles(trades, urls): MomentPair[]`, `waitingBySender(inbox): WaitingSender[]`, `splitSelection(selectedIds, waiting): { replyToTradeIds: string[]; recipientIds: string[] }`.
+  - From `@/features/moments/data/moments-api`: `fetchInbox()`, `fetchPairs(withUserId: string | null)`, `fetchOutgoingLocked(): Promise<MomentPair[]>`, `fetchMomentPhoto(momentId)`, `createMoment({ localUri, caption, width: number, height: number }): Promise<string>`, `sendMoment(momentId, recipientIds)`, `respondToTrade(tradeId, momentId)`, `markTradeSeen(tradeId)`. **`publicAvatarUrl` is gone** — `avatarUrl` from the profile feature replaced it in Task 11.
+  - Keys `queries.moments.inbox`, `pairs(withUserId | null)`, `outgoingLocked`, `photo(momentId)`.
+  - `useMarkTradeSeen()` from `@/features/moments/data/moments-mutations`.
+
+- [ ] **Step 1: Rewrite the shapes**
+
+Replace `src/features/moments/interfaces.ts` with:
+
+```ts
+import type { TradeStatus } from '@/shared/lib/database.types';
+/** The sender of a received moment, as the cards and the rails need them. */
+export interface MomentSender {
+  id: string;
+  name: string;
+  username: string | null;
+  avatarUrl: string | null;
+}
+
+/**
+ * A received moment as the UI thinks of it: a photo plus a lock.
+ *
+ * `photo` is a signed URL — the original once the trade is open, the frosted
+ * rendition before that, and `''` when the server withholds it entirely
+ * (a moment whose blurred rendition does not exist yet).
+ */
+export interface InboxMoment {
+  tradeId: string;
+  momentId: string;
+  from: MomentSender;
+  caption: string | null;
+  capturedAt: string;
+  status: TradeStatus;
+  /** False while the moment is frosted and awaiting a trade back. */
+  isOpen: boolean;
+  /** When the soft escape fires, if one is set. */
+  autoUnlockAt: string | null;
+  seenAt: string | null;
+  photo: string;
+}
+
+/**
+ * A completed trade: two photos taken the same day, kept together — or your own
+ * half still waiting for one, which is what `rightMomentId: null` means.
+ */
+export interface MomentPair {
+  tradeId: string;
+  date: string;
+  leftMomentId: string;
+  /** `null` while nobody has traded back for this photo. */
+  rightMomentId: string | null;
+  left: string;
+  right: string;
+}
+
+/** What the full-screen photo viewer needs, resolved for any moment id. */
+export interface MomentPhoto {
+  photo: string;
+  fromName: string;
+  fromAvatarUrl: string | null;
+  capturedAt: string;
+}
+
+/** Somebody whose frosted moment I have not answered, and the trade to answer. */
+export interface WaitingSender {
+  person: MomentSender;
+  tradeId: string;
+}
+
+/** One of my own moments that nobody has traded back for yet. */
+export interface OutgoingLockedTrade {
+  tradeId: string;
+  momentId: string;
+  createdAt: string;
+}
+```
+
+- [ ] **Step 2: Write the failing selector tests**
+
+Create `src/features/moments/selectors.test.ts`:
+
+```ts
+import {
+  lockedTiles,
+  nextUnlockDelay,
+  splitSelection,
+  waitingBySender,
+} from '@/features/moments/selectors';
+import type { InboxMoment } from '@/features/moments/interfaces';
+
+const NOW = Date.parse('2026-09-14T12:00:00.000Z');
+const at = (offsetMs: number) => new Date(NOW + offsetMs).toISOString();
+
+const moment = (over: Partial<InboxMoment> & Pick<InboxMoment, 'tradeId'>): InboxMoment => ({
+  momentId: `m-${over.tradeId}`,
+  from: { id: 'mia', name: 'Mia', username: 'mia', avatarUrl: null },
+  caption: null,
+  capturedAt: at(-3_600_000),
+  status: 'pending',
+  isOpen: false,
+  autoUnlockAt: null,
+  seenAt: null,
+  photo: '',
+  ...over,
+});
+
+describe('nextUnlockDelay', () => {
+  it('is null with nothing frosted', () => {
+    expect(nextUnlockDelay([moment({ tradeId: 't1', isOpen: true, autoUnlockAt: at(3_600_000) })], NOW)).toBeNull();
+  });
+
+  it('is null when no frosted moment has a deadline', () => {
+    expect(nextUnlockDelay([moment({ tradeId: 't1' })], NOW)).toBeNull();
+  });
+
+  it('waits for the earliest deadline, a moment past it', () => {
+    const delay = nextUnlockDelay(
+      [
+        moment({ tradeId: 't1', autoUnlockAt: at(7_200_000) }),
+        moment({ tradeId: 't2', autoUnlockAt: at(600_000) }),
+      ],
+      NOW,
+    );
+    expect(delay).toBe(601_000);
+  });
+
+  it('ignores deadlines that have already passed', () => {
+    expect(nextUnlockDelay([moment({ tradeId: 't1', autoUnlockAt: at(-60_000) })], NOW)).toBeNull();
+  });
+});
+
+describe('lockedTiles', () => {
+  it('draws one tile per photo, however many people it went to', () => {
+    const tiles = lockedTiles(
+      [
+        { tradeId: 't1', momentId: 'm1', createdAt: at(-60_000) },
+        { tradeId: 't2', momentId: 'm1', createdAt: at(-60_000) },
+        { tradeId: 't3', momentId: 'm2', createdAt: at(-120_000) },
+      ],
+      new Map([['m1', 'https://signed/m1']]),
+    );
+
+    expect(tiles).toHaveLength(2);
+    expect(tiles[0]).toEqual({
+      tradeId: 't1',
+      date: at(-60_000),
+      leftMomentId: 'm1',
+      rightMomentId: null,
+      left: 'https://signed/m1',
+      right: '',
+    });
+    // No URL yet: the tile still holds its place rather than vanishing.
+    expect(tiles[1].left).toBe('');
+  });
+});
+
+describe('waitingBySender', () => {
+  it('lists one entry per sender, their oldest unanswered moment', () => {
+    const inbox = [
+      moment({ tradeId: 'new', capturedAt: at(-60_000) }),
+      moment({ tradeId: 'old', capturedAt: at(-600_000) }),
+      moment({ tradeId: 'ben', from: { id: 'ben', name: 'Ben', username: 'ben', avatarUrl: null } }),
+      moment({ tradeId: 'open', isOpen: true }),
+    ];
+
+    expect(waitingBySender(inbox)).toEqual([
+      { person: expect.objectContaining({ id: 'mia' }), tradeId: 'old' },
+      { person: expect.objectContaining({ id: 'ben' }), tradeId: 'ben' },
+    ]);
+  });
+});
+
+describe('splitSelection', () => {
+  const waiting = [
+    { person: { id: 'mia', name: 'Mia', username: null, avatarUrl: null }, tradeId: 't-mia' },
+  ];
+
+  it('answers the people who are waiting and opens a lock for the rest', () => {
+    expect(splitSelection(['mia', 'ben'], waiting)).toEqual({
+      replyToTradeIds: ['t-mia'],
+      recipientIds: ['ben'],
+    });
+  });
+
+  it('never opens a second lock back at someone already waiting on me', () => {
+    expect(splitSelection(['mia'], waiting)).toEqual({ replyToTradeIds: ['t-mia'], recipientIds: [] });
+  });
+});
+```
+
+- [ ] **Step 3: Run to see it fail**
+
+Run: `npx jest src/features/moments/selectors.test.ts`
+Expected: FAIL, `Cannot find module '@/features/moments/selectors'`.
+
+- [ ] **Step 4: Write the selectors**
+
+Create `src/features/moments/selectors.ts`:
+
+```ts
+import type {
+  InboxMoment,
+  MomentPair,
+  OutgoingLockedTrade,
+  WaitingSender,
+} from '@/features/moments/interfaces';
+/** Pure readings of the inbox and my outgoing trades. No I/O, so they are tested. */
+
+/**
+ * How long until the next frosted card opens on its own.
+ *
+ * Nothing changes in the database when a trade's 24 hours pass, so no Realtime
+ * event ever arrives. The inbox schedules one refetch for the earliest deadline
+ * it holds instead. `null` means there is nothing to wait for.
+ */
+export function nextUnlockDelay(inbox: InboxMoment[], now: number): number | null {
+  const deadlines = inbox
+    .filter((moment) => !moment.isOpen && moment.autoUnlockAt !== null)
+    .map((moment) => Date.parse(moment.autoUnlockAt as string))
+    .filter((time) => Number.isFinite(time) && time > now);
+  if (deadlines.length === 0) return null;
+  // A second of slack, so the refetch happens after the deadline, not on it.
+  return Math.min(...deadlines) - now + 1000;
+}
+
+/**
+ * My unanswered outgoing moments as grid tiles: my photo on the left, an empty
+ * frosted tile on the right until somebody sends one back.
+ *
+ * One tile per photo, not per recipient — sending one capture to three people
+ * is still one moment, and three tiles would claim otherwise.
+ */
+export function lockedTiles(trades: OutgoingLockedTrade[], urls: Map<string, string>): MomentPair[] {
+  const seen = new Set<string>();
+  const tiles: MomentPair[] = [];
+
+  for (const trade of trades) {
+    if (seen.has(trade.momentId)) continue;
+    seen.add(trade.momentId);
+    tiles.push({
+      tradeId: trade.tradeId,
+      date: trade.createdAt,
+      leftMomentId: trade.momentId,
+      rightMomentId: null,
+      left: urls.get(trade.momentId) ?? '',
+      right: '',
+    });
+  }
+  return tiles;
+}
+
+/**
+ * Who is waiting on me, and which trade a capture would answer.
+ *
+ * Several frosted moments from one person collapse to their oldest unanswered
+ * one: answering the newest first would leave the older lock open for ever.
+ */
+export function waitingBySender(inbox: InboxMoment[]): WaitingSender[] {
+  const oldest = new Map<string, InboxMoment>();
+
+  for (const moment of inbox) {
+    if (moment.isOpen) continue;
+    const held = oldest.get(moment.from.id);
+    if (!held || Date.parse(moment.capturedAt) < Date.parse(held.capturedAt)) {
+      oldest.set(moment.from.id, moment);
+    }
+  }
+  return [...oldest.values()].map((moment) => ({ person: moment.from, tradeId: moment.tradeId }));
+}
+
+/**
+ * The recipients screen has one list of selected people; the send has two jobs.
+ *
+ * Selecting somebody who is waiting on me answers their moment. Selecting
+ * anybody else opens a new lock. One capture can do both — and a capture sent
+ * to somebody already waiting always answers them rather than opening a second
+ * lock in the reverse direction.
+ */
+export function splitSelection(
+  selectedIds: string[],
+  waiting: WaitingSender[],
+): { replyToTradeIds: string[]; recipientIds: string[] } {
+  const tradeByPerson = new Map(waiting.map((entry) => [entry.person.id, entry.tradeId]));
+  const replyToTradeIds: string[] = [];
+  const recipientIds: string[] = [];
+
+  for (const id of selectedIds) {
+    const tradeId = tradeByPerson.get(id);
+    if (tradeId) replyToTradeIds.push(tradeId);
+    else recipientIds.push(id);
+  }
+  return { replyToTradeIds, recipientIds };
+}
+```
+
+- [ ] **Step 5: Run the selector tests**
+
+Run: `npx jest src/features/moments/selectors.test.ts`
+Expected: PASS (8 tests).
+
+- [ ] **Step 6: Sign moment URLs through the cache**
+
+Create `src/features/moments/data/moment-urls.ts`:
+
+```ts
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { supabase } from '@/shared/lib/supabase';
+import { createSignedUrlCache } from '@/shared/lib/signed-urls';
+/**
+ * Signed URLs for moment objects, cached so a refetch hands back the same URL
+ * and `expo-image` goes on serving it from disk instead of downloading the same
+ * photo again.
+ *
+ * The server decides *which* rendition each caller may see
+ * (`visible_moment_paths`); the Storage API then refuses to sign any path the
+ * caller's row security does not allow. The client never chooses — it only
+ * asks. See docs/database.md §3.
+ */
+export const momentUrlCache = createSignedUrlCache(AsyncStorage, async (paths, expiresIn) => {
+  const { data, error } = await supabase.storage.from('moments').createSignedUrls(paths, expiresIn);
+  if (error) throw error;
+  return data ?? [];
+});
+
+/** A URL per moment the caller may see. Ids that were withheld are simply absent. */
+export async function signedMomentUrls(momentIds: string[]): Promise<Map<string, string>> {
+  const result = new Map<string, string>();
+  const ids = [...new Set(momentIds)];
+  if (ids.length === 0) return result;
+
+  const { data: paths, error } = await supabase.rpc('visible_moment_paths', { p_moment_ids: ids });
+  if (error) throw error;
+
+  // A null path is "nothing yet": a locked moment whose blurred rendition has
+  // not been made is withheld rather than leaked.
+  const allowed = (paths ?? []).filter(
+    (row): row is { moment_id: string; path: string } => row.path !== null,
+  );
+  if (allowed.length === 0) return result;
+
+  const urls = await momentUrlCache.get(allowed.map((row) => row.path));
+  for (const { moment_id, path } of allowed) {
+    const url = urls.get(path);
+    if (url) result.set(moment_id, url);
+  }
+  return result;
+}
+```
+
+In `src/features/auth/sign-out.ts`, add the import and the line the Task 10 comment promised:
+
+```ts
+import { momentUrlCache } from '@/features/moments/data/moment-urls';
+```
+
+```ts
+  await momentUrlCache.clear();
+```
+
+- [ ] **Step 7: Rewrite the API**
+
+Replace `src/features/moments/data/moments-api.ts` with:
+
+```ts
+import { supabase } from '@/shared/lib/supabase';
+import { MAX_CAPTURE_EDGE, resizeJpeg } from '@/shared/lib/resize';
+import { currentUserId } from '@/features/auth/current-user';
+import { avatarUrl } from '@/features/profile/data/profile-api';
+import { signedMomentUrls } from '@/features/moments/data/moment-urls';
+import { lockedTiles } from '@/features/moments/selectors';
+import type { InboxRow, PairRow } from '@/shared/lib/database.types';
+import type {
+  InboxMoment,
+  MomentPair,
+  MomentPhoto,
+  OutgoingLockedTrade,
+} from '@/features/moments/interfaces';
+/** Data access for the trade loop. Screens go through the queries and mutations. */
+
+export async function fetchInbox(): Promise<InboxMoment[]> {
+  const { data, error } = await supabase
+    .from('v_inbox')
+    .select('*')
+    .overrideTypes<InboxRow[], { merge: false }>();
+  if (error) throw error;
+
+  const rows = data ?? [];
+  const urls = await signedMomentUrls(rows.map((row) => row.moment_id));
+
+  // `photo` is empty when the server withholds the moment; the card then draws
+  // its own neutral frosted placeholder rather than a broken image.
+  return rows.map((row) => ({
+    tradeId: row.trade_id,
+    momentId: row.moment_id,
+    from: {
+      id: row.from_id,
+      name: row.from_name,
+      username: row.from_username,
+      avatarUrl: avatarUrl(row.from_avatar_storage_path),
+    },
+    caption: row.caption,
+    capturedAt: row.moment_created_at,
+    status: row.status,
+    isOpen: row.is_open,
+    autoUnlockAt: row.auto_unlock_at,
+    seenAt: row.seen_at,
+    photo: urls.get(row.moment_id) ?? '',
+  }));
+}
+
+/** `null` asks for every pair I am in; an id narrows it to that person. */
+export async function fetchPairs(withUserId: string | null): Promise<MomentPair[]> {
+  const base = supabase.from('v_pairs').select('*');
+  const filtered = withUserId ? base.or(`user_a.eq.${withUserId},user_b.eq.${withUserId}`) : base;
+  const { data, error } = await filtered.overrideTypes<PairRow[], { merge: false }>();
+  if (error) throw error;
+
+  const pairs = data ?? [];
+  const urls = await signedMomentUrls(
+    pairs.flatMap((pair) => [pair.initiator_moment_id, pair.responder_moment_id]),
+  );
+
+  return pairs.map((pair) => ({
+    tradeId: pair.trade_id,
+    date: pair.pair_at,
+    leftMomentId: pair.initiator_moment_id,
+    rightMomentId: pair.responder_moment_id,
+    left: urls.get(pair.initiator_moment_id) ?? '',
+    right: urls.get(pair.responder_moment_id) ?? '',
+  }));
+}
+
+/**
+ * My own moments nobody has traded back for — the locked tiles on my grid.
+ * Newest first, so they read as one sequence with the completed pairs.
+ */
+export async function fetchOutgoingLocked(): Promise<MomentPair[]> {
+  const { data, error } = await supabase
+    .from('trades')
+    .select('id, initiator_moment_id, created_at')
+    .eq('initiator_id', currentUserId())
+    .eq('status', 'pending')
+    .is('responder_moment_id', null)
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+
+  const trades: OutgoingLockedTrade[] = (data ?? []).map((row) => ({
+    tradeId: row.id,
+    momentId: row.initiator_moment_id,
+    createdAt: row.created_at,
+  }));
+  const urls = await signedMomentUrls(trades.map((trade) => trade.momentId));
+  return lockedTiles(trades, urls);
+}
+
+interface CreateMomentArgs {
+  localUri: string;
+  caption: string | null;
+  /** Pixel size of the capture. Required: without it the resize cannot bound anything. */
+  width: number;
+  height: number;
+}
+
+/**
+ * Resize, upload, insert the row, make the frosted rendition. Returns the
+ * moment id.
+ *
+ * The blurred copy is produced server-side on purpose: a client that could
+ * upload its own "blurred" rendition could upload the original and call it
+ * blurred. A failure here fails the whole send, so a recipient never ends up
+ * with a moment there is nothing to show them for.
+ */
+export async function createMoment(args: CreateMomentArgs): Promise<string> {
+  const userId = currentUserId();
+  const resized = await resizeJpeg(
+    args.localUri,
+    { width: args.width, height: args.height },
+    MAX_CAPTURE_EDGE,
+  );
+  // The row constraint and the storage policy both require this exact shape.
+  const objectKey = `original/${userId}/${Date.now()}.jpg`;
+
+  // `fetch(file://…).arrayBuffer()` rather than a Blob: React Native's Blob has
+  // no data the Storage client can read.
+  const body = await (await fetch(resized.uri)).arrayBuffer();
+  const { error: uploadError } = await supabase.storage
+    .from('moments')
+    .upload(objectKey, body, { contentType: 'image/jpeg', upsert: false });
+  if (uploadError) throw uploadError;
+
+  const { data: moment, error: insertError } = await supabase
+    .from('moments')
+    .insert({
+      author_id: userId,
+      original_storage_path: objectKey,
+      caption: args.caption,
+      width: resized.width,
+      height: resized.height,
+    })
+    .select('id')
+    .single();
+  if (insertError) throw insertError;
+
+  const { error: blurError } = await supabase.functions.invoke('blur-moment', {
+    body: { moment_id: moment.id },
+  });
+  if (blurError) throw blurError;
+
+  return moment.id;
+}
+
+/** Open a new trade with each recipient — one lock per person. */
+export async function sendMoment(momentId: string, recipientIds: string[]): Promise<string[]> {
+  const { data: trades, error } = await supabase.rpc('send_moment', {
+    p_moment_id: momentId,
+    p_recipient_ids: recipientIds,
+  });
+  if (error) throw error;
+  return (trades ?? []).map((trade) => trade.id);
+}
+
+/**
+ * Trade back. This is the unlock — after it returns, both halves are visible to
+ * both people. The state transition itself happens in a SECURITY DEFINER
+ * function so a client cannot forge it.
+ */
+export async function respondToTrade(tradeId: string, momentId: string) {
+  const { data, error } = await supabase.rpc('respond_to_trade', {
+    p_trade_id: tradeId,
+    p_moment_id: momentId,
+  });
+  if (error) throw error;
+  return data;
+}
+
+/** Stamp the frosted card as seen, so the sender can tell it landed. */
+export async function markTradeSeen(tradeId: string): Promise<void> {
+  const { error } = await supabase
+    .from('trades')
+    .update({ seen_at: new Date().toISOString() })
+    .eq('id', tradeId)
+    .is('seen_at', null);
+  if (error) throw error;
+}
+
+/**
+ * Resolve one moment for the full-screen viewer, whether it arrived in the
+ * inbox or sits in a completed pair. `null` when the caller may not see it, or
+ * it does not exist.
+ */
+export async function fetchMomentPhoto(momentId: string): Promise<MomentPhoto | null> {
+  const { data: moment, error } = await supabase
+    .from('moments')
+    .select('id, author_id, created_at')
+    .eq('id', momentId)
+    .maybeSingle();
+  if (error) throw error;
+  if (!moment) return null;
+
+  const [{ data: author }, urls] = await Promise.all([
+    supabase.from('profiles').select('first_name, avatar_storage_path').eq('id', moment.author_id).maybeSingle(),
+    signedMomentUrls([moment.id]),
+  ]);
+  const photo = urls.get(moment.id);
+  if (!photo) return null;
+
+  return {
+    photo,
+    fromName: author?.first_name ?? '',
+    fromAvatarUrl: avatarUrl(author?.avatar_storage_path ?? null),
+    capturedAt: moment.created_at,
+  };
+}
+```
+
+- [ ] **Step 8: Keys, the unlock timer and mark-as-seen**
+
+Replace `src/features/moments/data/moments-queries.ts` with:
+
+```ts
+import { createQueryKeys } from '@lukemorales/query-key-factory';
+import {
+  fetchInbox,
+  fetchMomentPhoto,
+  fetchOutgoingLocked,
+  fetchPairs,
+} from '@/features/moments/data/moments-api';
+import { publishSnapshot } from '@/features/widget/data/widget-bridge';
+/**
+ * Query keys + fetchers for the moments feature. Keys are derived by the
+ * factory, so `queries.moments._def` invalidates everything here and
+ * `queries.moments.inbox.queryKey` just the inbox.
+ */
+export const momentsQueries = createQueryKeys('moments', {
+  /** Everything sent to me, frosted or open. Shared by the tab badge, the feed and the viewer. */
+  inbox: {
+    queryKey: null,
+    queryFn: async () => {
+      const data = await fetchInbox();
+      // Keep the homescreen honest: the widget mirrors the inbox. No-ops
+      // without a dev build; a failure there must not surface as an
+      // unhandled rejection.
+      publishSnapshot(data).catch(() => {});
+      return data;
+    },
+  },
+  /** Completed trades as photo pairs. `null` means "with anyone". */
+  pairs: (withUserId: string | null) => ({
+    queryKey: [withUserId],
+    queryFn: () => fetchPairs(withUserId),
+  }),
+  /** My own moments nobody has answered, for the locked tiles on my grid. */
+  outgoingLocked: {
+    queryKey: null,
+    queryFn: fetchOutgoingLocked,
+  },
+  /** One unlocked photo, full bleed. */
+  photo: (momentId: string) => ({
+    queryKey: [momentId],
+    queryFn: () => fetchMomentPhoto(momentId),
+  }),
+});
+```
+
+Replace `src/features/moments/hooks/use-inbox.ts` with:
+
+```ts
+import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { queries } from '@/shared/lib/queries';
+import { nextUnlockDelay } from '@/features/moments/selectors';
+import type { InboxMoment } from '@/features/moments/interfaces';
+const EMPTY: InboxMoment[] = [];
+
+/**
+ * Feed + widget source: everything sent to me, frosted or open. One cached
+ * query, so the tab badge, the feed and the viewer share a single fetch and
+ * every mutation that touches a trade invalidates all of them at once.
+ *
+ * The auto-unlock timer lives on the `useQuery` rather than in the key factory:
+ * the factory's entry type does not carry the row type into `refetchInterval`'s
+ * `query` argument, so it would be typed `unknown` there.
+ */
+export function useInbox() {
+  const {
+    data = EMPTY,
+    isPending,
+    error,
+    refetch,
+  } = useQuery({
+    ...queries.moments.inbox,
+    refetchInterval: (query) => nextUnlockDelay(query.state.data ?? [], Date.now()) ?? false,
+  });
+
+  const pending = useMemo(() => data.filter((m) => !m.isOpen), [data]);
+  const open = useMemo(() => data.filter((m) => m.isOpen), [data]);
+
+  return { data, loading: isPending, error, pending, open, reload: refetch };
+}
+```
+
+Create `src/features/moments/data/moments-mutations.ts`:
+
+```ts
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { optimistic, patch } from '@/shared/lib/optimistic';
+import { queries } from '@/shared/lib/queries';
+import { markTradeSeen } from '@/features/moments/data/moments-api';
+import type { InboxMoment } from '@/features/moments/interfaces';
+/** Opening the frosted card stamps it, so the sender can tell it landed. */
+export function useMarkTradeSeen() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (tradeId: string) => markTradeSeen(tradeId),
+    ...optimistic(queryClient, [
+      patch<InboxMoment[], string>(queries.moments.inbox.queryKey, (old, tradeId) =>
+        old.map((moment) =>
+          moment.tradeId === tradeId ? { ...moment, seenAt: new Date().toISOString() } : moment,
+        ),
+      ),
+    ]),
+  });
+}
+```
+
+- [ ] **Step 9: Follow the renames through the screens**
+
+These are the call sites of the fields that changed shape. Tasks 14 and 15
+rewrite all five files properly; this keeps them compiling and correct now.
+
+In `src/features/feed/components/locked-moment-card.tsx`:
+
+```tsx
+        <Avatar source={moment.from.avatarUrl} name={moment.from.name} size={46} ring="halo" />
+```
+
+In `app/moment/[tradeId].tsx`:
+
+```tsx
+          <Avatar source={moment.from.avatarUrl} name={moment.from.name} size={52} />
+```
+
+In `app/(app)/feed.tsx`, in the `stories` list:
+
+```ts
+      ...pending.map((m) => ({
+        id: m.from.id,
+        name: m.from.name,
+        avatar: m.from.avatarUrl,
+        waiting: true,
+      })),
+```
+
+In `app/photo/[momentId].tsx`:
+
+```tsx
+          {moment?.fromAvatarUrl ? (
+            <Avatar source={moment.fromAvatarUrl} name={moment.fromName} size={52} />
+          ) : null}
+```
+
+In `src/features/profile/components/pair-grid.tsx`, `locked` is gone and the
+right tile is now optional. Replace both tiles inside `Pair` (Task 15 gives the
+empty right tile its frosted treatment):
+
+```tsx
+        <Pressable className="flex-1" onPress={() => onPressPhoto?.(pair.leftMomentId)}>
+          <Image source={pair.left} className="h-[111px] w-full rounded-tile" contentFit="cover" />
+        </Pressable>
+
+        {pair.rightMomentId ? (
+          <Pressable className="flex-1" onPress={() => onPressPhoto?.(pair.rightMomentId ?? '')}>
+            <Image source={pair.right} className="h-[111px] w-full rounded-tile" contentFit="cover" />
+          </Pressable>
+        ) : (
+          <View className="flex-1" />
+        )}
+```
+
+and drop the now-unused `BLUR` / `LockedImage` import. The left half of a locked
+tile is your own photo — `visible_moment_paths` only signs a path for someone
+allowed to see it, so there is never anything to withhold from yourself.
+
+In `app/compose.tsx` and `app/recipients.tsx`, `createMoment` now insists on a
+real pixel size. Replace the guard at the top of each `mutationFn`:
+
+```ts
+      if (!composer.uri || composer.width === null || composer.height === null) return;
+      const momentId = await createMoment({
+        localUri: composer.uri,
+        caption: caption || null,
+        width: composer.width,
+        height: composer.height,
+      });
+```
+
+(in `recipients.tsx` the caption is `composer.caption || null`), and drop the
+now-unused `isSupabaseConfigured` import from both.
+
+- [ ] **Step 10: Typecheck, format and test**
+
+Run: `npm run typecheck`
+Expected: exits 0. If `visible_moment_paths` or `send_moment` rows come back
+typed nullable, add an `.overrideTypes<…, { merge: false }>()` at that call the
+way Task 4 Step 6 types the views.
+
+Run: `grep -rn "publicAvatarUrl" app src`
+Expected: no output.
+
+Run: `npx prettier --write app src && npm test`
+Expected: all tests pass.
+
+- [ ] **Step 11: Commit**
+
+```bash
+git add app src
+git commit -m "feat: moments on real data, cached signed URLs and the unlock timer" -m "Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01XKE3Z4Mi437u3iDrbumuSC"
+```
+
+---
+
+### Task 14: The outbox and the capture flow
+
+**Files:**
+- Create: `src/features/moments/outbox.ts`, `src/features/moments/outbox.test.ts`, `src/features/moments/hooks/use-outbox.ts`, `src/features/feed/components/outbox-line.tsx`
+- Replace: `app/compose.tsx`, `app/recipients.tsx`
+- Modify: `src/features/auth/sign-out.ts`, `app/(app)/feed.tsx`
+
+**Interfaces:**
+- Consumes: `createMoment` / `respondToTrade` / `sendMoment`, `waitingBySender` / `splitSelection`, `useInbox` (Task 13); `friendsOf` (Task 11); `FEED.OUTBOX.*` (Task 6); `expo-crypto` (Task 1).
+- Produces:
+  - From `@/features/moments/outbox`: `OutboxEntry`, `OutboxDeps`, `runEntry(entry, deps, onProgress): Promise<void>`.
+  - From `@/features/moments/hooks/use-outbox`: `useOutbox` (store of `{ entries: OutboxEntry[] }`), `SendInput`, `enqueueSend(input: SendInput, queryClient: QueryClient): string`, `retrySend(id: string, queryClient: QueryClient): void`.
+  - `OutboxLine()` from `@/features/feed/components/outbox-line`.
+
+- [ ] **Step 1: Write the failing outbox test**
+
+Create `src/features/moments/outbox.test.ts`:
+
+```ts
+import { runEntry, type OutboxDeps, type OutboxEntry } from '@/features/moments/outbox';
+
+const entry = (over: Partial<OutboxEntry> = {}): OutboxEntry => ({
+  id: 'e1',
+  localUri: 'file:///capture.jpg',
+  width: 1600,
+  height: 1200,
+  caption: 'hi',
+  replyToTradeIds: [],
+  recipientIds: [],
+  names: [],
+  status: 'sending',
+  error: null,
+  momentId: null,
+  answeredTradeIds: [],
+  ...over,
+});
+
+function deps(over: Partial<OutboxDeps> = {}): jest.Mocked<OutboxDeps> {
+  return {
+    createMoment: jest.fn(async () => 'm1'),
+    respondToTrade: jest.fn(async () => ({})),
+    sendMoment: jest.fn(async () => ['t1']),
+    ...over,
+  } as jest.Mocked<OutboxDeps>;
+}
+
+describe('runEntry', () => {
+  it('uploads once, then answers and sends', async () => {
+    const d = deps();
+    const progress: Partial<OutboxEntry>[] = [];
+
+    await runEntry(entry({ replyToTradeIds: ['t-a'], recipientIds: ['ben'] }), d, (p) => progress.push(p));
+
+    expect(d.createMoment).toHaveBeenCalledTimes(1);
+    expect(d.createMoment).toHaveBeenCalledWith({
+      localUri: 'file:///capture.jpg',
+      caption: 'hi',
+      width: 1600,
+      height: 1200,
+    });
+    expect(d.respondToTrade).toHaveBeenCalledWith('t-a', 'm1');
+    expect(d.sendMoment).toHaveBeenCalledWith('m1', ['ben']);
+    expect(progress).toEqual([{ momentId: 'm1' }, { answeredTradeIds: ['t-a'] }]);
+  });
+
+  it('opens no trade when nobody new was picked', async () => {
+    const d = deps();
+    await runEntry(entry({ replyToTradeIds: ['t-a'] }), d, () => {});
+    expect(d.sendMoment).not.toHaveBeenCalled();
+  });
+
+  it('answers every frosted moment the capture replies to', async () => {
+    const d = deps();
+    await runEntry(entry({ replyToTradeIds: ['t-a', 't-b'] }), d, () => {});
+    expect(d.respondToTrade).toHaveBeenCalledTimes(2);
+  });
+
+  it('a retry re-uses the upload and skips the answers it already made', async () => {
+    const d = deps();
+
+    await runEntry(
+      entry({ momentId: 'm1', answeredTradeIds: ['t-a'], replyToTradeIds: ['t-a', 't-b'], recipientIds: ['ben'] }),
+      d,
+      () => {},
+    );
+
+    expect(d.createMoment).not.toHaveBeenCalled();
+    expect(d.respondToTrade).toHaveBeenCalledTimes(1);
+    expect(d.respondToTrade).toHaveBeenCalledWith('t-b', 'm1');
+    // send_moment's unique index makes a repeat a no-op, so it is not tracked.
+    expect(d.sendMoment).toHaveBeenCalledWith('m1', ['ben']);
+  });
+
+  it('reports the upload before it answers, so a failure there is not re-uploaded', async () => {
+    const progress: Partial<OutboxEntry>[] = [];
+    const d = deps({
+      respondToTrade: jest.fn(async () => {
+        throw new Error('trade_already_answered');
+      }),
+    });
+
+    await expect(
+      runEntry(entry({ replyToTradeIds: ['t-a'] }), d, (p) => progress.push(p)),
+    ).rejects.toThrow('trade_already_answered');
+    expect(progress).toEqual([{ momentId: 'm1' }]);
+  });
+});
+```
+
+- [ ] **Step 2: Run to see it fail**
+
+Run: `npx jest src/features/moments/outbox.test.ts`
+Expected: FAIL, `Cannot find module '@/features/moments/outbox'`.
+
+- [ ] **Step 3: Write the runner**
+
+Create `src/features/moments/outbox.ts`:
+
+```ts
+/**
+ * Sending is not a plain mutation: uploading a photo takes real seconds, and
+ * the screen that took it is gone by then. An entry is queued, the screen
+ * navigates, and this drains it behind them.
+ */
+
+/** A send in flight. */
+export interface OutboxEntry {
+  id: string;
+  localUri: string;
+  width: number;
+  height: number;
+  caption: string | null;
+  /** Frosted moments this capture answers. */
+  replyToTradeIds: string[];
+  /** Friends this capture opens a new lock with. */
+  recipientIds: string[];
+  /** For the line above the feed: "Sending to Mia…". */
+  names: string[];
+  status: 'sending' | 'failed';
+  error: string | null;
+  /** Set once the photo is up, so a retry does not upload it again. */
+  momentId: string | null;
+  /** Answered already, so a retry does not answer them twice. */
+  answeredTradeIds: string[];
+}
+
+export interface OutboxDeps {
+  createMoment(args: {
+    localUri: string;
+    caption: string | null;
+    width: number;
+    height: number;
+  }): Promise<string>;
+  respondToTrade(tradeId: string, momentId: string): Promise<unknown>;
+  sendMoment(momentId: string, recipientIds: string[]): Promise<unknown>;
+}
+
+/**
+ * Run one entry to completion, recording each finished step through
+ * `onProgress` so a retry picks up where it stopped.
+ *
+ * Two of the three steps must not repeat: the upload is the expensive one, and
+ * `respond_to_trade` refuses a second answer outright. `send_moment` needs no
+ * bookkeeping — its unique index on (moment, recipient) makes a repeat a no-op.
+ */
+export async function runEntry(
+  entry: OutboxEntry,
+  deps: OutboxDeps,
+  onProgress: (patch: Partial<OutboxEntry>) => void,
+): Promise<void> {
+  let momentId = entry.momentId;
+  if (!momentId) {
+    momentId = await deps.createMoment({
+      localUri: entry.localUri,
+      caption: entry.caption,
+      width: entry.width,
+      height: entry.height,
+    });
+    onProgress({ momentId });
+  }
+
+  const answered = [...entry.answeredTradeIds];
+  for (const tradeId of entry.replyToTradeIds) {
+    if (answered.includes(tradeId)) continue;
+    await deps.respondToTrade(tradeId, momentId);
+    answered.push(tradeId);
+    onProgress({ answeredTradeIds: [...answered] });
+  }
+
+  if (entry.recipientIds.length > 0) await deps.sendMoment(momentId, entry.recipientIds);
+}
+```
+
+- [ ] **Step 4: Run the outbox test**
+
+Run: `npx jest src/features/moments/outbox.test.ts`
+Expected: PASS (5 tests).
+
+- [ ] **Step 5: The store around it**
+
+Create `src/features/moments/hooks/use-outbox.ts`:
+
+```ts
+import { randomUUID } from 'expo-crypto';
+import type { QueryClient } from '@tanstack/react-query';
+import { create } from '@/shared/lib/store';
+import { errorMessage } from '@/shared/lib/error-message';
+import { queries } from '@/shared/lib/queries';
+import { createMoment, respondToTrade, sendMoment } from '@/features/moments/data/moments-api';
+import { runEntry, type OutboxEntry } from '@/features/moments/outbox';
+import type { InboxMoment } from '@/features/moments/interfaces';
+/**
+ * Sends in flight. In memory only, deliberately: the local file a retry would
+ * need may not survive a restart either, so a queue that did would be a list of
+ * entries that can never succeed.
+ */
+interface OutboxState {
+  entries: OutboxEntry[];
+}
+
+export const useOutbox = create<OutboxState>({ entries: [] });
+
+export interface SendInput {
+  localUri: string;
+  width: number;
+  height: number;
+  caption: string | null;
+  replyToTradeIds: string[];
+  recipientIds: string[];
+  names: string[];
+}
+
+function update(id: string, values: Partial<OutboxEntry>) {
+  useOutbox.set({
+    entries: useOutbox.getState().entries.map((entry) =>
+      entry.id === id ? { ...entry, ...values } : entry,
+    ),
+  });
+}
+
+/** The moments this capture answers open now; the photos sharpen on the refetch. */
+function openAnswered(queryClient: QueryClient, tradeIds: string[]) {
+  if (tradeIds.length === 0) return;
+  queryClient.setQueryData<InboxMoment[]>(queries.moments.inbox.queryKey, (old) =>
+    old?.map((moment) => (tradeIds.includes(moment.tradeId) ? { ...moment, isOpen: true } : moment)),
+  );
+}
+
+async function drain(id: string, queryClient: QueryClient): Promise<void> {
+  const entry = useOutbox.getState().entries.find((e) => e.id === id);
+  if (!entry) return;
+
+  try {
+    await runEntry(entry, { createMoment, respondToTrade, sendMoment }, (values) => update(id, values));
+    useOutbox.set({ entries: useOutbox.getState().entries.filter((e) => e.id !== id) });
+    await queryClient.invalidateQueries({ queryKey: queries.moments._def });
+  } catch (error) {
+    update(id, { status: 'failed', error: errorMessage(error) });
+    // Put the inbox back: nothing was answered after all.
+    await queryClient.invalidateQueries({ queryKey: queries.moments.inbox.queryKey });
+  }
+}
+
+/** Queue a send and return at once — the screen navigates, the upload follows. */
+export function enqueueSend(input: SendInput, queryClient: QueryClient): string {
+  const entry: OutboxEntry = {
+    id: randomUUID(),
+    ...input,
+    status: 'sending',
+    error: null,
+    momentId: null,
+    answeredTradeIds: [],
+  };
+  useOutbox.set({ entries: [...useOutbox.getState().entries, entry] });
+  openAnswered(queryClient, input.replyToTradeIds);
+  void drain(entry.id, queryClient);
+  return entry.id;
+}
+
+/** Re-run a failed entry. `runEntry` skips whatever already succeeded. */
+export function retrySend(id: string, queryClient: QueryClient): void {
+  const entry = useOutbox.getState().entries.find((e) => e.id === id);
+  if (!entry) return;
+  update(id, { status: 'sending', error: null });
+  openAnswered(queryClient, entry.replyToTradeIds);
+  void drain(id, queryClient);
+}
+```
+
+In `src/features/auth/sign-out.ts`, add the import and the line the Task 10
+comment promised:
+
+```ts
+import { useOutbox } from '@/features/moments/hooks/use-outbox';
+```
+
+```ts
+  useOutbox.reset();
+```
+
+- [ ] **Step 6: Say so on the feed**
+
+Create `src/features/feed/components/outbox-line.tsx`:
+
+```tsx
+import { ActivityIndicator, Pressable, View } from 'react-native';
+import { useQueryClient } from '@tanstack/react-query';
+import { Text } from '@/shared/ui/text';
+import { colors } from '@/shared/theme/colors';
+import { t } from '@/shared/i18n/i18n';
+import { FEED } from '@/shared/i18n/keys';
+import { retrySend, useOutbox } from '@/features/moments/hooks/use-outbox';
+/**
+ * A slim line above the feed cards while a send is still going.
+ *
+ * The screen that took the photo is gone by the time the upload finishes, so
+ * this is the only place that can say it is in flight — or that it failed.
+ */
+export function OutboxLine() {
+  const { entries } = useOutbox();
+  const queryClient = useQueryClient();
+  if (entries.length === 0) return null;
+
+  return (
+    <View className="gap-2">
+      {entries.map((entry) => {
+        const names = entry.names.join(', ');
+        if (entry.status === 'failed') {
+          return (
+            <View
+              key={entry.id}
+              className="flex-row items-center gap-2 rounded-pill bg-surface-violet px-3.5 py-2"
+            >
+              {/* The real reason where there is one: "Nothing is swallowed",
+                  and the recipients screen it happened on is long gone. */}
+              <Text variant="meta" className="flex-1 text-purple-deep" numberOfLines={1}>
+                {entry.error ?? t(FEED.OUTBOX.FAILED, { names })}
+              </Text>
+              <Pressable
+                onPress={() => retrySend(entry.id, queryClient)}
+                hitSlop={8}
+                accessibilityRole="button"
+              >
+                <Text variant="meta" weight="semibold" className="text-purple-deep">
+                  {t(FEED.OUTBOX.RETRY)}
+                </Text>
+              </Pressable>
+            </View>
+          );
+        }
+        return (
+          <View
+            key={entry.id}
+            className="flex-row items-center gap-2 rounded-pill bg-surface-lilac px-3.5 py-2"
+          >
+            <ActivityIndicator size="small" color={colors.purple} />
+            <Text variant="meta" className="flex-1 text-muted-violet" numberOfLines={1}>
+              {t(FEED.OUTBOX.SENDING, { names })}
+            </Text>
+          </View>
+        );
+      })}
+    </View>
+  );
+}
+```
+
+In `app/(app)/feed.tsx`, add the import and render it directly above the first
+`LockedMomentCard` — inside the `hasFriends` branch, as the first child of the
+fragment (Task 15 rewrites this screen and keeps it there):
+
+```tsx
+import { OutboxLine } from '@/features/feed/components/outbox-line';
+```
+
+```tsx
+            <OutboxLine />
+```
+
+- [ ] **Step 7: Compose enqueues instead of waiting**
+
+Replace `app/compose.tsx` with:
+
+```tsx
+import { useState } from 'react';
+import { KeyboardAvoidingView, Platform, TextInput, View } from 'react-native';
+import { Image } from 'expo-image';
+import { LinearGradient } from 'expo-linear-gradient';
+import { router } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useQueryClient } from '@tanstack/react-query';
+import { BlurView } from 'expo-blur';
+import { Pencil, RotateCcw, X } from 'lucide-react-native';
+import { Button } from '@/shared/ui/button';
+import { GlassButton } from '@/shared/ui/glass-button';
+import { Text } from '@/shared/ui/text';
+import { alpha, colors } from '@/shared/theme/colors';
+import { t } from '@/shared/i18n/i18n';
+import { COMMON, COMPOSE, MOMENT } from '@/shared/i18n/keys';
+import { useComposer } from '@/features/moments/hooks/use-composer';
+import { useInbox } from '@/features/moments/hooks/use-inbox';
+import { enqueueSend } from '@/features/moments/hooks/use-outbox';
+import { PHOTOS } from '@/shared/lib/fixtures';
+/**
+ * Screen `03b Senden · Bestätigen` — review the shot and add a caption before
+ * choosing who sees it.
+ *
+ * Two exits. Answering a frosted moment is the unlock itself: the recipient is
+ * already known, so it skips recipient selection and opens the now-unlocked
+ * pair straight away. Only a fresh moment goes on to choose who sees it.
+ */
+export default function ComposeScreen() {
+  const composer = useComposer();
+  const insets = useSafeAreaInsets();
+  const [caption, setCaption] = useState(composer.caption);
+  const queryClient = useQueryClient();
+  const { data: inbox } = useInbox();
+
+  const replyToTradeId = composer.replyToTradeId;
+  const answering = inbox.find((moment) => moment.tradeId === replyToTradeId);
+
+  function next() {
+    composer.set({ caption });
+    if (!replyToTradeId) {
+      router.push('/recipients');
+      return;
+    }
+    // The capture is what makes this a trade, so there is nothing to wait for.
+    if (!composer.uri || composer.width === null || composer.height === null) return;
+    enqueueSend(
+      {
+        localUri: composer.uri,
+        width: composer.width,
+        height: composer.height,
+        caption: caption || null,
+        replyToTradeIds: [replyToTradeId],
+        recipientIds: [],
+        names: answering ? [answering.from.name] : [],
+      },
+      queryClient,
+    );
+    composer.reset();
+    // Land on the now-open pair rather than back on the feed. `push`, not
+    // `replace`, so the tab root stays underneath and the moment's close
+    // button has somewhere to go back to.
+    router.dismissAll();
+    router.push(`/moment/${replyToTradeId}`);
+  }
+
+  return (
+    <View className="flex-1 bg-black">
+      <StatusBar style="light" />
+      {/* The viewfinder art is the fallback for a compose screen reached without
+          a capture — a stale deep link — rather than a black rectangle. */}
+      <Image
+        source={composer.uri ? { uri: composer.uri } : PHOTOS.viewfinder}
+        className="absolute inset-0"
+        contentFit="cover"
+      />
+      <LinearGradient
+        colors={['rgba(0,0,0,.5)', 'rgba(0,0,0,0)', 'rgba(0,0,0,0)', 'rgba(0,0,0,.8)']}
+        locations={[0, 0.22, 0.5, 1]}
+        className="absolute inset-0"
+        pointerEvents="none"
+      />
+
+      {/* Safe-area insets are runtime values, so they stay as style. */}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        className="absolute inset-0"
+        style={{ paddingTop: insets.top + 12 }}
+      >
+        <View className="flex-row items-start justify-between px-5">
+          <GlassButton size={38} onDark onPress={() => router.back()} accessibilityLabel={t(COMMON.CLOSE)}>
+            <X size={12} color={colors.white} strokeWidth={2.2} />
+          </GlassButton>
+          <GlassButton
+            size={38}
+            onDark
+            onPress={() => router.back()}
+            accessibilityLabel={t(COMPOSE.RETAKE)}
+          >
+            <RotateCcw size={17} color={colors.white} strokeWidth={1.9} />
+          </GlassButton>
+        </View>
+
+        <View className="flex-1" />
+
+        {/* Frosted action bar, matching `rgba(18,16,24,.62)` + blur(22px). */}
+        <BlurView
+          intensity={40}
+          tint="dark"
+          className="overflow-hidden border-t border-t-[rgba(255,255,255,.14)]"
+        >
+          <View className="gap-[18px] px-[22px] pt-[22px]" style={{ paddingBottom: insets.bottom + 22 }}>
+            <View className="flex-row items-center gap-[9px] px-1.5">
+              <Pencil size={15} color="rgba(255,255,255,.82)" strokeWidth={1.8} />
+              <TextInput
+                value={caption}
+                onChangeText={setCaption}
+                placeholder={t(COMPOSE.CAPTION_PLACEHOLDER)}
+                placeholderTextColor={alpha.onDarkText}
+                className="max-h-[90px] flex-1 p-0 font-sans text-[15px] text-white"
+                maxLength={280}
+                multiline
+              />
+            </View>
+            <Button
+              label={replyToTradeId ? t(MOMENT.LOCKED_CTA) : t(COMPOSE.CONTINUE)}
+              variant="purple"
+              size="xl"
+              onPress={next}
+              disabled={!composer.uri}
+            />
+          </View>
+        </BlurView>
+      </KeyboardAvoidingView>
+    </View>
+  );
+}
+```
+
+- [ ] **Step 8: Recipients, with "Waiting on you" first**
+
+Replace `app/recipients.tsx` with:
+
+```tsx
+import { useMemo, useState } from 'react';
+import { ScrollView, View } from 'react-native';
+import { router } from 'expo-router';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { X } from 'lucide-react-native';
+import { Button } from '@/shared/ui/button';
+import { GlassButton } from '@/shared/ui/glass-button';
+import { Screen } from '@/shared/ui/screen';
+import { SectionLabel } from '@/shared/ui/section-label';
+import { Text } from '@/shared/ui/text';
+import { colors } from '@/shared/theme/colors';
+import { spacing } from '@/shared/theme/page-structure';
+import { t } from '@/shared/i18n/i18n';
+import { COMMON, COMPOSE } from '@/shared/i18n/keys';
+import { errorMessage } from '@/shared/lib/error-message';
+import { queries } from '@/shared/lib/queries';
+import { PersonRow } from '@/features/friends/components/person-row';
+import { Checkbox } from '@/features/friends/components/checkbox';
+import { friendsOf } from '@/features/friends/relationships';
+import { EmptyState } from '@/features/feed/components/empty-state';
+import { useComposer } from '@/features/moments/hooks/use-composer';
+import { useInbox } from '@/features/moments/hooks/use-inbox';
+import { enqueueSend } from '@/features/moments/hooks/use-outbox';
+import { splitSelection, waitingBySender } from '@/features/moments/selectors';
+import { useMe } from '@/features/profile/hooks/use-me';
+/**
+ * Screen `03c Senden · Empfänger wählen`.
+ *
+ * One list of selected people, two jobs. Picking someone from "Waiting on you"
+ * answers their frosted moment — never opens a second lock back at them.
+ * Picking anyone else opens a new one. Sending queues the work and returns to
+ * the feed; the upload runs behind it.
+ */
+export default function RecipientsScreen() {
+  const composer = useComposer();
+  const queryClient = useQueryClient();
+  const { data: me } = useMe();
+  const { data: friendships = [], error: friendsError } = useQuery(queries.friends.all);
+  const { data: inbox } = useInbox();
+
+  const waiting = useMemo(() => waitingBySender(inbox), [inbox]);
+  const friends = useMemo(() => {
+    // They are already on the list above; one person, one row.
+    const waitingIds = new Set(waiting.map((entry) => entry.person.id));
+    return friendsOf(friendships, me?.id ?? '').filter((person) => !waitingIds.has(person.id));
+  }, [friendships, me?.id, waiting]);
+
+  // A friend's profile pre-selects them; otherwise start empty.
+  const [selected, setSelected] = useState<string[]>(composer.recipientIds);
+
+  const nameById = useMemo(
+    () =>
+      new Map<string, string>([
+        ...waiting.map((entry) => [entry.person.id, entry.person.name] as const),
+        ...friends.map((person) => [person.id, person.name] as const),
+      ]),
+    [waiting, friends],
+  );
+
+  function toggle(id: string) {
+    setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
+  }
+
+  function send() {
+    if (!composer.uri || composer.width === null || composer.height === null) return;
+    const { replyToTradeIds, recipientIds } = splitSelection(selected, waiting);
+    enqueueSend(
+      {
+        localUri: composer.uri,
+        width: composer.width,
+        height: composer.height,
+        caption: composer.caption || null,
+        replyToTradeIds,
+        recipientIds,
+        names: selected.map((id) => nameById.get(id) ?? '').filter((name) => name.length > 0),
+      },
+      queryClient,
+    );
+    composer.reset();
+    router.dismissAll();
+    router.replace('/(app)/feed');
+  }
+
+  const ctaLabel =
+    selected.length === 0
+      ? t(COMPOSE.SEND_NONE)
+      : selected.length === 1
+        ? t(COMPOSE.SEND_TO, { name: nameById.get(selected[0]) ?? '' })
+        : t(COMPOSE.SEND_TO_MANY, { count: selected.length });
+
+  return (
+    <Screen gutter={0} bottomInset={spacing.contentBottom}>
+      <View className="flex-row items-center gap-3.5 px-gutter">
+        <GlassButton size={38} onPress={() => router.back()} accessibilityLabel={t(COMMON.CLOSE)}>
+          <X size={12} color={colors.inkFaint} strokeWidth={2.2} />
+        </GlassButton>
+        <Text variant="cardTitleLg" className="text-ink">
+          {t(COMPOSE.RECIPIENTS_TITLE)}
+        </Text>
+      </View>
+
+      <ScrollView
+        className="flex-1"
+        contentContainerClassName="gap-[26px] px-gutter pb-6 pt-[30px]"
+        showsVerticalScrollIndicator={false}
+      >
+        {waiting.length > 0 ? (
+          <View className="gap-3.5">
+            <SectionLabel>{t(COMPOSE.WAITING_SECTION)}</SectionLabel>
+            <View className="gap-4">
+              {waiting.map(({ person }) => (
+                <PersonRow
+                  key={person.id}
+                  avatar={person.avatarUrl}
+                  name={person.name}
+                  subtitle={person.username ? `@${person.username}` : undefined}
+                  size={46}
+                  onPress={() => toggle(person.id)}
+                  accessibilityRole="checkbox"
+                  accessibilityState={{ checked: selected.includes(person.id) }}
+                  trailing={<Checkbox checked={selected.includes(person.id)} />}
+                />
+              ))}
+            </View>
+          </View>
+        ) : null}
+
+        <View className="gap-3.5">
+          <SectionLabel>{t(COMPOSE.FRIENDS_SECTION)}</SectionLabel>
+          <View className="gap-4">
+            {friends.map((person) => (
+              <PersonRow
+                key={person.id}
+                avatar={person.avatarUrl}
+                name={person.name}
+                subtitle={person.tagline ?? undefined}
+                size={46}
+                onPress={() => toggle(person.id)}
+                accessibilityRole="checkbox"
+                accessibilityState={{ checked: selected.includes(person.id) }}
+                trailing={<Checkbox checked={selected.includes(person.id)} />}
+              />
+            ))}
+          </View>
+        </View>
+
+        <View className="gap-3.5">
+          <EmptyState
+            title={t(COMPOSE.INVITE_TITLE)}
+            body={t(COMPOSE.INVITE_BODY)}
+            cta={t(COMPOSE.INVITE_CTA)}
+            artSize={112}
+            onPress={() => router.push('/(app)/friends/search')}
+          />
+        </View>
+
+        {friendsError ? (
+          <Text variant="meta" className="mt-2 text-center text-purple-deep">
+            {errorMessage(friendsError)}
+          </Text>
+        ) : null}
+      </ScrollView>
+
+      <View className="px-gutter pt-3">
+        <Button
+          label={ctaLabel}
+          onPress={send}
+          size="lg"
+          disabled={selected.length === 0 || !composer.uri}
+        />
+      </View>
+    </Screen>
+  );
+}
+```
+
+- [ ] **Step 9: Typecheck, format and test**
+
+Run: `npm run typecheck`
+Expected: exits 0.
+
+Run: `npm test`
+Expected: all pass.
+
+Run: `npx prettier --write app src && npm run format:check`
+Expected: `All matched files use Prettier code style!`
+
+- [ ] **Step 10: Commit**
+
+```bash
+git add app src
+git commit -m "feat: outbox-backed sending, waiting-on-you recipients and the feed's sending line" -m "Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01XKE3Z4Mi437u3iDrbumuSC"
+```
+
+---
 
 ### Task 15: Feed, profile grid, moment and photo screens
-- Feed: me plus pending senders in the story rail with real avatars; empty state only when I have no friends and an empty inbox; open moments grid.
-- Profile: pairs plus `lockedTiles`, newest first; `MomentPair.rightMomentId` becomes nullable and `PairGrid` draws an empty frosted right tile.
-- Moment screen: real avatar, `useMarkTradeSeen`, trade-back sets `composer.replyToTradeId`.
-- Photo screen: real data through `moments.photo`.
+
+**Files:**
+- Replace: `app/(app)/feed.tsx`, `src/features/profile/components/pair-grid.tsx`, `app/moment/[tradeId].tsx`
+- Modify: `app/(app)/profile.tsx`, `app/photo/[momentId].tsx`
+
+**Interfaces:**
+- Consumes: `useInbox`, `queries.moments.*`, `useMarkTradeSeen` (Task 13); `OutboxLine` (Task 14); `friendsOf` (Task 11); `useMe` and `avatarUrl` (Task 10).
+- Produces: no new modules. The own-profile grid now shows completed pairs and unanswered outgoing moments together, newest first.
+
+- [ ] **Step 1: The feed**
+
+Replace `app/(app)/feed.tsx` with:
+
+```tsx
+import { useMemo } from 'react';
+import { Pressable, View } from 'react-native';
+import { Image } from 'expo-image';
+import { router } from 'expo-router';
+import { useQuery } from '@tanstack/react-query';
+import { SectionHeading } from '@/shared/ui/section-heading';
+import { SectionLabel } from '@/shared/ui/section-label';
+import { Text } from '@/shared/ui/text';
+import { t } from '@/shared/i18n/i18n';
+import { COMMON, FEED } from '@/shared/i18n/keys';
+import { memberSince } from '@/shared/lib/format';
+import { queries } from '@/shared/lib/queries';
+import { friendsOf } from '@/features/friends/relationships';
+import { useInbox } from '@/features/moments/hooks/use-inbox';
+import { useComposer } from '@/features/moments/hooks/use-composer';
+import { FeedHeader } from '@/features/feed/components/feed-header';
+import { StoryRail, StoryItem } from '@/features/feed/components/story-rail';
+import { LockedMomentCard } from '@/features/feed/components/locked-moment-card';
+import { OutboxLine } from '@/features/feed/components/outbox-line';
+import { EmptyState } from '@/features/feed/components/empty-state';
+import { TabScreen } from '@/features/navigation/tab-screen';
+import { avatarUrl } from '@/features/profile/data/profile-api';
+import { useMe } from '@/features/profile/hooks/use-me';
+import { openProfile } from '@/features/profile/open-profile';
+/**
+ * Screens `01 Feed` and `01c Feed · leer`.
+ *
+ * One component covers both: with nobody to trade with and nothing waiting, the
+ * cards are replaced by the dashed invite card, exactly as the two artboards
+ * show. Having friends but no moments is not empty — it is a quiet day.
+ */
+export default function FeedScreen() {
+  const { pending, open, loading } = useInbox();
+  const { data: me } = useMe();
+  const { data: friendships = [] } = useQuery(queries.friends.all);
+  const composer = useComposer();
+  const myId = me?.id ?? '';
+
+  const stories = useMemo<StoryItem[]>(
+    () => [
+      {
+        id: myId,
+        name: t(COMMON.YOU),
+        avatar: avatarUrl(me?.avatar_storage_path ?? null),
+        waiting: true,
+      },
+      ...pending.map((moment) => ({
+        id: moment.from.id,
+        name: moment.from.name,
+        avatar: moment.from.avatarUrl,
+        waiting: true,
+      })),
+    ],
+    [me, myId, pending],
+  );
+
+  const hasPeople = friendsOf(friendships, myId).length > 0;
+  const hasMoments = pending.length > 0 || open.length > 0;
+  // Nobody to trade with AND nothing waiting. Either one on its own is a feed.
+  const empty = !loading && !hasPeople && !hasMoments;
+
+  function startTrade(tradeId: string) {
+    // Capture answers this specific frosted moment; the camera reads it back.
+    composer.set({ replyToTradeId: tradeId });
+    router.push('/camera');
+  }
+
+  return (
+    <TabScreen>
+      <View className="flex-1 gap-4">
+        <FeedHeader
+          avatar={avatarUrl(me?.avatar_storage_path ?? null)}
+          name={me?.first_name ?? ''}
+          subtitle={me ? memberSince(me.created_at) : ''}
+          onPressAdd={() => router.push('/(app)/friends/search')}
+          onPressAvatar={() => router.push('/(app)/friends')}
+        />
+
+        <View className="gap-3">
+          <SectionLabel
+            trailing={pending.length > 0 ? t(FEED.STORIES_TRAILING, { count: pending.length }) : undefined}
+          >
+            {t(FEED.STORIES_LABEL)}
+          </SectionLabel>
+          <StoryRail
+            items={stories}
+            placeholders={Math.max(0, 3 - pending.length)}
+            placeholderLabel={t(FEED.ADD_FRIEND)}
+            onPressItem={(id) => openProfile(id, myId)}
+            onPressPlaceholder={() => router.push('/(app)/friends/search')}
+          />
+        </View>
+
+        <Text variant="headline" className="text-ink">
+          {empty ? t(FEED.EMPTY.HEADLINE) : greetingForNow()}
+        </Text>
+
+        {empty ? (
+          <EmptyState
+            title={t(FEED.EMPTY.TITLE)}
+            body={t(FEED.EMPTY.BODY)}
+            cta={t(FEED.EMPTY.CTA)}
+            onPress={() => router.push('/(app)/friends/search')}
+          />
+        ) : (
+          <>
+            <OutboxLine />
+
+            {pending.map((moment) => (
+              <LockedMomentCard
+                key={moment.tradeId}
+                moment={moment}
+                onPressTrade={() => startTrade(moment.tradeId)}
+                onPressCard={() => router.push(`/moment/${moment.tradeId}`)}
+              />
+            ))}
+
+            {open.length > 0 ? (
+              <>
+                <SectionHeading title={t(FEED.MOMENTS_TITLE)} />
+
+                {/* Fixed share rather than flex:1, which would stretch a lone item across
+                    the full width and render a portrait photo as a letterbox strip. */}
+                <View className="flex-row flex-wrap gap-[13px]">
+                  {open.map((moment) => (
+                    <Pressable
+                      key={moment.tradeId}
+                      className="w-[48%]"
+                      onPress={() => router.push(`/photo/${moment.momentId}`)}
+                      accessibilityRole="imagebutton"
+                      accessibilityLabel={moment.from.name}
+                    >
+                      <Image
+                        source={moment.photo}
+                        className="aspect-[4/5] w-full rounded-thumb"
+                        contentFit="cover"
+                      />
+                    </Pressable>
+                  ))}
+                </View>
+              </>
+            ) : null}
+          </>
+        )}
+      </View>
+    </TabScreen>
+  );
+}
+
+function greetingForNow(): string {
+  const hour = new Date().getHours();
+  if (hour < 11) return t(FEED.GREETING_MORNING);
+  if (hour >= 18) return t(FEED.GREETING_EVENING);
+  return t(FEED.GREETING_DAY);
+}
+```
+
+- [ ] **Step 2: A pair that is still waiting for its other half**
+
+Replace `src/features/profile/components/pair-grid.tsx` with:
+
+```tsx
+import { Pressable, View } from 'react-native';
+import { Image } from 'expo-image';
+import { LockedIcon } from '@/shared/ui/icons';
+import { Text } from '@/shared/ui/text';
+import { pairDate } from '@/shared/lib/format';
+import type { MomentPair } from '@/features/moments/interfaces';
+interface PairGridProps {
+  pairs: MomentPair[];
+  onPressPhoto?: (momentId: string) => void;
+}
+
+/**
+ * A completed trade rendered as what it is: two photos taken the same day, kept
+ * together — two pairs per row, as on screen 07b. This is the "something to
+ * keep" layer from the positioning note, the artefact the month-end export is
+ * eventually built from.
+ *
+ * A pair with no right half is one of your own moments nobody has traded back
+ * for. Its left tile is your own photo, shown plainly — the server only signs a
+ * path for someone allowed to see it, and you always are. The empty right tile
+ * is what the lock looks like from this side.
+ */
+export function PairGrid({ pairs, onPressPhoto }: PairGridProps) {
+  return (
+    <View className="gap-4">
+      {chunk(pairs, 2).map((row, i) => (
+        <View key={i} className="flex-row gap-3">
+          {row.map((pair) => (
+            <Pair key={pair.tradeId} pair={pair} onPressPhoto={onPressPhoto} />
+          ))}
+          {/* Keep a lone trailing pair at half width instead of stretching it. */}
+          {row.length === 1 ? <View className="flex-1" /> : null}
+        </View>
+      ))}
+    </View>
+  );
+}
+
+interface PairProps {
+  pair: MomentPair;
+  onPressPhoto?: (momentId: string) => void;
+}
+
+/** Both tiles of a pair share the 111px height. */
+function Pair({ pair, onPressPhoto }: PairProps) {
+  const rightMomentId = pair.rightMomentId;
+
+  return (
+    <View className="flex-1 gap-2">
+      <View className="flex-row gap-[5px]">
+        <Pressable className="flex-1" onPress={() => onPressPhoto?.(pair.leftMomentId)}>
+          <Image source={pair.left} className="h-[111px] w-full rounded-tile" contentFit="cover" />
+        </Pressable>
+
+        {rightMomentId ? (
+          <Pressable className="flex-1" onPress={() => onPressPhoto?.(rightMomentId)}>
+            <Image source={pair.right} className="h-[111px] w-full rounded-tile" contentFit="cover" />
+          </Pressable>
+        ) : (
+          // Nothing to blur: there is no photo here yet, which is the point.
+          <View className="h-[111px] flex-1 items-center justify-center rounded-tile bg-surface-violet-deep">
+            <LockedIcon size={18} />
+          </View>
+        )}
+      </View>
+
+      <Text variant="metaSm" className="text-center text-muted-grey">
+        {pairDate(pair.date)}
+      </Text>
+    </View>
+  );
+}
+
+function chunk<T>(items: T[], size: number): T[][] {
+  const out: T[][] = [];
+  for (let i = 0; i < items.length; i += size) out.push(items.slice(i, i + size));
+  return out;
+}
+```
+
+- [ ] **Step 3: Your own grid holds both**
+
+In `app/(app)/profile.tsx`, add `useMemo` to the React import and replace the
+pairs query with the two queries and their merge:
+
+```ts
+  const { data: pairs = [] } = useQuery({ ...queries.moments.pairs(null), enabled: me != null });
+  const { data: locked = [] } = useQuery({ ...queries.moments.outgoingLocked, enabled: me != null });
+  // One sequence, newest first: a moment you sent an hour ago belongs above a
+  // pair you completed yesterday.
+  const grid = useMemo(
+    () => [...locked, ...pairs].sort((a, b) => Date.parse(b.date) - Date.parse(a.date)),
+    [locked, pairs],
+  );
+```
+
+and pass `pairs={grid}` to `<ProfileView>`.
+
+The friend profile keeps `queries.moments.pairs(userId)`: their locked tiles are
+theirs to see, not mine.
+
+- [ ] **Step 4: The moment screen on real data**
+
+Replace `app/moment/[tradeId].tsx` with:
+
+```tsx
+import { useEffect, useMemo } from 'react';
+import { View, TextInput, Pressable } from 'react-native';
+import { Image } from 'expo-image';
+import { LinearGradient } from 'expo-linear-gradient';
+import { router, useLocalSearchParams } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { BlurView } from 'expo-blur';
+import { X } from 'lucide-react-native';
+import { Avatar } from '@/shared/ui/avatar';
+import { GlassButton } from '@/shared/ui/glass-button';
+import { LockedIcon, CameraIcon } from '@/shared/ui/icons';
+import { Text } from '@/shared/ui/text';
+import { alpha, colors } from '@/shared/theme/colors';
+import { BLUR } from '@/shared/ui/locked-image';
+import { t } from '@/shared/i18n/i18n';
+import { COMMON, MOMENT } from '@/shared/i18n/keys';
+import { relativeTime, timeUntilUnlock } from '@/shared/lib/format';
+import { useInbox } from '@/features/moments/hooks/use-inbox';
+import { useComposer } from '@/features/moments/hooks/use-composer';
+import { useMarkTradeSeen } from '@/features/moments/data/moments-mutations';
+/**
+ * Screens `04 Moment geöffnet` and `04b Moment verschwommen`.
+ *
+ * These are the same screen in two states, which is the point: the frosted
+ * version is not an error or an empty state, it is the photo, withheld. The only
+ * way forward is the camera.
+ */
+export default function MomentScreen() {
+  const { tradeId } = useLocalSearchParams<{ tradeId: string }>();
+  const { data, loading } = useInbox();
+  const composer = useComposer();
+  const insets = useSafeAreaInsets();
+
+  const moment = useMemo(() => data.find((m) => m.tradeId === tradeId), [data, tradeId]);
+
+  // Opening the frosted card stamps it as seen, so the sender can tell it
+  // landed. This is a genuine side effect of viewing, not a fetch — hence the
+  // one `useEffect` on this screen.
+  const { mutate } = useMarkTradeSeen();
+  // Primitive deps only: the refetch after the patch yields a new object for
+  // the same moment, which must not stamp it a second time.
+  const found = moment !== undefined;
+  const seenAt = moment?.seenAt;
+  useEffect(() => {
+    if (tradeId && found && !seenAt) mutate(tradeId);
+  }, [tradeId, found, seenAt, mutate]);
+
+  // Before the inbox has loaded (deep link, cold start) there is no moment yet.
+  // The chrome still renders so the screen is never a black box with no way out.
+  if (!moment) {
+    return (
+      <View className="flex-1 bg-black">
+        <StatusBar style="light" />
+        {/* Safe-area insets are runtime values, so they stay as style. */}
+        <View className="absolute inset-0 px-4" style={{ paddingTop: insets.top + 6 }}>
+          <View className="mt-4 flex-row items-center gap-3">
+            <View className="min-w-0 flex-1 gap-0.5">
+              {!loading ? (
+                <Text variant="bodySm" className="text-on-dark-text">
+                  {t(MOMENT.NOT_FOUND)}
+                </Text>
+              ) : null}
+            </View>
+            <GlassButton
+              size={34}
+              onDark
+              onPress={() => router.back()}
+              accessibilityLabel={t(COMMON.CLOSE)}
+            >
+              <X size={12} color={colors.white} strokeWidth={2.2} />
+            </GlassButton>
+          </View>
+        </View>
+      </View>
+    );
+  }
+
+  const locked = !moment.isOpen;
+  const countdown = timeUntilUnlock(moment.autoUnlockAt);
+
+  const tradeBack = () => {
+    composer.set({ replyToTradeId: moment.tradeId });
+    router.push('/camera');
+  };
+
+  return (
+    <View className="flex-1 bg-black">
+      <StatusBar style="light" />
+
+      <Image
+        source={moment.photo}
+        className="absolute inset-0"
+        contentFit="cover"
+        blurRadius={locked ? BLUR.full : 0}
+      />
+      <LinearGradient
+        colors={
+          locked
+            ? ['rgba(0,0,0,.62)', 'rgba(0,0,0,.18)', 'rgba(0,0,0,.22)', 'rgba(0,0,0,.8)']
+            : ['rgba(0,0,0,.62)', 'rgba(0,0,0,0)', 'rgba(0,0,0,0)', 'rgba(0,0,0,.78)']
+        }
+        locations={[0, 0.24, 0.46, 1]}
+        className="absolute inset-0"
+        pointerEvents="none"
+      />
+
+      {/* Safe-area insets are runtime values, so they stay as style. */}
+      <View
+        className="absolute inset-0 px-4"
+        style={{ paddingTop: insets.top + 6, paddingBottom: insets.bottom + 10 }}
+      >
+        <View className="mt-4 flex-row items-center gap-3">
+          <Avatar source={moment.from.avatarUrl} name={moment.from.name} size={52} />
+          <View className="min-w-0 flex-1 gap-0.5">
+            <Text variant="rowTitle" className="text-white">
+              {moment.from.name}
+            </Text>
+            <Text variant="metaXs" className="text-on-dark-text-soft">
+              {relativeTime(moment.capturedAt)}
+            </Text>
+          </View>
+          <GlassButton size={34} onDark onPress={() => router.back()} accessibilityLabel={t(COMMON.CLOSE)}>
+            <X size={12} color={colors.white} strokeWidth={2.2} />
+          </GlassButton>
+        </View>
+
+        {locked ? (
+          <View className="flex-1 items-center justify-center gap-4 pb-[60px]">
+            <View className="h-[72px] w-[72px] items-center justify-center rounded-[36px] border border-[rgba(255,255,255,.28)] bg-on-dark-fill">
+              <LockedIcon size={28} />
+            </View>
+            <Text variant="cardTitleLg" className="text-center text-white">
+              {t(MOMENT.LOCKED_TITLE)}
+            </Text>
+            <Text variant="bodyXs" className="max-w-[250px] text-center text-on-dark-text">
+              {t(MOMENT.LOCKED_BODY, { name: moment.from.name })}
+            </Text>
+            {countdown ? (
+              <Text variant="caption" className="text-center text-on-dark-text-faint">
+                {t(MOMENT.AUTO_UNLOCK, { time: countdown })}
+              </Text>
+            ) : null}
+          </View>
+        ) : (
+          <>
+            <View className="flex-1" />
+            {moment.caption ? (
+              <Text variant="bodyLg" className="mb-4 px-1 text-white">
+                {moment.caption}
+              </Text>
+            ) : null}
+          </>
+        )}
+
+        {/* Reply bar. The camera button is the primary action in both states.
+            Task 17 makes the field send a message carrying this trade id. */}
+        <View className="flex-row items-center gap-2.5 px-1">
+          <BlurView
+            intensity={30}
+            tint="dark"
+            className="h-[52px] flex-1 justify-center overflow-hidden rounded-pill border border-on-dark-border px-5"
+          >
+            <TextInput
+              placeholder={t(MOMENT.REPLY_PLACEHOLDER)}
+              placeholderTextColor={alpha.onDarkTextSoft}
+              className="p-0 font-sans text-[15.5px] text-white"
+              editable={!locked}
+            />
+          </BlurView>
+          <Pressable
+            onPress={tradeBack}
+            accessibilityRole="button"
+            accessibilityLabel={t(MOMENT.LOCKED_CTA)}
+            className="h-[52px] w-[52px] items-center justify-center rounded-[26px] bg-purple active:opacity-85"
+          >
+            <CameraIcon size={22} lensColor={colors.purple} />
+          </Pressable>
+        </View>
+      </View>
+    </View>
+  );
+}
+```
+
+- [ ] **Step 5: A photo that is not there**
+
+In `app/photo/[momentId].tsx`, read the query's settled state and say so rather
+than leaving a black screen:
+
+```ts
+  const { data: moment, isPending } = useQuery({
+    ...queries.moments.photo(momentId ?? ''),
+    enabled: Boolean(momentId),
+  });
+```
+
+and, inside the top row's centre column, under the meta text:
+
+```tsx
+          <Text variant="subtitle" weight="medium" className="shrink text-on-dark-text" numberOfLines={1}>
+            {moment
+              ? t(PHOTO.META, { name: moment.fromName, date: pairDate(moment.capturedAt) })
+              : isPending
+                ? ''
+                : t(MOMENT.NOT_FOUND)}
+          </Text>
+```
+
+Add `MOMENT` to the file's keys import.
+
+- [ ] **Step 6: Typecheck, format and test**
+
+Run: `npm run typecheck`
+Expected: exits 0.
+
+Run: `grep -rn "fixtures" app`
+Expected: only `app/(onboarding)/welcome.tsx`, `signup.tsx`, `thank-you.tsx`,
+`first-glimpse.tsx`, `camera.tsx`, `notifications.tsx`, `widget.tsx`,
+`reviews.tsx`, `paywall.tsx` and `invite/[token].tsx` — screens that legitimately
+render bundled artwork, plus the invite screen, which Task 19 finishes.
+
+Run: `npx prettier --write app src && npm test`
+Expected: all tests pass.
+
+- [ ] **Step 7: Commit**
+
+```bash
+git add app src
+git commit -m "feat: feed, profile grid, moment and photo screens on real data" -m "Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01XKE3Z4Mi437u3iDrbumuSC"
+```
+
+---
 
 ### Task 16: Chat data
-- `interfaces.ts`: `ChatMessage { id; senderId; recipientId; content; momentId; tradeId; createdAt; readAt; pending?: boolean }`, `Thread { partner: PersonSummary; lastMessageId; lastContent; lastMomentId; lastSenderId; lastAt; unreadCount; photo: string | null }`.
-- `messages.ts` (+ test): `appendMessage(list, message)` dedupes by id and keeps `createdAt` order; `pairKey(a, b)` = lower id, colon, higher id.
-- `chat-api`: `fetchThreads()` (`v_threads` with `overrideTypes<ThreadRow[]>`, partner profiles, thumbnails through `signedMomentUrls`), `fetchMessages(partnerId)` newest 200 then reversed, `sendMessage({ id, recipientId, content, tradeId })` with a client uuid from `expo-crypto` so the optimistic row already has its real id, `markThreadRead(partnerId)`.
-- `chat-queries`: `threads`, `messages(partnerId)`. `chat-mutations`: `useSendMessage(partnerId)` appends a pending message and updates the thread; `useMarkThreadRead(partnerId)` zeroes the unread count and stamps `readAt`.
-- Tab badge in `app/(app)/_layout.tsx` and the friends-tab chats badge use the unread total.
 
-### Task 17: Chat screens and presence
-- Chats list and chat screen on real data; the composer sends; opening a thread marks it read.
-- `hooks/use-partner-presence.ts`: `supabase.channel('chat:' + pairKey(me, partnerId), { config: { private: true, presence: { key: me } } })`, `track()` on `SUBSCRIBED`, present while the partner's id is a key of `presenceState()`; remove the channel on unmount. "Active now" only while present.
-- Moment screen reply bar sends a message with `trade_id`.
+**Files:**
+- Create: `src/features/chat/interfaces.ts`, `src/features/chat/messages.ts`, `src/features/chat/messages.test.ts`, `src/features/chat/data/chat-api.ts`, `src/features/chat/data/chat-queries.ts`, `src/features/chat/data/chat-mutations.ts`, `src/features/chat/hooks/use-unread-total.ts`, `src/shared/lib/prefetch.ts`
+- Modify: `src/features/friends/data/friends-api.ts`, `src/shared/lib/queries.ts`, `app/_layout.tsx`, `app/(app)/_layout.tsx`, `app/(app)/friends/index.tsx`
+
+**Interfaces:**
+- Consumes: `ThreadRow` (Task 4), `optimistic` / `patch` (Task 7), `currentUserId` (Task 8), `PersonSummary` (Task 11), `signedMomentUrls` (Task 13), `expo-crypto` (Task 1).
+- Produces:
+  - From `@/features/chat/interfaces`: `ChatMessage { id; senderId; recipientId; content: string | null; momentId: string | null; tradeId: string | null; createdAt: string; readAt: string | null; pending?: boolean }`, `Thread { partner: PersonSummary; lastMessageId; lastContent: string | null; lastMomentId: string | null; lastSenderId; lastAt; unreadCount: number; photo: string | null }`.
+  - From `@/features/chat/messages`: `appendMessage(list, message): ChatMessage[]`, `pairKey(a, b): string`.
+  - From `@/features/chat/data/chat-api`: `MESSAGE_PAGE = 200`, `fetchThreads()`, `fetchMessages(partnerId)`, `sendMessage(input: SendMessageInput)`, `markThreadRead(partnerId)`.
+  - Keys `queries.chat.threads`, `queries.chat.messages(partnerId)`.
+  - From `@/features/chat/data/chat-mutations`: `draftMessage(input): ChatMessage`, `useSendMessage(partnerId)`, `useMarkThreadRead(partnerId)`.
+  - `useUnreadTotal(): number`.
+  - `prefetchForUser(queryClient: QueryClient, userId: string): void` from `@/shared/lib/prefetch`.
+  - `friends-api` now also exports `PERSON_COLUMNS` and `toPersonSummary`.
+
+- [ ] **Step 1: Write the shapes**
+
+Create `src/features/chat/interfaces.ts`:
+
+```ts
+import type { PersonSummary } from '@/features/friends/interfaces';
+/** One message in a 1:1 conversation. Group threads are deliberately not a thing. */
+export interface ChatMessage {
+  id: string;
+  senderId: string;
+  recipientId: string;
+  content: string | null;
+  momentId: string | null;
+  /** Set when the message was written from a moment screen. */
+  tradeId: string | null;
+  createdAt: string;
+  readAt: string | null;
+  /** True while the insert is still in flight. */
+  pending?: boolean;
+}
+
+/** A row in the chats list: the last message with one person. */
+export interface Thread {
+  partner: PersonSummary;
+  lastMessageId: string;
+  lastContent: string | null;
+  lastMomentId: string | null;
+  lastSenderId: string;
+  lastAt: string;
+  unreadCount: number;
+  /** Thumbnail of the moment the last message carried, when it carried one. */
+  photo: string | null;
+}
+```
+
+- [ ] **Step 2: Write the failing message-list test**
+
+Create `src/features/chat/messages.test.ts`:
+
+```ts
+import { appendMessage, pairKey } from '@/features/chat/messages';
+import type { ChatMessage } from '@/features/chat/interfaces';
+
+const message = (id: string, createdAt: string, over: Partial<ChatMessage> = {}): ChatMessage => ({
+  id,
+  senderId: 'me',
+  recipientId: 'mia',
+  content: id,
+  momentId: null,
+  tradeId: null,
+  createdAt,
+  readAt: null,
+  ...over,
+});
+
+describe('appendMessage', () => {
+  const first = message('a', '2026-09-14T10:00:00.000Z');
+  const second = message('b', '2026-09-14T10:01:00.000Z');
+
+  it('adds a message at the end', () => {
+    expect(appendMessage([first], second).map((m) => m.id)).toEqual(['a', 'b']);
+  });
+
+  it('replaces the pending copy of a message rather than showing it twice', () => {
+    const pending = message('b', '2026-09-14T10:01:00.000Z', { pending: true });
+    const confirmed = message('b', '2026-09-14T10:01:02.000Z');
+    const list = appendMessage(appendMessage([first], pending), confirmed);
+
+    expect(list.map((m) => m.id)).toEqual(['a', 'b']);
+    expect(list[1].pending).toBeUndefined();
+  });
+
+  it('puts an out-of-order arrival where it belongs', () => {
+    const early = message('z', '2026-09-14T09:59:00.000Z');
+    expect(appendMessage([first, second], early).map((m) => m.id)).toEqual(['z', 'a', 'b']);
+  });
+});
+
+describe('pairKey', () => {
+  it('is the same string from either side', () => {
+    expect(pairKey('bbb', 'aaa')).toBe('aaa:bbb');
+    expect(pairKey('aaa', 'bbb')).toBe(pairKey('bbb', 'aaa'));
+  });
+});
+```
+
+- [ ] **Step 3: Run to see it fail**
+
+Run: `npx jest src/features/chat/messages.test.ts`
+Expected: FAIL, `Cannot find module '@/features/chat/messages'`.
+
+- [ ] **Step 4: Write the list helpers**
+
+Create `src/features/chat/messages.ts`:
+
+```ts
+import type { ChatMessage } from '@/features/chat/interfaces';
+/**
+ * Messages arrive from three directions — the optimistic send, the insert's own
+ * answer, and the Realtime event — and the same message routinely arrives
+ * twice. Both writers go through here so neither has to know about the others.
+ */
+export function appendMessage(list: ChatMessage[], message: ChatMessage): ChatMessage[] {
+  const without = list.filter((existing) => existing.id !== message.id);
+  return [...without, message].sort((a, b) => Date.parse(a.createdAt) - Date.parse(b.createdAt));
+}
+
+/**
+ * The presence topic for a conversation: the two ids in a fixed order, so both
+ * phones join the same channel. The migration's policy splits this same string.
+ */
+export function pairKey(a: string, b: string): string {
+  return a < b ? `${a}:${b}` : `${b}:${a}`;
+}
+```
+
+- [ ] **Step 5: Run the test**
+
+Run: `npx jest src/features/chat/messages.test.ts`
+Expected: PASS (4 tests).
+
+- [ ] **Step 6: Share the person mapper**
+
+Chat needs the same profile columns and the same mapping. In
+`src/features/friends/data/friends-api.ts`, export them rather than copying:
+
+```ts
+/** The profile columns every person row needs. */
+export const PERSON_COLUMNS = 'id, first_name, username, tagline, avatar_storage_path';
+
+export interface PersonColumns {
+  id: string;
+  first_name: string;
+  username: string | null;
+  tagline: string | null;
+  avatar_storage_path: string | null;
+}
+
+export function toPersonSummary(row: PersonColumns): PersonSummary {
+  return {
+    id: row.id,
+    name: row.first_name,
+    username: row.username,
+    tagline: row.tagline,
+    avatarUrl: avatarUrl(row.avatar_storage_path),
+  };
+}
+```
+
+and replace the three `toPerson(` call sites in that file with `toPersonSummary(`.
+
+- [ ] **Step 7: Threads and messages**
+
+Create `src/features/chat/data/chat-api.ts`:
+
+```ts
+import { supabase } from '@/shared/lib/supabase';
+import { currentUserId } from '@/features/auth/current-user';
+import { PERSON_COLUMNS, toPersonSummary } from '@/features/friends/data/friends-api';
+import { signedMomentUrls } from '@/features/moments/data/moment-urls';
+import type { ThreadRow } from '@/shared/lib/database.types';
+import type { ChatMessage, Thread } from '@/features/chat/interfaces';
+/** Reads and writes for 1:1 chat. */
+
+/** No pagination: a conversation is short, and the positioning note keeps it that way. */
+export const MESSAGE_PAGE = 200;
+
+const MESSAGE_COLUMNS = 'id, sender_id, recipient_id, content, moment_id, trade_id, created_at, read_at';
+
+interface MessageColumns {
+  id: string;
+  sender_id: string;
+  recipient_id: string;
+  content: string | null;
+  moment_id: string | null;
+  trade_id: string | null;
+  created_at: string;
+  read_at: string | null;
+}
+
+function toMessage(row: MessageColumns): ChatMessage {
+  return {
+    id: row.id,
+    senderId: row.sender_id,
+    recipientId: row.recipient_id,
+    content: row.content,
+    momentId: row.moment_id,
+    tradeId: row.trade_id,
+    createdAt: row.created_at,
+    readAt: row.read_at,
+  };
+}
+
+/**
+ * The chats list. `v_threads` gives one row per conversation; the partners'
+ * profiles and any moment thumbnails are two more round trips, not one per row.
+ */
+export async function fetchThreads(): Promise<Thread[]> {
+  const { data, error } = await supabase
+    .from('v_threads')
+    .select('*')
+    .overrideTypes<ThreadRow[], { merge: false }>();
+  if (error) throw error;
+
+  const rows = data ?? [];
+  if (rows.length === 0) return [];
+
+  const [profiles, urls] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select(PERSON_COLUMNS)
+      .in(
+        'id',
+        rows.map((row) => row.partner_id),
+      ),
+    signedMomentUrls(rows.map((row) => row.last_moment_id).filter((id): id is string => id !== null)),
+  ]);
+  if (profiles.error) throw profiles.error;
+
+  const byId = new Map((profiles.data ?? []).map((profile) => [profile.id, profile]));
+
+  return rows
+    .map((row): Thread | null => {
+      // A partner whose profile a block now hides: drop the thread rather than
+      // render a nameless row.
+      const profile = byId.get(row.partner_id);
+      if (!profile) return null;
+      return {
+        partner: toPersonSummary(profile),
+        lastMessageId: row.last_message_id,
+        lastContent: row.last_content,
+        lastMomentId: row.last_moment_id,
+        lastSenderId: row.last_sender_id,
+        lastAt: row.last_at,
+        unreadCount: row.unread_count,
+        photo: row.last_moment_id ? (urls.get(row.last_moment_id) ?? null) : null,
+      };
+    })
+    .filter((thread): thread is Thread => thread !== null);
+}
+
+/** Newest 200 from the database — that is what the index is for — oldest first on screen. */
+export async function fetchMessages(partnerId: string): Promise<ChatMessage[]> {
+  const me = currentUserId();
+  const { data, error } = await supabase
+    .from('messages')
+    .select(MESSAGE_COLUMNS)
+    .or(
+      `and(sender_id.eq.${me},recipient_id.eq.${partnerId}),and(sender_id.eq.${partnerId},recipient_id.eq.${me})`,
+    )
+    .order('created_at', { ascending: false })
+    .limit(MESSAGE_PAGE);
+  if (error) throw error;
+  return (data ?? []).map(toMessage).reverse();
+}
+
+export interface SendMessageInput {
+  /** Minted on the client, so the optimistic row already carries its real id. */
+  id: string;
+  recipientId: string;
+  content: string;
+  /** Set when the message was written on a moment screen. */
+  tradeId?: string | null;
+}
+
+export async function sendMessage({
+  id,
+  recipientId,
+  content,
+  tradeId,
+}: SendMessageInput): Promise<ChatMessage> {
+  const { data, error } = await supabase
+    .from('messages')
+    .insert({
+      id,
+      sender_id: currentUserId(),
+      recipient_id: recipientId,
+      content,
+      trade_id: tradeId ?? null,
+    })
+    .select(MESSAGE_COLUMNS)
+    .single();
+  if (error) throw error;
+  return toMessage(data);
+}
+
+/** `read_at` is the only column the recipient may write (see the column grant). */
+export async function markThreadRead(partnerId: string): Promise<void> {
+  const { error } = await supabase
+    .from('messages')
+    .update({ read_at: new Date().toISOString() })
+    .eq('sender_id', partnerId)
+    .eq('recipient_id', currentUserId())
+    .is('read_at', null);
+  if (error) throw error;
+}
+```
+
+Create `src/features/chat/data/chat-queries.ts`:
+
+```ts
+import { createQueryKeys } from '@lukemorales/query-key-factory';
+import { fetchMessages, fetchThreads } from '@/features/chat/data/chat-api';
+export const chatQueries = createQueryKeys('chat', {
+  /** The chats list, and the source of every unread badge in the app. */
+  threads: {
+    queryKey: null,
+    queryFn: fetchThreads,
+  },
+  messages: (partnerId: string) => ({
+    queryKey: [partnerId],
+    queryFn: () => fetchMessages(partnerId),
+  }),
+});
+```
+
+In `src/shared/lib/queries.ts`, add the import and the fourth factory:
+
+```ts
+import { chatQueries } from '@/features/chat/data/chat-queries';
+```
+
+```ts
+export const queries = mergeQueryKeys(momentsQueries, friendsQueries, profileQueries, chatQueries);
+```
+
+- [ ] **Step 8: Send and read, optimistically**
+
+Create `src/features/chat/data/chat-mutations.ts`:
+
+```ts
+import { randomUUID } from 'expo-crypto';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { optimistic, patch } from '@/shared/lib/optimistic';
+import { queries } from '@/shared/lib/queries';
+import { markThreadRead, sendMessage } from '@/features/chat/data/chat-api';
+import { appendMessage } from '@/features/chat/messages';
+import type { ChatMessage, Thread } from '@/features/chat/interfaces';
+import { useMe } from '@/features/profile/hooks/use-me';
+
+export interface DraftMessageInput {
+  senderId: string;
+  recipientId: string;
+  content: string;
+  tradeId?: string | null;
+}
+
+/**
+ * The row the insert is about to create, minted here so the bubble that appears
+ * instantly and the row that lands a moment later are the same message rather
+ * than two.
+ */
+export function draftMessage(input: DraftMessageInput): ChatMessage {
+  return {
+    id: randomUUID(),
+    senderId: input.senderId,
+    recipientId: input.recipientId,
+    content: input.content,
+    momentId: null,
+    tradeId: input.tradeId ?? null,
+    createdAt: new Date().toISOString(),
+    readAt: null,
+    pending: true,
+  };
+}
+
+/** Takes the draft itself as its variable, so the patch and the insert cannot drift. */
+export function useSendMessage(partnerId: string) {
+  const queryClient = useQueryClient();
+  const messagesKey = queries.chat.messages(partnerId).queryKey;
+
+  return useMutation({
+    mutationFn: (message: ChatMessage) =>
+      sendMessage({
+        id: message.id,
+        recipientId: message.recipientId,
+        content: message.content ?? '',
+        tradeId: message.tradeId,
+      }),
+    ...optimistic(queryClient, [
+      patch<ChatMessage[], ChatMessage>(messagesKey, (old, message) => appendMessage(old, message)),
+      patch<Thread[], ChatMessage>(queries.chat.threads.queryKey, (old, message) =>
+        old.map((thread) =>
+          thread.partner.id === partnerId
+            ? {
+                ...thread,
+                lastMessageId: message.id,
+                lastContent: message.content,
+                lastMomentId: null,
+                lastSenderId: message.senderId,
+                lastAt: message.createdAt,
+                photo: null,
+              }
+            : thread,
+        ),
+      ),
+    ]),
+    // Swap the pending bubble for the stored row before the refetch lands, so
+    // the "sending" state does not linger for a round trip longer than it is.
+    onSuccess: (saved) => {
+      queryClient.setQueryData<ChatMessage[]>(messagesKey, (old) =>
+        old ? appendMessage(old, saved) : old,
+      );
+    },
+  });
+}
+
+/** Opening a conversation reads it. Both the badge and the ticks move at once. */
+export function useMarkThreadRead(partnerId: string) {
+  const queryClient = useQueryClient();
+  const { data: me } = useMe();
+  const myId = me?.id ?? '';
+
+  return useMutation({
+    mutationFn: () => markThreadRead(partnerId),
+    ...optimistic(queryClient, [
+      patch<Thread[], void>(queries.chat.threads.queryKey, (old) =>
+        old.map((thread) => (thread.partner.id === partnerId ? { ...thread, unreadCount: 0 } : thread)),
+      ),
+      patch<ChatMessage[], void>(queries.chat.messages(partnerId).queryKey, (old) =>
+        old.map((message) =>
+          message.recipientId === myId && message.readAt === null
+            ? { ...message, readAt: new Date().toISOString() }
+            : message,
+        ),
+      ),
+    ]),
+  });
+}
+```
+
+- [ ] **Step 9: Real unread badges**
+
+Create `src/features/chat/hooks/use-unread-total.ts`:
+
+```ts
+import { useQuery } from '@tanstack/react-query';
+import { queries } from '@/shared/lib/queries';
+/** Unread messages across every conversation — the Friends tab badge. */
+export function useUnreadTotal(): number {
+  const { data: threads = [] } = useQuery(queries.chat.threads);
+  return threads.reduce((total, thread) => total + thread.unreadCount, 0);
+}
+```
+
+In `app/(app)/_layout.tsx`, drop the `demoUnreadCount` import and use it:
+
+```ts
+import { useUnreadTotal } from '@/features/chat/hooks/use-unread-total';
+```
+
+```ts
+  const unread = useUnreadTotal();
+  // Friends carries both incoming moments and unread messages.
+  const friendsBadge = unread > 0 ? String(unread) : undefined;
+```
+
+In `app/(app)/friends/index.tsx`, replace the placeholder from Task 12:
+
+```ts
+  const unreadTotal = useUnreadTotal();
+```
+
+and add the import.
+
+- [ ] **Step 10: Prefetch what the first screen needs**
+
+All four queries the app opens with now exist, so they can be in flight before
+anything renders. Create `src/shared/lib/prefetch.ts`:
+
+```ts
+import type { QueryClient } from '@tanstack/react-query';
+import { queries } from '@/shared/lib/queries';
+/**
+ * The four queries the first screen after sign-in reads.
+ *
+ * Fired once whenever a user id appears — at sign-in and at every cold start —
+ * so the header, the feed, the rail and the badges are already in flight by the
+ * time they mount. The persisted cache draws the previous answer meanwhile.
+ */
+export function prefetchForUser(queryClient: QueryClient, userId: string): void {
+  void queryClient.prefetchQuery(queries.profile.byId(userId));
+  void queryClient.prefetchQuery(queries.moments.inbox);
+  void queryClient.prefetchQuery(queries.friends.all);
+  void queryClient.prefetchQuery(queries.chat.threads);
+}
+```
+
+In `app/_layout.tsx`, add the import and one line to the user-change effect
+Task 10 added:
+
+```ts
+import { prefetchForUser } from '@/shared/lib/prefetch';
+```
+
+```tsx
+  // A session that ends, expires, or returns as somebody else.
+  const previousUserId = useRef<string | null>(null);
+  useEffect(() => {
+    if (previousUserId.current && previousUserId.current !== userId) void clearUserData(queryClient);
+    previousUserId.current = userId;
+    if (userId) prefetchForUser(queryClient, userId);
+  }, [userId]);
+```
+
+- [ ] **Step 11: Typecheck, format and test**
+
+Run: `npm run typecheck`
+Expected: exits 0.
+
+Run: `npx prettier --write app src && npm test`
+Expected: all tests pass.
+
+- [ ] **Step 12: Commit**
+
+```bash
+git add app src
+git commit -m "feat: chat threads, messages and unread counts on real data" -m "Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01XKE3Z4Mi437u3iDrbumuSC"
+```
+
+---
+
+### Task 17: Chat screens and conversation presence
+
+**Files:**
+- Create: `src/features/chat/hooks/use-partner-presence.ts`
+- Replace: `src/features/chat/components/chats-list.tsx`, `app/chat/[partnerId].tsx`
+- Modify: `app/moment/[tradeId].tsx`
+
+**Interfaces:**
+- Consumes: the chat data layer and `pairKey` (Task 16); `queries.profile.byId` (Task 8); `avatarUrl` (Task 10); the presence policies on `realtime.messages` (Task 3).
+- Produces: `usePartnerPresence(myId: string, partnerId: string): boolean`.
+
+- [ ] **Step 1: Presence, scoped to the conversation**
+
+Create `src/features/chat/hooks/use-partner-presence.ts`:
+
+```ts
+import { useEffect, useState } from 'react';
+import { supabase } from '@/shared/lib/supabase';
+import { pairKey } from '@/features/chat/messages';
+/**
+ * "Active now", for one conversation and nowhere else.
+ *
+ * Presence is tracked only while this screen is open, on a private channel whose
+ * topic is the pair — so nobody outside the conversation can observe it and
+ * there is no global online state to leak. The two policies on
+ * `realtime.messages` from the `app_wiring` migration enforce that server-side;
+ * `private: true` is what makes the server consult them.
+ */
+export function usePartnerPresence(myId: string, partnerId: string): boolean {
+  const [present, setPresent] = useState(false);
+
+  useEffect(() => {
+    if (!myId || !partnerId) return;
+
+    const channel = supabase.channel(`chat:${pairKey(myId, partnerId)}`, {
+      config: { private: true, presence: { key: myId } },
+    });
+
+    const read = () => setPresent(Object.keys(channel.presenceState()).includes(partnerId));
+
+    channel
+      .on('presence', { event: 'sync' }, read)
+      .on('presence', { event: 'join' }, read)
+      .on('presence', { event: 'leave' }, read)
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') void channel.track({ at: new Date().toISOString() });
+      });
+
+    return () => {
+      // Removing the channel untracks and unsubscribes in one go, so leaving
+      // the screen is the same thing as going offline for this pair.
+      setPresent(false);
+      void supabase.removeChannel(channel);
+    };
+  }, [myId, partnerId]);
+
+  return present;
+}
+```
+
+- [ ] **Step 2: The chats list**
+
+Replace `src/features/chat/components/chats-list.tsx` with:
+
+```tsx
+import { Pressable, View } from 'react-native';
+import { Image } from 'expo-image';
+import { router } from 'expo-router';
+import { useQuery } from '@tanstack/react-query';
+import { Search } from 'lucide-react-native';
+import { Avatar } from '@/shared/ui/avatar';
+import { CameraBadgeIcon } from '@/shared/ui/icons';
+import { SectionLabel } from '@/shared/ui/section-label';
+import { Text } from '@/shared/ui/text';
+import { cn } from '@/shared/lib/cn';
+import { colors } from '@/shared/theme/colors';
+import { t } from '@/shared/i18n/i18n';
+import { CHAT } from '@/shared/i18n/keys';
+import { threadTime } from '@/shared/lib/format';
+import { queries } from '@/shared/lib/queries';
+import { useMe } from '@/features/profile/hooks/use-me';
+/**
+ * The conversation list, backed by `public.v_threads`.
+ *
+ * Lives in a component rather than a screen because it is shown inside the
+ * Friends tab — the positioning note says to keep messaging a small part of the
+ * app, not a destination of its own.
+ */
+export function ChatsList() {
+  const { data: threads = [] } = useQuery(queries.chat.threads);
+  const { data: me } = useMe();
+  const myId = me?.id ?? '';
+  const unread = threads.reduce((total, thread) => total + thread.unreadCount, 0);
+
+  return (
+    <View>
+      {/* Decorative in the mock and still decorative: searching a list this
+          short is not a feature, and chat search is out of scope. */}
+      <View className="mt-[18px] h-field-xs flex-row items-center gap-2.5 rounded-pill bg-surface-lilac px-4">
+        <Search size={16} color={colors.mutedCool} strokeWidth={1.8} />
+        <Text variant="bodyXs" className="text-placeholder">
+          {t(CHAT.SEARCH_PLACEHOLDER)}
+        </Text>
+      </View>
+
+      <View className="mt-6 gap-3.5">
+        <SectionLabel trailing={unread > 0 ? t(CHAT.UNREAD_TRAILING, { count: unread }) : undefined}>
+          {t(CHAT.UNREAD_SECTION)}
+        </SectionLabel>
+
+        <View className="gap-[18px]">
+          {threads.map((thread) => {
+            const isUnread = thread.unreadCount > 0;
+            const fromMe = thread.lastSenderId === myId;
+
+            return (
+              <Pressable
+                key={thread.lastMessageId}
+                className="flex-row items-center gap-[13px]"
+                onPress={() => router.push(`/chat/${thread.partner.id}`)}
+              >
+                <Avatar
+                  source={thread.partner.avatarUrl}
+                  name={thread.partner.name}
+                  size={52}
+                  ring={isUnread ? 'active' : 'none'}
+                />
+
+                <View className="min-w-0 flex-1 gap-[3px]">
+                  <Text variant="rowTitleSm" className="text-ink" numberOfLines={1}>
+                    {thread.partner.name}
+                  </Text>
+                  <View className="min-w-0 flex-row items-center gap-1.5">
+                    {thread.lastMomentId && !thread.lastContent ? <CameraBadgeIcon size={14} /> : null}
+                    <Text
+                      variant="meta"
+                      weight={isUnread ? 'semibold' : undefined}
+                      className={cn('flex-1', isUnread ? 'text-ink-body' : 'text-muted-violet')}
+                      numberOfLines={1}
+                    >
+                      {(fromMe ? t(CHAT.YOU_PREFIX) : '') + (thread.lastContent ?? t(CHAT.SENT_PHOTO))}
+                    </Text>
+                  </View>
+                </View>
+
+                <View className="flex-row items-center gap-2.5">
+                  {thread.photo ? (
+                    <Image
+                      source={thread.photo}
+                      className="h-[50px] w-[38px] rounded-tile border-[1.5px] border-border-chip"
+                      contentFit="cover"
+                    />
+                  ) : null}
+                  {isUnread ? (
+                    <View className="h-[22px] min-w-[22px] items-center justify-center rounded-pill bg-purple px-[7px]">
+                      <Text variant="caption" weight="semibold" className="text-white">
+                        {String(thread.unreadCount)}
+                      </Text>
+                    </View>
+                  ) : (
+                    <Text variant="caption" className="text-muted-lilac">
+                      {threadTime(thread.lastAt)}
+                    </Text>
+                  )}
+                </View>
+              </Pressable>
+            );
+          })}
+        </View>
+      </View>
+    </View>
+  );
+}
+```
+
+- [ ] **Step 3: The chat screen**
+
+Replace `app/chat/[partnerId].tsx` with:
+
+```tsx
+import { useEffect, useRef, useState } from 'react';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, TextInput, View } from 'react-native';
+import { router, useLocalSearchParams } from 'expo-router';
+import { useQuery } from '@tanstack/react-query';
+import { ArrowUp, MoreHorizontal, Paperclip, Plus, X } from 'lucide-react-native';
+import { Avatar } from '@/shared/ui/avatar';
+import { GlassButton } from '@/shared/ui/glass-button';
+import { Screen } from '@/shared/ui/screen';
+import { Text } from '@/shared/ui/text';
+import { cn } from '@/shared/lib/cn';
+import { colors } from '@/shared/theme/colors';
+import { shadow } from '@/shared/theme/page-structure';
+import { t } from '@/shared/i18n/i18n';
+import { CHAT, COMMON } from '@/shared/i18n/keys';
+import { threadTime } from '@/shared/lib/format';
+import { queries } from '@/shared/lib/queries';
+import { draftMessage, useMarkThreadRead, useSendMessage } from '@/features/chat/data/chat-mutations';
+import { usePartnerPresence } from '@/features/chat/hooks/use-partner-presence';
+import { avatarUrl } from '@/features/profile/data/profile-api';
+import { useMe } from '@/features/profile/hooks/use-me';
+/**
+ * Screen `09 Chat`.
+ *
+ * Note the positioning note explicitly says to cut open chat — this stays 1:1
+ * only, reachable from a friend, with no group threads and no discovery.
+ *
+ * The mock's standing "Today" chip is gone: with real messages it would sit
+ * above ones sent last week. Each bubble carries its own time, and `threadTime`
+ * already says "Yesterday" or the weekday when that is what it is.
+ */
+export default function ChatScreen() {
+  const { partnerId } = useLocalSearchParams<{ partnerId: string }>();
+  const id = partnerId ?? '';
+  const { data: me } = useMe();
+  const myId = me?.id ?? '';
+  const [draft, setDraft] = useState('');
+  const scrollRef = useRef<ScrollView>(null);
+
+  const { data: partner } = useQuery({ ...queries.profile.byId(id), enabled: id.length > 0 });
+  const { data: messages = [] } = useQuery({ ...queries.chat.messages(id), enabled: id.length > 0 });
+
+  const send = useSendMessage(id);
+  const { mutate: markRead } = useMarkThreadRead(id);
+  const present = usePartnerPresence(myId, id);
+
+  const partnerAvatar = avatarUrl(partner?.avatar_storage_path ?? null);
+  const partnerName = partner?.first_name ?? '';
+
+  // Opening a conversation reads it. Primitive dep: every refetch is a new
+  // array, and re-reading an already-read thread is a pointless write.
+  const hasUnread = messages.some((message) => message.recipientId === myId && message.readAt === null);
+  useEffect(() => {
+    if (hasUnread) markRead();
+  }, [hasUnread, markRead]);
+
+  // A new message belongs in view, whether I sent it or it just arrived.
+  useEffect(() => {
+    scrollRef.current?.scrollToEnd({ animated: true });
+  }, [messages.length]);
+
+  function submit() {
+    const content = draft.trim();
+    if (content.length === 0 || myId.length === 0 || id.length === 0) return;
+    send.mutate(draftMessage({ senderId: myId, recipientId: id, content }));
+    setDraft('');
+  }
+
+  return (
+    <Screen gutter={0} bottomInset={0}>
+      <View className="h-[60px] flex-row items-center gap-3 px-gutter">
+        <GlassButton size={34} onPress={() => router.back()} accessibilityLabel={t(COMMON.CLOSE)}>
+          <X size={12} color={colors.inkFaint} strokeWidth={2.2} />
+        </GlassButton>
+        <Avatar source={partnerAvatar} name={partnerName} size={40} />
+        <View className="flex-1 gap-px">
+          <Text variant="rowTitle" className="text-ink">
+            {partnerName}
+          </Text>
+          {present ? (
+            <Text variant="metaXs" className="text-muted-lilac">
+              {t(CHAT.ONLINE)}
+            </Text>
+          ) : null}
+        </View>
+        <GlassButton size={34} accessibilityLabel={t(COMMON.MORE)}>
+          <MoreHorizontal size={17} color={colors.inkFaint} strokeWidth={2.4} />
+        </GlassButton>
+      </View>
+
+      <ScrollView
+        ref={scrollRef}
+        className="flex-1"
+        contentContainerClassName="gap-4 px-gutter pb-2 pt-[18px]"
+        showsVerticalScrollIndicator={false}
+      >
+        {messages.map((message) => {
+          const mine = message.senderId === myId;
+          return (
+            <View key={message.id} className={mine ? 'flex-row justify-end' : 'flex-row items-end gap-2.5'}>
+              {!mine ? <Avatar source={partnerAvatar} name={partnerName} size={30} /> : null}
+
+              <View className={cn('shrink gap-1.5', mine && 'items-end')}>
+                <Text variant="caption" className="text-muted-lilac">
+                  {threadTime(message.createdAt)}
+                </Text>
+                {message.content ? (
+                  <View
+                    className={cn(
+                      'max-w-[264px] rounded-[22px] px-4 py-3',
+                      mine ? 'rounded-br-[8px] bg-purple' : 'rounded-bl-[8px] bg-surface-violet',
+                      // Still in flight: present, but not yet a fact.
+                      message.pending && 'opacity-60',
+                    )}
+                  >
+                    <Text variant="bodyXs" className={mine ? 'text-white' : 'text-ink-body'}>
+                      {message.content}
+                    </Text>
+                  </View>
+                ) : null}
+              </View>
+            </View>
+          );
+        })}
+      </ScrollView>
+
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <View
+          className="m-4 mb-6 gap-[18px] rounded-lg border border-border-lilac-alt bg-white px-4 pb-3 pt-[15px]"
+          // Shadows stay as a style: RN's shadow props have no CSS equivalent NativeWind maps.
+          style={shadow.card}
+        >
+          <TextInput
+            value={draft}
+            onChangeText={setDraft}
+            placeholder={t(CHAT.INPUT_PLACEHOLDER)}
+            placeholderTextColor={colors.placeholder}
+            className="max-h-[100px] p-0 font-sans text-[15.5px] text-ink-body"
+            multiline
+          />
+          {/* Attachments are out of scope; the two icons stay as the mock draws them. */}
+          <View className="flex-row items-center gap-3.5">
+            <Plus size={19} color={colors.inkBody} strokeWidth={2} />
+            <Paperclip size={19} color={colors.inkBody} strokeWidth={1.8} />
+            <View className="flex-1" />
+            <Pressable
+              className={cn(
+                'h-9 w-9 items-center justify-center rounded-[18px] bg-purple',
+                draft.trim().length === 0 && 'opacity-40',
+              )}
+              onPress={submit}
+              disabled={draft.trim().length === 0}
+              accessibilityRole="button"
+              accessibilityLabel={t(CHAT.SEND)}
+              accessibilityState={{ disabled: draft.trim().length === 0 }}
+            >
+              <ArrowUp size={17} color={colors.white} strokeWidth={2.4} />
+            </Pressable>
+          </View>
+        </View>
+      </KeyboardAvoidingView>
+    </Screen>
+  );
+}
+```
+
+- [ ] **Step 4: The moment screen's reply bar sends**
+
+In `app/moment/[tradeId].tsx`, add to the imports:
+
+```ts
+import { useEffect, useMemo, useState } from 'react';
+```
+
+```ts
+import { draftMessage, useSendMessage } from '@/features/chat/data/chat-mutations';
+import { useMe } from '@/features/profile/hooks/use-me';
+```
+
+and add these **above** the `if (!moment)` early return, so the hook order never
+changes between the two branches:
+
+```ts
+  const [reply, setReply] = useState('');
+  const { data: me } = useMe();
+  const myId = me?.id ?? '';
+  const senderId = moment?.from.id ?? '';
+  const sendReply = useSendMessage(senderId);
+```
+
+Then replace the reply `TextInput` with:
+
+```tsx
+            <TextInput
+              value={reply}
+              onChangeText={setReply}
+              placeholder={t(MOMENT.REPLY_PLACEHOLDER)}
+              placeholderTextColor={alpha.onDarkTextSoft}
+              className="p-0 font-sans text-[15.5px] text-white"
+              editable={!locked}
+              returnKeyType="send"
+              onSubmitEditing={() => {
+                const content = reply.trim();
+                if (content.length === 0 || myId.length === 0) return;
+                // `trade_id` ties the message to the moment it is about, which
+                // is what makes the chat readable later.
+                sendReply.mutate(
+                  draftMessage({
+                    senderId: myId,
+                    recipientId: moment.from.id,
+                    content,
+                    tradeId: moment.tradeId,
+                  }),
+                );
+                setReply('');
+              }}
+            />
+```
+
+and drop the "Task 17 makes the field send…" line from the comment above the
+reply bar.
+
+- [ ] **Step 5: Typecheck, format and test**
+
+Run: `npm run typecheck`
+Expected: exits 0.
+
+Run: `grep -rn "demoMessages\|demoThreads\|demoUnreadCount\|demoProfiles\|DEMO_USER_ID" app src`
+Expected: only `src/shared/lib/fixtures.ts` itself. Task 20 deletes them.
+
+Run: `npx prettier --write app src && npm test`
+Expected: all tests pass.
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add app src
+git commit -m "feat: chat on real messages, with per-conversation presence" -m "Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01XKE3Z4Mi437u3iDrbumuSC"
+```
+
+---
 
 ### Task 18: Live updates
-- `src/features/live/live-actions.ts` (+ test): `actionsFor(event, me)` maps a Realtime payload to `inbox-changed`, `pairs-changed`, `outgoing-changed`, `friendships-changed`, `message-received { partnerId, message }` or `message-read { partnerId, messageId, readAt }`.
-- `use-live-updates.ts`, mounted in the root layout while signed in: channel `user:<uid>` with listeners for trades INSERT and UPDATE filtered on `responder_id=eq.<uid>` and on `initiator_id=eq.<uid>`, messages INSERT on `recipient_id=eq.<uid>`, messages UPDATE on `sender_id=eq.<uid>`, friendships INSERT and UPDATE on `recipient_id=eq.<uid>` and on `requester_id=eq.<uid>`. No DELETE listeners. On a re-subscribe after a drop, invalidate every query once.
 
-### Task 19: Invites
-- `invites-api`: `createInvite(momentId?)` returns the token; `fetchInvitePreview(token)` calls `invite_preview` and signs the blurred path with `createSignedUrl`; `claimInvite(token)`; `inviteLink(token)` = `glimpse://invite/<token>`.
-- `share-invite.ts`: create, then `Share.share({ message: t(INVITE.SHARE_MESSAGE, { name, link }) })`; where no share sheet exists, copy the link with `expo-clipboard`; returns `'shared' | 'copied'`, and share rows show `COMMON.COPIED` after a copy.
-- `hooks/use-pending-invite.ts`. Invite screen: signed out stores the token and pushes the name step; signed in claims on open and replaces with the camera for the returned trade; a dead token shows `MOMENT.NOT_FOUND`. Details sign-up claims a pending token after the avatar upload.
+**Files:**
+- Create: `src/features/live/live-actions.ts`, `src/features/live/live-actions.test.ts`, `src/features/live/use-live-updates.ts`
+- Modify: `app/_layout.tsx`
+
+**Interfaces:**
+- Consumes: the publication from Task 3; `appendMessage` and the chat keys (Task 16); the moments and friends keys (Tasks 11, 13).
+- Produces:
+  - From `@/features/live/live-actions`: `LiveEvent { table: 'trades' | 'messages' | 'friendships'; eventType: 'INSERT' | 'UPDATE'; new: Record<string, unknown> }`, `LiveAction` (a union of `inbox-changed`, `pairs-changed`, `outgoing-changed`, `friendships-changed`, `message-received`, `message-read`), `actionsFor(event: LiveEvent, me: string): LiveAction[]`.
+  - `useLiveUpdates(userId: string | null): void`.
+
+- [ ] **Step 1: Write the failing mapping test**
+
+Create `src/features/live/live-actions.test.ts`:
+
+```ts
+import { actionsFor, type LiveEvent } from '@/features/live/live-actions';
+
+const ME = 'me';
+const event = (over: Partial<LiveEvent> & Pick<LiveEvent, 'table'>): LiveEvent => ({
+  eventType: 'INSERT',
+  new: {},
+  ...over,
+});
+
+describe('actionsFor', () => {
+  it('a moment arriving for me changes the inbox', () => {
+    expect(
+      actionsFor(event({ table: 'trades', new: { responder_id: ME, initiator_id: 'mia' } }), ME),
+    ).toEqual([{ kind: 'inbox-changed' }]);
+  });
+
+  it('a trade of mine unlocking changes the inbox and the pairs', () => {
+    expect(
+      actionsFor(
+        event({ table: 'trades', eventType: 'UPDATE', new: { responder_id: ME, initiator_id: 'mia' } }),
+        ME,
+      ),
+    ).toEqual([{ kind: 'inbox-changed' }, { kind: 'pairs-changed' }]);
+  });
+
+  it('a trade I started appearing changes my locked tiles', () => {
+    expect(
+      actionsFor(event({ table: 'trades', new: { initiator_id: ME, responder_id: 'mia' } }), ME),
+    ).toEqual([{ kind: 'outgoing-changed' }]);
+  });
+
+  it('a trade I started being answered changes the pairs and my locked tiles', () => {
+    expect(
+      actionsFor(
+        event({ table: 'trades', eventType: 'UPDATE', new: { initiator_id: ME, responder_id: 'mia' } }),
+        ME,
+      ),
+    ).toEqual([{ kind: 'pairs-changed' }, { kind: 'outgoing-changed' }]);
+  });
+
+  it('a message to me arrives under its sender', () => {
+    const actions = actionsFor(
+      event({
+        table: 'messages',
+        new: {
+          id: 'm1',
+          sender_id: 'mia',
+          recipient_id: ME,
+          content: 'hey',
+          moment_id: null,
+          trade_id: null,
+          created_at: '2026-09-14T10:00:00.000Z',
+          read_at: null,
+        },
+      }),
+      ME,
+    );
+
+    expect(actions).toEqual([
+      {
+        kind: 'message-received',
+        partnerId: 'mia',
+        message: expect.objectContaining({ id: 'm1', senderId: 'mia', content: 'hey' }),
+      },
+    ]);
+  });
+
+  it('my message being read stamps it in the right conversation', () => {
+    expect(
+      actionsFor(
+        event({
+          table: 'messages',
+          eventType: 'UPDATE',
+          new: {
+            id: 'm1',
+            sender_id: ME,
+            recipient_id: 'mia',
+            read_at: '2026-09-14T10:05:00.000Z',
+          },
+        }),
+        ME,
+      ),
+    ).toEqual([
+      {
+        kind: 'message-read',
+        partnerId: 'mia',
+        messageId: 'm1',
+        readAt: '2026-09-14T10:05:00.000Z',
+      },
+    ]);
+  });
+
+  it('ignores my own message coming back and an unread update', () => {
+    expect(
+      actionsFor(event({ table: 'messages', new: { sender_id: ME, recipient_id: 'mia' } }), ME),
+    ).toEqual([]);
+    expect(
+      actionsFor(
+        event({ table: 'messages', eventType: 'UPDATE', new: { sender_id: ME, recipient_id: 'mia', read_at: null } }),
+        ME,
+      ),
+    ).toEqual([]);
+  });
+
+  it('a friendship in either direction changes the friend lists', () => {
+    expect(
+      actionsFor(event({ table: 'friendships', new: { requester_id: 'mia', recipient_id: ME } }), ME),
+    ).toEqual([{ kind: 'friendships-changed' }]);
+    expect(
+      actionsFor(
+        event({ table: 'friendships', eventType: 'UPDATE', new: { requester_id: ME, recipient_id: 'mia' } }),
+        ME,
+      ),
+    ).toEqual([{ kind: 'friendships-changed' }]);
+  });
+
+  it('says nothing about a row that is not mine', () => {
+    expect(
+      actionsFor(event({ table: 'trades', new: { initiator_id: 'mia', responder_id: 'ben' } }), ME),
+    ).toEqual([]);
+  });
+});
+```
+
+- [ ] **Step 2: Run to see it fail**
+
+Run: `npx jest src/features/live/live-actions.test.ts`
+Expected: FAIL, `Cannot find module '@/features/live/live-actions'`.
+
+- [ ] **Step 3: Map payloads to intentions**
+
+Create `src/features/live/live-actions.ts`:
+
+```ts
+import type { ChatMessage } from '@/features/chat/interfaces';
+/**
+ * What a Realtime change means for the cache, as a value rather than a side
+ * effect. The socket handler is then four lines and this is testable — which
+ * matters, because "the other person's moment did not appear" is invisible in
+ * a single-user run.
+ *
+ * Deletes are deliberately absent. Supabase cannot filter delete events and
+ * does not apply row security to them, so declines, withdrawals and unfriends
+ * reach the other phone on its next refetch instead.
+ */
+export type LiveAction =
+  | { kind: 'inbox-changed' }
+  | { kind: 'pairs-changed' }
+  | { kind: 'outgoing-changed' }
+  | { kind: 'friendships-changed' }
+  | { kind: 'message-received'; partnerId: string; message: ChatMessage }
+  | { kind: 'message-read'; partnerId: string; messageId: string; readAt: string };
+
+export interface LiveEvent {
+  table: 'trades' | 'messages' | 'friendships';
+  eventType: 'INSERT' | 'UPDATE';
+  /** The changed row. Row security already decided this subscriber may see it. */
+  new: Record<string, unknown>;
+}
+
+const text = (value: unknown): string | null => (typeof value === 'string' ? value : null);
+
+function toMessage(row: Record<string, unknown>): ChatMessage {
+  return {
+    id: text(row.id) ?? '',
+    senderId: text(row.sender_id) ?? '',
+    recipientId: text(row.recipient_id) ?? '',
+    content: text(row.content),
+    momentId: text(row.moment_id),
+    tradeId: text(row.trade_id),
+    createdAt: text(row.created_at) ?? new Date().toISOString(),
+    readAt: text(row.read_at),
+  };
+}
+
+export function actionsFor(event: LiveEvent, me: string): LiveAction[] {
+  const row = event.new;
+
+  if (event.table === 'trades') {
+    const actions: LiveAction[] = [];
+    if (text(row.responder_id) === me) {
+      actions.push({ kind: 'inbox-changed' });
+      // An update to a trade I hold is the unlock, which makes a pair.
+      if (event.eventType === 'UPDATE') actions.push({ kind: 'pairs-changed' });
+    }
+    if (text(row.initiator_id) === me) {
+      // An insert is a new lock of mine — my own send, or somebody claiming an
+      // invite. An update is somebody answering one.
+      if (event.eventType === 'UPDATE') actions.push({ kind: 'pairs-changed' });
+      actions.push({ kind: 'outgoing-changed' });
+    }
+    return actions;
+  }
+
+  if (event.table === 'messages') {
+    if (event.eventType === 'INSERT' && text(row.recipient_id) === me) {
+      const message = toMessage(row);
+      return [{ kind: 'message-received', partnerId: message.senderId, message }];
+    }
+    const readAt = text(row.read_at);
+    if (event.eventType === 'UPDATE' && text(row.sender_id) === me && readAt) {
+      return [
+        {
+          kind: 'message-read',
+          partnerId: text(row.recipient_id) ?? '',
+          messageId: text(row.id) ?? '',
+          readAt,
+        },
+      ];
+    }
+    return [];
+  }
+
+  const isMine = text(row.requester_id) === me || text(row.recipient_id) === me;
+  return isMine ? [{ kind: 'friendships-changed' }] : [];
+}
+```
+
+- [ ] **Step 4: Run the test**
+
+Run: `npx jest src/features/live/live-actions.test.ts`
+Expected: PASS (9 tests).
+
+- [ ] **Step 5: One channel per signed-in user**
+
+Create `src/features/live/use-live-updates.ts`:
+
+```ts
+import { useEffect } from 'react';
+import { useQueryClient, type QueryClient } from '@tanstack/react-query';
+import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
+import { supabase } from '@/shared/lib/supabase';
+import { queries } from '@/shared/lib/queries';
+import { appendMessage } from '@/features/chat/messages';
+import { actionsFor, type LiveAction, type LiveEvent } from '@/features/live/live-actions';
+import type { ChatMessage } from '@/features/chat/interfaces';
+/**
+ * One channel for everything that can change behind my back.
+ *
+ * Mounted in the root layout rather than under the tabs, so a deep link
+ * straight into a moment or a chat is live too. Row-level security decides
+ * which change reaches which subscriber; the filters below only narrow it
+ * further, so the socket does not carry rows this phone would drop.
+ */
+type Payload = RealtimePostgresChangesPayload<Record<string, unknown>>;
+
+function applyActions(queryClient: QueryClient, actions: LiveAction[]): void {
+  for (const action of actions) {
+    switch (action.kind) {
+      case 'inbox-changed':
+        void queryClient.invalidateQueries({ queryKey: queries.moments.inbox.queryKey });
+        break;
+      case 'pairs-changed':
+        void queryClient.invalidateQueries({ queryKey: queries.moments.pairs._def });
+        break;
+      case 'outgoing-changed':
+        void queryClient.invalidateQueries({ queryKey: queries.moments.outgoingLocked.queryKey });
+        break;
+      case 'friendships-changed':
+        void queryClient.invalidateQueries({ queryKey: queries.friends._def });
+        break;
+      case 'message-received':
+        // Appended rather than invalidated: an open conversation should show it
+        // now, not after a round trip.
+        queryClient.setQueryData<ChatMessage[]>(queries.chat.messages(action.partnerId).queryKey, (old) =>
+          old ? appendMessage(old, action.message) : old,
+        );
+        void queryClient.invalidateQueries({ queryKey: queries.chat.threads.queryKey });
+        break;
+      case 'message-read':
+        queryClient.setQueryData<ChatMessage[]>(queries.chat.messages(action.partnerId).queryKey, (old) =>
+          old?.map((message) =>
+            message.id === action.messageId ? { ...message, readAt: action.readAt } : message,
+          ),
+        );
+        break;
+    }
+  }
+}
+
+export function useLiveUpdates(userId: string | null): void {
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (!userId) return;
+
+    const handle =
+      (table: LiveEvent['table']) =>
+      (payload: Payload): void => {
+        if (payload.eventType !== 'INSERT' && payload.eventType !== 'UPDATE') return;
+        applyActions(
+          queryClient,
+          actionsFor(
+            { table, eventType: payload.eventType, new: payload.new as Record<string, unknown> },
+            userId,
+          ),
+        );
+      };
+
+    const table = (name: LiveEvent['table'], event: 'INSERT' | 'UPDATE', filter: string) =>
+      ({ event, schema: 'public', table: name, filter }) as const;
+
+    /** False until the first successful subscribe, so the initial one is not a "reconnect". */
+    let hasSubscribed = false;
+
+    const channel = supabase
+      .channel(`user:${userId}`)
+      .on('postgres_changes', table('trades', 'INSERT', `responder_id=eq.${userId}`), handle('trades'))
+      .on('postgres_changes', table('trades', 'UPDATE', `responder_id=eq.${userId}`), handle('trades'))
+      .on('postgres_changes', table('trades', 'INSERT', `initiator_id=eq.${userId}`), handle('trades'))
+      .on('postgres_changes', table('trades', 'UPDATE', `initiator_id=eq.${userId}`), handle('trades'))
+      .on('postgres_changes', table('messages', 'INSERT', `recipient_id=eq.${userId}`), handle('messages'))
+      .on('postgres_changes', table('messages', 'UPDATE', `sender_id=eq.${userId}`), handle('messages'))
+      .on(
+        'postgres_changes',
+        table('friendships', 'INSERT', `recipient_id=eq.${userId}`),
+        handle('friendships'),
+      )
+      .on(
+        'postgres_changes',
+        table('friendships', 'UPDATE', `recipient_id=eq.${userId}`),
+        handle('friendships'),
+      )
+      .on(
+        'postgres_changes',
+        table('friendships', 'INSERT', `requester_id=eq.${userId}`),
+        handle('friendships'),
+      )
+      .on(
+        'postgres_changes',
+        table('friendships', 'UPDATE', `requester_id=eq.${userId}`),
+        handle('friendships'),
+      )
+      .subscribe((status) => {
+        if (status !== 'SUBSCRIBED') return;
+        // Anything that happened while the socket was down was simply missed;
+        // there is no replay. One sweep is cheaper than reasoning about it.
+        if (hasSubscribed) void queryClient.invalidateQueries();
+        hasSubscribed = true;
+      });
+
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [userId, queryClient]);
+}
+```
+
+- [ ] **Step 6: Mount it once**
+
+In `app/_layout.tsx`, `useLiveUpdates` has to sit inside the query provider, so
+it goes in `RootStack`. Add the import:
+
+```ts
+import { useLiveUpdates } from '@/features/live/use-live-updates';
+```
+
+give `RootStack` the id as well:
+
+```tsx
+          <RootStack signedIn={status === 'signed-in'} userId={userId} />
+```
+
+```tsx
+interface RootStackProps {
+  signedIn: boolean;
+  userId: string | null;
+}
+```
+
+```tsx
+function RootStack({ signedIn, userId }: RootStackProps) {
+  useLiveUpdates(userId);
+```
+
+- [ ] **Step 7: Typecheck, format and test**
+
+Run: `npm run typecheck`
+Expected: exits 0. If supabase-js will not accept the `table(...)` helper's
+return where a `postgres_changes` filter is expected, inline the four object
+literals at the first two `.on(` calls and follow the same shape for the rest;
+do not widen the payload type to `any`.
+
+Run: `npx prettier --write app src && npm test`
+Expected: all tests pass.
+
+- [ ] **Step 8: Commit**
+
+```bash
+git add app src
+git commit -m "feat: live inbox, chat and friend updates over one realtime channel" -m "Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01XKE3Z4Mi437u3iDrbumuSC"
+```
+
+---
+
+### Task 19: Invites and share links
+
+**Files:**
+- Create: `src/features/invites/data/invites-api.ts`, `src/features/invites/data/invites-queries.ts`, `src/features/invites/share-invite.ts`, `src/features/invites/hooks/use-pending-invite.ts`
+- Replace: `app/invite/[token].tsx`
+- Modify: `src/shared/lib/queries.ts`, `src/features/auth/sign-out.ts`, `app/(onboarding)/details.tsx`, `app/(onboarding)/friends.tsx`, `app/(app)/friends/search.tsx`, `app/(app)/friends/index.tsx`
+
+**Interfaces:**
+- Consumes: `invite_preview` / `claim_invite` (existing migrations), `SIGN_TTL_SECONDS` (Task 7), `currentUserId` (Task 8), `avatarUrl` (Task 10), `INVITE.SHARE_MESSAGE` and `COMMON.COPIED` (Task 6).
+- Produces:
+  - From `@/features/invites/data/invites-api`: `INVITE_BASE`, `inviteLink(token): string`, `InvitePreview`, `ClaimResult`, `createInvite(momentId?): Promise<string>`, `fetchInvitePreview(token): Promise<InvitePreview | null>`, `claimInvite(token): Promise<ClaimResult | null>`.
+  - Key `queries.invites.preview(token)`.
+  - From `@/features/invites/share-invite`: `type ShareOutcome = 'shared' | 'copied'`, `shareInvite(name: string, momentId?: string | null): Promise<ShareOutcome>`, `copyInvite(momentId?: string | null): Promise<void>`. The spec writes this as `shareInvite(momentId?)`; the name is passed in because `INVITE.SHARE_MESSAGE` interpolates `%{name}`, and a module that is not a hook would otherwise have to fetch the caller's own profile to get it.
+  - `usePendingInvite` — store of `{ token: string | null }`.
+
+- [ ] **Step 1: The API**
+
+Create `src/features/invites/data/invites-api.ts`:
+
+```ts
+import { supabase } from '@/shared/lib/supabase';
+import { SIGN_TTL_SECONDS } from '@/shared/lib/signed-urls';
+import { currentUserId } from '@/features/auth/current-user';
+import { avatarUrl } from '@/features/profile/data/profile-api';
+/**
+ * The growth loop's front door. An invite is a token that stands in for a
+ * friendship that does not exist yet: opening it shows the frosted moment, and
+ * claiming it makes the two people friends and opens the trade.
+ */
+
+/**
+ * One constant, to be swapped for a universal link once there is a domain.
+ * A custom scheme is enough while the app is not in a store.
+ */
+export const INVITE_BASE = 'glimpse://invite/';
+
+export function inviteLink(token: string): string {
+  return `${INVITE_BASE}${token}`;
+}
+
+export interface InvitePreview {
+  inviterName: string;
+  inviterAvatarUrl: string | null;
+  /** `null` for an invite that carries no photo — just "come and trade". */
+  momentId: string | null;
+  photo: string | null;
+  createdAt: string;
+}
+
+export interface ClaimResult {
+  inviterId: string;
+  momentId: string | null;
+  /** `null` when the invite carried no moment, so there is nothing to answer. */
+  tradeId: string | null;
+}
+
+/** The `invites` trigger refuses a moment that is not the inviter's own. */
+export async function createInvite(momentId?: string | null): Promise<string> {
+  const { data, error } = await supabase
+    .from('invites')
+    .insert({ inviter_id: currentUserId(), moment_id: momentId ?? null })
+    .select('token')
+    .single();
+  if (error) throw error;
+  return data.token;
+}
+
+/**
+ * Callable without an account — the token is the only key. `null` for a token
+ * that is unknown, expired, or already claimed.
+ */
+export async function fetchInvitePreview(token: string): Promise<InvitePreview | null> {
+  const { data, error } = await supabase.rpc('invite_preview', { p_token: token });
+  if (error) throw error;
+  const row = (data ?? [])[0];
+  if (!row) return null;
+
+  // Signed directly rather than through the moment URL cache: a signed-out
+  // visitor has no `visible_moment_paths` to ask. The `invite_object_readable`
+  // policy is what lets the Storage API sign this one path for them.
+  let photo: string | null = null;
+  if (row.blurred_storage_path) {
+    const { data: signed } = await supabase.storage
+      .from('moments')
+      .createSignedUrl(row.blurred_storage_path, SIGN_TTL_SECONDS);
+    photo = signed?.signedUrl ?? null;
+  }
+
+  return {
+    inviterName: row.inviter_first_name,
+    inviterAvatarUrl: avatarUrl(row.inviter_avatar_storage_path),
+    momentId: row.moment_id,
+    photo,
+    createdAt: row.created_at,
+  };
+}
+
+/**
+ * Marks the token used, makes the two friends, and opens the trade for the
+ * frosted photo. `null` when the token is not claimable — unknown, expired,
+ * already used, the caller's own, or across a block.
+ */
+export async function claimInvite(token: string): Promise<ClaimResult | null> {
+  const { data, error } = await supabase.rpc('claim_invite', { p_token: token });
+  if (error) throw error;
+  const row = (data ?? [])[0];
+  if (!row) return null;
+  return { inviterId: row.inviter_id, momentId: row.moment_id, tradeId: row.trade_id };
+}
+```
+
+Create `src/features/invites/data/invites-queries.ts`:
+
+```ts
+import { createQueryKeys } from '@lukemorales/query-key-factory';
+import { fetchInvitePreview } from '@/features/invites/data/invites-api';
+export const invitesQueries = createQueryKeys('invites', {
+  /** What the deep-link screen shows before the visitor has an account. */
+  preview: (token: string) => ({
+    queryKey: [token],
+    queryFn: () => fetchInvitePreview(token),
+  }),
+});
+```
+
+In `src/shared/lib/queries.ts`, add the import and the fifth factory:
+
+```ts
+import { invitesQueries } from '@/features/invites/data/invites-queries';
+```
+
+```ts
+export const queries = mergeQueryKeys(
+  momentsQueries,
+  friendsQueries,
+  profileQueries,
+  chatQueries,
+  invitesQueries,
+);
+```
+
+- [ ] **Step 2: Sharing a link**
+
+Create `src/features/invites/share-invite.ts`:
+
+```ts
+import { Share } from 'react-native';
+import * as Clipboard from 'expo-clipboard';
+import { t } from '@/shared/i18n/i18n';
+import { INVITE } from '@/shared/i18n/keys';
+import { createInvite, inviteLink } from '@/features/invites/data/invites-api';
+/** Every "invite" button in the app ends up here. */
+export type ShareOutcome = 'shared' | 'copied';
+
+/**
+ * Mint an invite and hand out its link.
+ *
+ * Where there is no share sheet — desktop web, which is where this work is
+ * verified — the link goes on the clipboard instead, so the button always does
+ * something rather than failing silently.
+ */
+export async function shareInvite(name: string, momentId?: string | null): Promise<ShareOutcome> {
+  const token = await createInvite(momentId);
+  const link = inviteLink(token);
+
+  try {
+    await Share.share({ message: t(INVITE.SHARE_MESSAGE, { name, link }) });
+    return 'shared';
+  } catch {
+    await Clipboard.setStringAsync(link);
+    return 'copied';
+  }
+}
+
+/** The "Copy" action on a share row: the bare link, no share sheet. */
+export async function copyInvite(momentId?: string | null): Promise<void> {
+  const token = await createInvite(momentId);
+  await Clipboard.setStringAsync(inviteLink(token));
+}
+```
+
+Create `src/features/invites/hooks/use-pending-invite.ts`:
+
+```ts
+import { create } from '@/shared/lib/store';
+/**
+ * A token a signed-out visitor arrived with, held across onboarding so the
+ * account they create at step 4 can claim it.
+ *
+ * Not persisted on purpose: a token that survives a restart is a link they can
+ * simply open again, and a stale one would befriend a stranger later.
+ */
+interface PendingInvite {
+  token: string | null;
+}
+
+export const usePendingInvite = create<PendingInvite>({ token: null });
+```
+
+In `src/features/auth/sign-out.ts`, add the import and the reset:
+
+```ts
+import { usePendingInvite } from '@/features/invites/hooks/use-pending-invite';
+```
+
+```ts
+  usePendingInvite.reset();
+```
+
+- [ ] **Step 3: The invite screen**
+
+Replace `app/invite/[token].tsx` with:
+
+```tsx
+import { useEffect } from 'react';
+import { View } from 'react-native';
+import { router, useLocalSearchParams } from 'expo-router';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Avatar } from '@/shared/ui/avatar';
+import { Button } from '@/shared/ui/button';
+import { CloseRow } from '@/shared/ui/close-row';
+import { CameraIcon } from '@/shared/ui/icons';
+import { LockedImage } from '@/shared/ui/locked-image';
+import { Screen } from '@/shared/ui/screen';
+import { Text } from '@/shared/ui/text';
+import { colors } from '@/shared/theme/colors';
+import { radius } from '@/shared/theme/page-structure';
+import { t } from '@/shared/i18n/i18n';
+import { INVITE, MOMENT } from '@/shared/i18n/keys';
+import { relativeTime } from '@/shared/lib/format';
+import { errorMessage } from '@/shared/lib/error-message';
+import { queries } from '@/shared/lib/queries';
+import { useSession } from '@/features/auth/hooks/use-session';
+import { claimInvite } from '@/features/invites/data/invites-api';
+import { usePendingInvite } from '@/features/invites/hooks/use-pending-invite';
+/**
+ * Screen `E Einladung annehmen · Deeplink`.
+ *
+ * Someone has sent you a moment before you have an account. The photo is shown
+ * frosted — the rule applies before signup too, which is exactly what makes the
+ * invite worth opening.
+ *
+ * Reached via `glimpse://invite/<token>`; the token is the capability (see the
+ * `invites` table). Signed in, opening the link claims it. Signed out, the
+ * token waits on the onboarding store until step 4 creates the account.
+ */
+export default function InviteScreen() {
+  const { token } = useLocalSearchParams<{ token: string }>();
+  const inviteToken = token ?? '';
+  const queryClient = useQueryClient();
+  const { status } = useSession();
+  const pending = usePendingInvite();
+
+  const { data: preview, isPending } = useQuery({
+    ...queries.invites.preview(inviteToken),
+    enabled: inviteToken.length > 0,
+  });
+
+  const claim = useMutation({
+    mutationFn: () => claimInvite(inviteToken),
+    onSuccess: (result) => {
+      if (!result) return;
+      // A friendship and possibly a trade appeared; nothing cached knows yet.
+      void queryClient.invalidateQueries();
+      usePendingInvite.reset();
+      // The feed has to be underneath, or closing the camera has nowhere to go.
+      router.replace('/(app)/feed');
+      if (result.tradeId) router.push({ pathname: '/camera', params: { trade: result.tradeId } });
+    },
+  });
+
+  const signedIn = status === 'signed-in';
+  const { mutate: claimNow, isIdle } = claim;
+  useEffect(() => {
+    // Claiming is the whole point of opening the link with an account.
+    if (signedIn && inviteToken.length > 0 && isIdle) claimNow();
+  }, [signedIn, inviteToken, isIdle, claimNow]);
+
+  const dead = (!isPending && !preview) || (claim.isSuccess && claim.data === null);
+
+  if (dead) {
+    return (
+      <Screen>
+        <CloseRow onPress={() => router.replace('/(onboarding)/welcome')} />
+        <Text variant="bodyMd" className="mt-10 text-center text-muted">
+          {t(MOMENT.NOT_FOUND)}
+        </Text>
+      </Screen>
+    );
+  }
+
+  return (
+    <Screen
+      footer={
+        <View className="items-center gap-5">
+          {claim.error ? (
+            <Text variant="subtitle" className="text-center text-purple-deep">
+              {errorMessage(claim.error)}
+            </Text>
+          ) : null}
+          <Button
+            label={t(INVITE.CTA)}
+            size="lg"
+            icon={<CameraIcon size={21} lensColor={colors.ink} />}
+            loading={claim.isPending}
+            onPress={() => {
+              // Signed out: the account has to exist before the token can be
+              // spent, so it waits here and step 4 claims it.
+              pending.set({ token: inviteToken });
+              router.push('/(onboarding)/name');
+            }}
+          />
+          <Text
+            variant="buttonSm"
+            className="text-center text-ink-soft"
+            accessibilityRole="link"
+            onPress={() => router.replace('/(onboarding)/welcome')}
+          >
+            {t(INVITE.SECONDARY)}
+          </Text>
+        </View>
+      }
+      scroll
+    >
+      <CloseRow onPress={() => router.replace('/(onboarding)/welcome')} />
+
+      <View className="mt-[26px] items-center gap-3.5">
+        <Avatar
+          source={preview?.inviterAvatarUrl ?? null}
+          name={preview?.inviterName}
+          size={76}
+          ring="halo"
+        />
+        <Text variant="headlineSm" className="text-center text-ink">
+          {t(INVITE.TITLE, { name: preview?.inviterName ?? '' })}
+        </Text>
+        <Text variant="bodySm" className="max-w-[280px] text-center text-muted">
+          {t(INVITE.BODY)}
+        </Text>
+      </View>
+
+      {/* An invite with no moment is name and avatar only — there is nothing to
+          withhold, just somebody asking you to trade. */}
+      {preview?.photo ? (
+        <LockedImage
+          source={preview.photo}
+          radius={radius.lg}
+          puckSize={62}
+          className="mt-6 aspect-[4/5] w-full"
+        >
+          <View className="absolute bottom-[18px] left-[18px] right-[18px] gap-1">
+            <Text variant="meta" className="text-[rgba(255,255,255,.78)]">
+              {relativeTime(preview.createdAt)}
+            </Text>
+          </View>
+        </LockedImage>
+      ) : null}
+    </Screen>
+  );
+}
+```
+
+- [ ] **Step 4: Claim the waiting token after sign-up**
+
+In `app/(onboarding)/details.tsx`, add:
+
+```ts
+import { claimInvite } from '@/features/invites/data/invites-api';
+import { usePendingInvite } from '@/features/invites/hooks/use-pending-invite';
+```
+
+and extend the signed-in branch of `mutationFn`, after the avatar upload:
+
+```ts
+      if (outcome.kind === 'signed-in') {
+        // The account exists now, so the picture finally has somewhere to go.
+        if (draft.avatar) await uploadAvatar(draft.avatar);
+        // And the invite that brought them here can be spent.
+        const pendingToken = usePendingInvite.getState().token;
+        if (pendingToken) {
+          await claimInvite(pendingToken);
+          usePendingInvite.reset();
+        }
+        useOnboardingDraft.reset();
+      }
+```
+
+- [ ] **Step 5: The share rows mint real links**
+
+In `app/(onboarding)/friends.tsx`, widen the keys import and add the share module:
+
+```ts
+import { COMMON, FRIENDS, ONBOARDING } from '@/shared/i18n/keys';
+import { copyInvite, shareInvite } from '@/features/invites/share-invite';
+```
+
+```ts
+  const [copied, setCopied] = useState(false);
+```
+
+and replace the two `ShareRow` actions (`Clipboard` and `Share` are no longer
+imported directly here — drop both imports):
+
+```tsx
+        actions={[
+          {
+            label: copied ? t(COMMON.COPIED) : t(ONBOARDING.FRIENDS.SHARE_COPY),
+            icon: <Copy size={22} color={colors.inkFaint} strokeWidth={2} />,
+            onPress: () => {
+              void copyInvite().then(() => setCopied(true));
+            },
+          },
+          {
+            label: t(ONBOARDING.FRIENDS.SHARE_MORE),
+            icon: <MoreHorizontal size={22} color={colors.inkFaint} strokeWidth={2.4} />,
+            onPress: () => {
+              void shareInvite(me?.first_name ?? '').then((outcome) => setCopied(outcome === 'copied'));
+            },
+          },
+        ]}
+```
+
+Make the same change in `app/(app)/friends/search.tsx` — the QR action stays
+inert, and the "More" action becomes:
+
+```tsx
+          {
+            label: copied ? t(COMMON.COPIED) : t(FRIENDS.SEARCH.MORE),
+            icon: <MoreHorizontal size={22} color={colors.inkFaint} strokeWidth={2.4} />,
+            onPress: () => {
+              void shareInvite(me?.first_name ?? '').then((outcome) => setCopied(outcome === 'copied'));
+            },
+          },
+```
+
+with the same `copied` state and the `Share` import dropped.
+
+In `app/(app)/friends/index.tsx`, "Invite more" shares instead of opening search:
+
+```ts
+import { shareInvite } from '@/features/invites/share-invite';
+```
+
+```tsx
+          <CtaFooter
+            label={t(FRIENDS.ADD_CTA)}
+            onPress={() => void shareInvite(me?.first_name ?? '')}
+          />
+```
+
+- [ ] **Step 6: Typecheck, format and test**
+
+Run: `npm run typecheck`
+Expected: exits 0. If `invite_preview` or `claim_invite` rows are typed nullable,
+add `.overrideTypes<…, { merge: false }>()` at that call as in Task 4 Step 6.
+
+Run: `npx prettier --write app src && npm test`
+Expected: all tests pass.
+
+- [ ] **Step 7: Commit**
+
+```bash
+git add app src
+git commit -m "feat: invite links, preview and claim" -m "Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01XKE3Z4Mi437u3iDrbumuSC"
+```
+
+---
 
 ### Task 20: Cleanup and docs
-- `src/shared/lib/fixtures.ts` becomes `src/shared/lib/assets.ts` with only `ART`, `IOS_ICONS`, `PHOTOS.viewfinder`, `PHOTOS.widgetCard` and the review faces; delete every demo export, `ContactsInvite`, `isSupabaseConfigured` and `requireSupabase`.
-- README: Postgres 17, `.env` required, `npm test`, blur function deployed, known issues updated. `docs/database.md`: Realtime publication, presence policies, blur function.
+
+**Files:**
+- Rename: `src/shared/lib/fixtures.ts` → `src/shared/lib/assets.ts` (rewritten)
+- Modify: `src/shared/lib/supabase.ts`, `app/(onboarding)/reviews.tsx`, `src/features/widget/components/homescreen-preview.tsx`, every file importing `@/shared/lib/fixtures`, `README.md`, `docs/database.md`
+
+**Interfaces:**
+- Consumes: nothing new.
+- Produces:
+  - From `@/shared/lib/assets`: `ART`, `IOS_ICONS`, `PHOTOS` (`viewfinder`, `widgetCard`) and `SAMPLE_FACES` (`mia`, `ben`, `lina`). Nothing else.
+  - `@/shared/lib/fixtures` no longer exists; `isSupabaseConfigured` and `requireSupabase` no longer exist.
+
+- [ ] **Step 1: See what is actually still used**
+
+Run:
+
+```bash
+grep -rn "from '@/shared/lib/fixtures'" app src
+```
+
+Expected: only `ART`, `AVATARS`, `PHOTOS` and `IOS_ICONS` are imported — from
+`app/(onboarding)/welcome.tsx`, `paywall.tsx`, `thank-you.tsx`, `camera.tsx`,
+`signup.tsx`, `notifications.tsx`, `reviews.tsx`, `app/compose.tsx`,
+`src/features/feed/components/empty-state.tsx` and
+`src/features/widget/components/homescreen-preview.tsx`.
+
+Any `demo*` or `DEMO_USER_ID` still listed is a screen an earlier task missed:
+fix that screen before going on, rather than keeping the fixture alive.
+
+- [ ] **Step 2: Write the asset module**
+
+Run: `git mv src/shared/lib/fixtures.ts src/shared/lib/assets.ts`
+
+Replace the whole of `src/shared/lib/assets.ts` with:
+
+```ts
+/**
+ * Bundled design artwork. Not data: every screen that shows a person, a photo
+ * or a message now reads the real thing from Supabase.
+ *
+ * What is left is illustration — the onboarding heroes, the mascot, the fake
+ * iOS homescreen behind the widget preview, and the three faces on the reviews
+ * screen, which are stock portraits standing in for quotes rather than accounts.
+ */
+export const ART = {
+  mascot: require('../../../assets/images/mascot.png'),
+  mascotUnlock: require('../../../assets/images/mascot-unlock.png'),
+  welcomeHero: require('../../../assets/images/welcome-hero.png'),
+  cameraHero: require('../../../assets/images/camera-hero.png'),
+  signupKey: require('../../../assets/images/signup-key-hero.png'),
+  bell: require('../../../assets/images/bell.png'),
+};
+
+export const PHOTOS = {
+  /** Behind the compose screen when it is reached without a capture. */
+  viewfinder: require('../../../assets/images/viewfinder.png'),
+  /** The sample photo inside the widget preview on onboarding step 6. */
+  widgetCard: require('../../../assets/images/on8-widget-card.png'),
+};
+
+/** The faked homescreen the widget preview sits on. */
+export const IOS_ICONS = {
+  weather: require('../../../assets/images/ios/weather.png'),
+  clock: require('../../../assets/images/ios/clock.png'),
+  calendar: require('../../../assets/images/ios/calendar.png'),
+  maps: require('../../../assets/images/ios/maps.png'),
+  mail: require('../../../assets/images/ios/mail.png'),
+  contacts: require('../../../assets/images/ios/contacts.png'),
+  stock: require('../../../assets/images/ios/stock.png'),
+  phone: require('../../../assets/images/ios/phone.png'),
+  safari: require('../../../assets/images/ios/safari.png'),
+  photos: require('../../../assets/images/ios/photos.png'),
+  camera: require('../../../assets/images/ios/camera.png'),
+};
+
+/**
+ * Stock portraits for the three review quotes, and for "Mia" in the widget
+ * preview. Named for what they are, so nobody mistakes them for avatars again.
+ */
+export const SAMPLE_FACES = {
+  mia: require('../../../assets/images/av-mia.png'),
+  ben: require('../../../assets/images/av-ben.png'),
+  lina: require('../../../assets/images/av-lina.png'),
+};
+```
+
+Then point every import at the new module and rename the faces:
+
+```bash
+grep -rl "@/shared/lib/fixtures" app src \
+  | xargs sed -i '' "s#@/shared/lib/fixtures#@/shared/lib/assets#g"
+grep -rl "AVATARS" app src | xargs sed -i '' "s/\bAVATARS\b/SAMPLE_FACES/g"
+```
+
+Run: `grep -rn "fixtures\|AVATARS" app src`
+Expected: no output.
+
+Delete the now-unused images if nothing references them, checking each first:
+
+```bash
+for image in av-self c-av-noah alex-avatar moment-open p-beach p-flowers p-street gal-sea gal-flowers; do
+  echo "== $image"; grep -rn "$image" app src widgets scripts || true
+done
+```
+
+Expected: no hits. Remove the files that have none with `git rm assets/images/<name>.png`.
+Leave anything still referenced (for example by `scripts/render-splash.py`) alone.
+
+- [ ] **Step 3: Drop the "not configured" fallback**
+
+In `src/shared/lib/supabase.ts`, delete the two deprecated exports at the end of
+the file:
+
+```ts
+/** @deprecated Always true. Removed in Task 20 once no module reads it. */
+export const isSupabaseConfigured = true;
+
+/** @deprecated Import `supabase` instead. Removed in Task 20. */
+export function requireSupabase() {
+  return supabase;
+}
+```
+
+Run: `grep -rn "isSupabaseConfigured\|requireSupabase" app src`
+Expected: no output.
+
+Run: `npm run typecheck`
+Expected: exits 0.
+
+- [ ] **Step 4: Update the README**
+
+Replace the **Getting started** block and the paragraph under it with:
+
+````markdown
+## Getting started
+
+```bash
+npm install
+cp .env.example .env      # required — fill in from the Supabase project
+npx expo start
+```
+
+`.env` is required. The app talks to Supabase for everything: there is no
+fixture mode and no "not configured" fallback. Without the two
+`EXPO_PUBLIC_SUPABASE_*` values the client throws at import.
+````
+
+In the **Generated types** bullet, replace the hand-written note with:
+
+```markdown
+- **Generated types.** `src/shared/lib/database.interfaces.ts` is generated from
+  the project — regenerate it after every migration (`supabase gen types
+  typescript`, or the MCP's `generate_typescript_types`) and never edit it by
+  hand. App code imports row names from `src/shared/lib/database.types.ts`.
+```
+
+Add `npm test` to the command block, above `npm run typecheck`:
+
+```markdown
+npm test                           # jest — pure logic: keys, selectors, caches
+```
+
+In **What is deliberately not built**, replace the "Blurred renditions" row with
+a "Push notifications" row, and the "Contacts import" row's state:
+
+```markdown
+| Push notifications     | No token registration and nothing sent. `device_tokens` and `register_device_token()` exist; the sender does not.                                                                                                                              |
+| Contacts import        | Not built and not shown. Onboarding step 5 is real `@username` search plus a share link.                                                                                                                                                       |
+```
+
+Replace the whole **Known issues** section with:
+
+```markdown
+## Known issues
+
+- **Postgres 17.** The project runs Postgres 17; the migrations assume it.
+- **`citext` and `pgcrypto` live in `public`.** The security advisor flags it.
+  Moving them to an `extensions` schema is a migration nobody has needed yet.
+- **Auto-unlocked trades that are never answered** stay `pending` for ever and
+  never become pairs. They show as locked tiles on the sender's own profile.
+  Still an open product decision — see below.
+- **Deletes do not arrive live.** Supabase cannot filter delete events and does
+  not apply row security to them, so a decline, a withdrawal or an unfriend
+  reaches the other phone on its next refetch rather than instantly.
+```
+
+- [ ] **Step 5: Update the database doc**
+
+At the end of `docs/database.md`, add:
+
+````markdown
+## 7. Realtime, presence and the blur function
+
+Three tables are in the `supabase_realtime` publication: `trades`, `messages`
+and `friendships`. Row-level security still decides which subscriber receives
+which change, so a client subscribing to somebody else's rows simply never
+hears about them.
+
+Only INSERT and UPDATE are consumed. Supabase cannot filter delete events and
+does not apply row security to them, so there is deliberately no delete
+listener and no `replica identity full`: declines, withdrawals and unfriends
+reach the other phone on its next refetch. `src/features/live/live-actions.ts`
+maps a change to what it means for the cache, and is unit-tested.
+
+Nothing changes in the database when a trade's 24 hours pass, so the timer
+produces no event. The inbox query schedules one refetch for the earliest
+`auto_unlock_at` it holds instead (`nextUnlockDelay`).
+
+**Presence.** "Active now" is per conversation and exists only while the chat
+screen is open. Both phones join the private channel
+`chat:<lower uuid>:<higher uuid>` and track themselves; two policies on
+`realtime.messages` allow read and insert on that topic only for the two ids in
+it, so presence cannot be observed from outside the conversation and there is no
+global online state anywhere.
+
+**The blur function.** `supabase/functions/blur-moment` makes the frosted
+rendition server-side, with JWT verification on: it refuses a moment whose
+`author_id` is not the caller, downloads the original with the service role,
+resizes it to 48px wide, blurs it, and writes `blurred/{author_id}/{file}` plus
+`moments.blurred_storage_path`. The client invokes it after inserting the moment
+row and before `send_moment` or `respond_to_trade`, and a failure fails the send
+— so a recipient never receives a moment with nothing to show them, and a
+client that could upload its own "blurred" copy (which could just be the
+original) never gets the chance.
+````
+
+In §3, after the paragraph explaining `visible_moment_paths()`, add:
+
+```markdown
+The client never re-signs a path it already holds: `src/shared/lib/signed-urls.ts`
+caches `{ path → url, expiresAt }` in memory and in AsyncStorage, signs for 24
+hours, and re-signs only when under two hours remain. A fresh URL per fetch
+would defeat the image cache and re-download the same photo on every refetch.
+```
+
+- [ ] **Step 6: Typecheck, format and test**
+
+Run: `npm run typecheck && npm test && npm run format:check`
+Expected: all three pass. If `format:check` complains about the markdown,
+run `npx prettier --write README.md docs` and re-check.
+
+- [ ] **Step 7: Commit**
+
+```bash
+git add -A app src assets README.md docs
+git commit -m "chore: drop the fixtures and the not-configured fallback, update the docs" -m "Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01XKE3Z4Mi437u3iDrbumuSC"
+```
+
+---
 
 ### Task 21: Verification
-- The spec's Verification section, steps 6–8: web build in Chrome with three isolated contexts, a canvas-backed fake `getUserMedia` injected before opening the camera, row checks through the MCP after each step, and the report of what passed and what did not.
+
+**Files:** none. This task changes no code; it proves the code works and writes the report.
+
+**Interfaces:**
+- Consumes: everything. The Supabase MCP for the row checks, the Chrome DevTools MCP for the browser.
+- Produces: a report of what passed and what did not, with rows as evidence.
+
+**Prerequisites:** the Chrome DevTools MCP is connected; "Confirm email" is off;
+`.env` holds the real values. Three throwaway accounts are created and, unless
+the owner asks otherwise, left in the project.
+
+- [ ] **Step 1: The gates that do not need a browser**
+
+Run: `npm run typecheck && npm test && npm run format:check`
+Expected: all three exit 0. Do not start the browser work with any of them red —
+every failure below would be ambiguous.
+
+- [ ] **Step 2: Start the web build**
+
+Run: `npx expo start --web --clear`
+Expected: a local URL, and no bundling error. Keep it running; every step below
+drives this build.
+
+- [ ] **Step 3: Prepare a fake camera**
+
+Two of the steps below need `getUserMedia`. In each browser context, evaluate
+this **before** navigating to a camera screen — a canvas stream whose frames
+differ, so the three moments are distinguishable and the blur is visible:
+
+```js
+(() => {
+  const canvas = document.createElement('canvas');
+  canvas.width = 720;
+  canvas.height = 1280;
+  const context = canvas.getContext('2d');
+  let frame = 0;
+  setInterval(() => {
+    frame += 1;
+    context.fillStyle = `hsl(${(frame * 7) % 360} 70% 55%)`;
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.fillStyle = '#ffffff';
+    context.font = '64px sans-serif';
+    context.fillText(`glimpse ${frame}`, 40, 220);
+  }, 100);
+  const stream = canvas.captureStream(10);
+  navigator.mediaDevices.getUserMedia = async () => stream;
+  navigator.mediaDevices.enumerateDevices = async () => [
+    { deviceId: 'fake', kind: 'videoinput', label: 'Fake camera', groupId: 'fake', toJSON: () => ({}) },
+  ];
+})();
+```
+
+If `expo-camera` on web refuses this stream, stop trying to force it: note it in
+the report, hand the two capture steps to the owner on a phone, and carry on
+checking every row here. That is the fallback the spec already allows.
+
+- [ ] **Step 4: Three isolated contexts**
+
+Open three isolated browser contexts (separate storage, so three sessions
+coexist) and keep them for the whole run: **A**, **B**, **C**. Use one email
+prefix per person so the cleanup query at the end is exact:
+
+- A: `glimpse.a+<timestamp>@example.com`
+- B: `glimpse.b+<timestamp>@example.com`
+- C: `glimpse.c+<timestamp>@example.com`
+
+Password for all three: `Glimpse-test-123`.
+
+- [ ] **Step 5: B signs up**
+
+In context B: welcome → Get started → name "Bea" → allow camera → take the
+practice shot → skip the avatar → sign up → details → Create account.
+
+Expected: it lands on the friends step (5 of 7).
+
+Check with `execute_sql`:
+
+```sql
+select p.id, p.first_name, p.username, p.avatar_storage_path, p.onboarding_done_at
+from public.profiles p
+join auth.users u on u.id = p.id
+where u.email like 'glimpse.b+%';
+```
+
+Expected: one row, `first_name = 'Bea'`, `username = 'bea'`,
+`avatar_storage_path` null, `onboarding_done_at` null. Keep B's id.
+
+- [ ] **Step 6: A signs up with an avatar**
+
+In context A the same way, name "Ada", but pick a photo on the avatar step. The
+file input needs a real image: use `assets/images/welcome-hero.png`.
+
+Check:
+
+```sql
+select p.id, p.first_name, p.username, p.avatar_storage_path,
+       (select count(*) from storage.objects o
+        where o.bucket_id = 'avatars' and o.name = p.avatar_storage_path) as avatar_object
+from public.profiles p
+join auth.users u on u.id = p.id
+where u.email like 'glimpse.a+%';
+```
+
+Expected: `first_name = 'Ada'`, `username = 'ada'`, `avatar_storage_path` of the
+form `<A id>/<digits>.jpg`, `avatar_object = 1`. Keep A's id.
+
+- [ ] **Step 7: A adds B**
+
+In context A, on the friends step, type B's handle (`bea`) and tap Add.
+
+Expected: the pill flips to "Requested" without a visible wait.
+
+```sql
+select id, requester_id, recipient_id, status, responded_at
+from public.friendships
+where requester_id = '<A>' or recipient_id = '<A>';
+```
+
+Expected: one row, `requester_id = <A>`, `recipient_id = <B>`,
+`status = 'pending'`, `responded_at` null.
+
+- [ ] **Step 8: B accepts, live**
+
+Leave context A on its friends screen. In context B, go through to the feed
+(Next through notifications, widget, reviews, heard-about, thank-you → "Look
+around first"), then open the Friends tab and Accept.
+
+Expected: `status = 'accepted'` and `responded_at` set in the query above.
+**And in context A, without a reload**, B appears as a friend — that is the
+`friendships` INSERT/UPDATE listener working.
+
+```sql
+select onboarding_done_at from public.profiles where id = '<B>';
+```
+
+Expected: not null — stamped by the first mount of the tabs, not by the
+thank-you screen.
+
+- [ ] **Step 9: A sends B a moment**
+
+In context A: capture button → shoot → caption "from ada" → Continue → select
+Bea → Send.
+
+Expected: A returns to the feed at once, with "Sending to Bea…" above the cards,
+which disappears when the upload finishes.
+
+```sql
+select m.id, m.width, m.height, m.caption,
+       m.original_storage_path, m.blurred_storage_path,
+       t.id as trade_id, t.status, t.auto_unlock_at, t.seen_at
+from public.moments m
+join public.trades t on t.initiator_moment_id = m.id
+where m.author_id = '<A>';
+```
+
+Expected: `width` and `height` both ≤ 1600, `original_storage_path` of the form
+`original/<A>/<digits>.jpg`, **`blurred_storage_path` not null** (the function
+ran), `status = 'pending'`, `auto_unlock_at` about 24h out, `seen_at` null.
+
+Then open A's own profile tab. Expected: one locked tile — A's photo on the left,
+an empty frosted tile on the right.
+
+- [ ] **Step 10: B opens the frosted card and answers it**
+
+In context B: the moment appears in the feed live, frosted. Open it.
+
+```sql
+select seen_at from public.trades where id = '<trade>';
+```
+
+Expected: `seen_at` set.
+
+Close it, then capture: capture button → shoot → caption "from bea" → Continue.
+On the recipients screen Ada is under **"Waiting on you"**. Select her and Send.
+
+Expected: B lands on the feed; the pair appears for both.
+
+```sql
+select t.id, t.status, t.unlocked_at, t.initiator_moment_id, t.responder_moment_id
+from public.trades t
+where (t.initiator_id in ('<A>', '<B>') and t.responder_id in ('<A>', '<B>'));
+```
+
+Expected: **exactly one trade row**, `status = 'unlocked'`, `unlocked_at` set,
+both moment ids present. No second trade in the reverse direction — that is the
+crossing-trades rule. Both feeds show the pair; both profile grids show it with
+two photos.
+
+- [ ] **Step 11: A and B message each other**
+
+In context A: Friends tab → Chats → Bea → send "hi bea". In context B the
+message arrives without a reload; reply "hi ada". While both chat screens are
+open, each header shows "Active now"; closing one makes it disappear on the other.
+
+```sql
+select m.id, m.sender_id, m.recipient_id, m.content, m.trade_id, m.read_at
+from public.messages m
+where m.sender_id in ('<A>', '<B>') and m.recipient_id in ('<A>', '<B>')
+order by m.created_at;
+
+select * from public.v_threads;
+```
+
+Expected: two message rows; `read_at` set on each once the other side has the
+conversation open; `v_threads` (run as each user via the app, not as the SQL
+owner) matching the unread badges the app showed before opening.
+
+Also send one from the moment screen's reply bar and check `trade_id` is set on
+that row.
+
+- [ ] **Step 12: A invites C, C signs up through the link**
+
+In context A: capture and send a moment to Bea again is not needed — instead use
+the Friends tab's "Invite more", which shares (and on desktop copies) a
+`glimpse://invite/<token>` link. Read the token:
+
+```sql
+select token, inviter_id, moment_id, claimer_id, expires_at
+from public.invites where inviter_id = '<A>' order by created_at desc limit 1;
+```
+
+In context C, navigate to the web build at `/invite/<token>` while signed out.
+
+Expected: A's name and avatar, and the frosted photo if the invite carried one.
+Tap "Send one back" → the name step → sign up as "Cem".
+
+```sql
+select i.claimer_id, f.status, f.requester_id, f.recipient_id,
+       t.id as trade_id, t.status as trade_status
+from public.invites i
+left join public.friendships f
+  on (f.requester_id = i.inviter_id and f.recipient_id = i.claimer_id)
+  or (f.requester_id = i.claimer_id and f.recipient_id = i.inviter_id)
+left join public.trades t on t.responder_id = i.claimer_id and t.initiator_id = i.inviter_id
+where i.token = '<token>';
+```
+
+Expected: `claimer_id` = C, the friendship `accepted`, and — if the invite
+carried a moment — a `pending` trade from A to C.
+
+- [ ] **Step 13: A signs out and back in**
+
+In context A: profile tab → "more" → Sign out.
+
+Expected: it lands on the welcome screen. Reloading the page does not get back
+into the app (the protected routes are gone, not merely redirected away from).
+
+Sign in again through "Already here? Sign in".
+
+Expected: the feed renders its cards from the persisted cache **before** the
+network answers — watch for content on the first frame rather than an empty
+screen. `onboarding_done_at` is unchanged, so it lands on the feed, not
+onboarding.
+
+- [ ] **Step 14: Advisors, one last time**
+
+Call `get_advisors` for `security` and then `performance`.
+Expected: nothing new since Task 3. Acceptable leftovers are the ones Task 3
+listed: `extension_in_public` for `citext` and `pgcrypto`, storage policies
+using `auth.uid()`, and auth settings notices.
+
+- [ ] **Step 15: Write the report**
+
+Report, in this order:
+
+1. Every step above, pass or fail, with the rows that prove it.
+2. What could not be exercised here, stated plainly: the native tab bar is a web
+   substitute, the widget and push are not exercised at all, and — if it came to
+   that — the two capture steps that were handed to the owner.
+3. The three test accounts and their ids, still in the project unless the owner
+   asks for them to be removed. The removal is one call:
+
+   ```sql
+   delete from auth.users where email like 'glimpse.a+%' or email like 'glimpse.b+%' or email like 'glimpse.c+%';
+   ```
+
+   Profiles, moments, trades and messages cascade; the storage objects under
+   `original/`, `blurred/` and `avatars/` do not, so list those names too.
+4. Anything found and fixed along the way, and anything found and not fixed.
+
+- [ ] **Step 16: Commit whatever the run changed**
+
+If Steps 1–14 needed a fix, it is already committed by its own task's
+conventions. If nothing changed, there is nothing to commit — say so in the
+report rather than making an empty commit.
+
+---
 
 ## Handoff notes
 
@@ -2009,3 +9379,6 @@ Each outline below fixes the files, names and decisions for that task. Expand it
 - "Confirm email" must be switched off in the dashboard before Task 5.
 - Task 21 needs the Chrome DevTools MCP.
 - Local baseline before Task 1: `npm run typecheck` reported 6 errors, all from `nativewind` and `tailwind-merge` missing in `node_modules`; `npm install` is expected to clear them.
+- **The tasks are strictly ordered.** Each one ends on a green `npm run typecheck` and a green `npm test`, and several of them deliberately patch a screen minimally — just enough to keep the tree compiling — before a later task rewrites that screen in full. Skipping a task, or doing two out of order, leaves the build red for reasons that look like bugs.
+- Five files are touched by more than one task on purpose: `app/_layout.tsx` (Tasks 8, 10, 16, 18), `app/(app)/feed.tsx` (10, 12, 13, 14, 15), `app/recipients.tsx` (11, 13, 14), `app/moment/[tradeId].tsx` (13, 15, 17) and `app/(onboarding)/details.tsx` (9, 10, 19). The task that gives a file its whole new content says so; the others show only the lines they touch.
+- Every screen after Task 6 uses translation constants (`t(FEED.STORIES_LABEL)`), so the code quoted in Tasks 8-21 is the post-Task-6 form. If a snippet does not match the file, check that Task 6 Step 6 ran over it.
