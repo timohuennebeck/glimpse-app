@@ -64,7 +64,7 @@ export default function WelcomeScreen() {
         </View>
       }
       scroll
-     
+
       gutter={spacing.gutterWide}
       background="transparent"
       // Full-bleed: as a child it would be clipped to the padded content box

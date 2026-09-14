@@ -59,22 +59,14 @@ export function LockedImage({
         contentFit="cover"
         blurRadius={blur}
       />
-      <LinearGradient
-        colors={['rgba(0,0,0,.1)', 'rgba(0,0,0,.26)']}
-        style={StyleSheet.absoluteFill}
-      />
+      <LinearGradient colors={['rgba(0,0,0,.1)', 'rgba(0,0,0,.26)']} style={StyleSheet.absoluteFill} />
       {/* inset 0 0 0 1px rgba(255,255,255,.18) */}
       <View
         style={[StyleSheet.absoluteFill, styles.hairline, { borderRadius: radius }]}
         pointerEvents="none"
       />
       {puckSize > 0 ? (
-        <View
-          style={[
-            styles.puck,
-            { width: puckSize, height: puckSize, borderRadius: puckSize / 2 },
-          ]}
-        >
+        <View style={[styles.puck, { width: puckSize, height: puckSize, borderRadius: puckSize / 2 }]}>
           <LockedIcon size={puckSize * 0.39} />
         </View>
       ) : null}

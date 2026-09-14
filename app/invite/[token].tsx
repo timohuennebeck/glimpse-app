@@ -47,7 +47,8 @@ export default function InviteScreen() {
           </Text>
         </View>
       }
-      scroll>
+      scroll
+    >
       <CloseRow onPress={() => router.back()} />
 
       <View style={styles.intro}>

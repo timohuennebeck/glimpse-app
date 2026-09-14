@@ -49,7 +49,6 @@ export default function DetailsScreen() {
       background={colors.surfaceAlt}
       gutter={spacing.gutterWide}
       scroll
-     
     >
       <ProgressHeader step={4} onClose={() => router.back()} />
 
@@ -97,7 +96,9 @@ export default function DetailsScreen() {
               onPress={() => setReveal((r) => !r)}
               hitSlop={8}
               accessibilityRole="button"
-              accessibilityLabel={reveal ? t('onboarding.details.hidePassword') : t('onboarding.details.showPassword')}
+              accessibilityLabel={
+                reveal ? t('onboarding.details.hidePassword') : t('onboarding.details.showPassword')
+              }
             >
               <EyeIcon size={21} />
             </Pressable>

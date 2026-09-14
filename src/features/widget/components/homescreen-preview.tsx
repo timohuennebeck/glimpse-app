@@ -154,7 +154,12 @@ function LargeWidget() {
     <View style={styles.largeCell}>
       <View style={styles.largeTile}>
         <View style={styles.largeImage}>
-          <Image source={PHOTOS.widgetCard} style={StyleSheet.absoluteFill} contentFit="cover" blurRadius={4} />
+          <Image
+            source={PHOTOS.widgetCard}
+            style={StyleSheet.absoluteFill}
+            contentFit="cover"
+            blurRadius={4}
+          />
           <View style={styles.largePuck}>
             <LockedIcon size={16} />
           </View>

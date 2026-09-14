@@ -31,7 +31,6 @@ export interface MomentPair {
   locked: boolean;
 }
 
-
 /** What the full-screen photo viewer needs, resolved for any moment id. */
 export interface MomentPhoto {
   photo: string | number;

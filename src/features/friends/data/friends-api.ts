@@ -49,7 +49,10 @@ function toFriend(
  * write (see the column grant in the RLS migration); the friend cap trigger
  * runs on the way in.
  */
-export async function respondToFriendRequest(friendshipId: string, status: 'accepted' | 'declined'): Promise<void> {
+export async function respondToFriendRequest(
+  friendshipId: string,
+  status: 'accepted' | 'declined',
+): Promise<void> {
   if (!isSupabaseConfigured) return;
   const { error } = await requireSupabase().from('friendships').update({ status }).eq('id', friendshipId);
   if (error) throw error;

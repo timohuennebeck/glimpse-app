@@ -44,7 +44,15 @@ export function OnboardingScreen({
   return (
     <Screen
       scroll
-      footer={<CtaFooter label={cta} onPress={onNext} icon={ctaIcon} secondary={secondary} onSecondary={onSecondary} />}
+      footer={
+        <CtaFooter
+          label={cta}
+          onPress={onNext}
+          icon={ctaIcon}
+          secondary={secondary}
+          onSecondary={onSecondary}
+        />
+      }
     >
       <ProgressHeader step={step} onClose={() => router.back()} />
 

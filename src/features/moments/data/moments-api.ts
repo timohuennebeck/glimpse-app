@@ -69,9 +69,10 @@ async function signedMomentUrls(momentIds: string[]): Promise<Map<string, string
   const allowed = (paths ?? []).filter((p): p is { moment_id: string; path: string } => p.path !== null);
   if (allowed.length === 0) return result;
 
-  const { data: signed, error: signError } = await sb.storage
-    .from('moments')
-    .createSignedUrls(allowed.map((p) => p.path), SIGNED_URL_TTL_SECONDS);
+  const { data: signed, error: signError } = await sb.storage.from('moments').createSignedUrls(
+    allowed.map((p) => p.path),
+    SIGNED_URL_TTL_SECONDS,
+  );
   if (signError) throw signError;
 
   const byPath = new Map(signed.map((entry) => [entry.path, entry.signedUrl]));
@@ -162,11 +163,7 @@ export async function respondToTrade(tradeId: string, momentId: string) {
 export async function markTradeSeen(tradeId: string) {
   if (!isSupabaseConfigured) return;
   const sb = requireSupabase();
-  await sb
-    .from('trades')
-    .update({ seen_at: new Date().toISOString() })
-    .eq('id', tradeId)
-    .is('seen_at', null);
+  await sb.from('trades').update({ seen_at: new Date().toISOString() }).eq('id', tradeId).is('seen_at', null);
 }
 
 export async function fetchPairs(withUserId: string): Promise<MomentPair[]> {
@@ -218,7 +215,8 @@ export async function fetchMomentPhoto(momentId: string): Promise<MomentPhoto | 
       };
     }
     for (const pair of demoPairs) {
-      const side = pair.initiator_moment_id === momentId ? 'a' : pair.responder_moment_id === momentId ? 'b' : null;
+      const side =
+        pair.initiator_moment_id === momentId ? 'a' : pair.responder_moment_id === momentId ? 'b' : null;
       if (!side) continue;
       // Fixture convention: user_a is the initiator of every demo pair. The
       // real branch below uses the moment's author_id instead.

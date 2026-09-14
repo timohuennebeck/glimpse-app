@@ -30,7 +30,15 @@ export function InstagramChannelIcon({ size = 24 }: ChannelIconProps) {
 
 export function TiktokChannelIcon({ size = 26 }: ChannelIconProps) {
   return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={C} strokeWidth={2.6} strokeLinecap="round">
+    <Svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={C}
+      strokeWidth={2.6}
+      strokeLinecap="round"
+    >
       <Path d="M14.2 4.2L5.8 18.8" />
       <Path d="M10.4 4.6l3 5.2" />
       <Path d="M12.6 9.6l5.6 9.7" />
@@ -42,7 +50,15 @@ export function TiktokChannelIcon({ size = 26 }: ChannelIconProps) {
 
 export function AppStoreChannelIcon({ size = 24 }: ChannelIconProps) {
   return (
-    <Svg width={size} height={(size * 20) / 26} viewBox="0 0 26 20" fill="none" stroke={C} strokeWidth={1.9} strokeLinejoin="round">
+    <Svg
+      width={size}
+      height={(size * 20) / 26}
+      viewBox="0 0 26 20"
+      fill="none"
+      stroke={C}
+      strokeWidth={1.9}
+      strokeLinejoin="round"
+    >
       <Rect x="1" y="1" width="24" height="18" rx="3.5" />
       <Path d="M2 3l11 8 11-8" />
     </Svg>

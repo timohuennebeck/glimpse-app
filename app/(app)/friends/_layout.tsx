@@ -6,7 +6,5 @@ import { colors } from '@/shared/theme/colors';
  * top of it.
  */
 export default function FriendsLayout() {
-  return (
-    <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.white } }} />
-  );
+  return <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.white } }} />;
 }

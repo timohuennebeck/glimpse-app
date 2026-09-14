@@ -69,7 +69,12 @@ export default function MomentScreen() {
                 </Text>
               ) : null}
             </View>
-            <GlassButton size={34} onDark onPress={() => router.back()} accessibilityLabel={t('common.close')}>
+            <GlassButton
+              size={34}
+              onDark
+              onPress={() => router.back()}
+              accessibilityLabel={t('common.close')}
+            >
               <CloseIcon size={12} color={colors.white} />
             </GlassButton>
           </View>

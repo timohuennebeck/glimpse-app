@@ -42,19 +42,54 @@ const px = (n: number) => Math.round(n * SCALE * 2) / 2;
  */
 export const type = {
   /** 42px — "Sign up" hero */
-  displayXl: { fontSize: px(42), lineHeight: px(42 * 1.04), letterSpacing: px(-1.7), fontWeight: fontWeight.semibold },
+  displayXl: {
+    fontSize: px(42),
+    lineHeight: px(42 * 1.04),
+    letterSpacing: px(-1.7),
+    fontWeight: fontWeight.semibold,
+  },
   /** 38px — Welcome / paywall hero */
-  displayLg: { fontSize: px(38), lineHeight: px(38 * 1.06), letterSpacing: px(-1.4), fontWeight: fontWeight.semibold },
+  displayLg: {
+    fontSize: px(38),
+    lineHeight: px(38 * 1.06),
+    letterSpacing: px(-1.4),
+    fontWeight: fontWeight.semibold,
+  },
   /** 37px — most onboarding headlines */
-  display: { fontSize: px(37), lineHeight: px(37 * 1.06), letterSpacing: px(-1.4), fontWeight: fontWeight.semibold },
+  display: {
+    fontSize: px(37),
+    lineHeight: px(37 * 1.06),
+    letterSpacing: px(-1.4),
+    fontWeight: fontWeight.semibold,
+  },
   /** 35px — two-line onboarding headline */
-  displaySm: { fontSize: px(35), lineHeight: px(35 * 1.06), letterSpacing: px(-1.4), fontWeight: fontWeight.semibold },
+  displaySm: {
+    fontSize: px(35),
+    lineHeight: px(35 * 1.06),
+    letterSpacing: px(-1.4),
+    fontWeight: fontWeight.semibold,
+  },
   /** 34px — feed greeting */
-  headline: { fontSize: px(34), lineHeight: px(34 * 1.06), letterSpacing: px(-1.2), fontWeight: fontWeight.semibold },
+  headline: {
+    fontSize: px(34),
+    lineHeight: px(34 * 1.06),
+    letterSpacing: px(-1.2),
+    fontWeight: fontWeight.semibold,
+  },
   /** 33px — name step (looser leading, inline chips) */
-  headlineChips: { fontSize: px(33), lineHeight: px(33 * 1.62), letterSpacing: px(-1.1), fontWeight: fontWeight.semibold },
+  headlineChips: {
+    fontSize: px(33),
+    lineHeight: px(33 * 1.62),
+    letterSpacing: px(-1.1),
+    fontWeight: fontWeight.semibold,
+  },
   /** 32px — invite deeplink */
-  headlineSm: { fontSize: px(32), lineHeight: px(32 * 1.08), letterSpacing: px(-1.2), fontWeight: fontWeight.semibold },
+  headlineSm: {
+    fontSize: px(32),
+    lineHeight: px(32 * 1.08),
+    letterSpacing: px(-1.2),
+    fontWeight: fontWeight.semibold,
+  },
   /** 31px — profile name */
   title: { fontSize: px(31), letterSpacing: px(-1), fontWeight: fontWeight.semibold },
   /** 27px — screen title (Friends, Chats) */

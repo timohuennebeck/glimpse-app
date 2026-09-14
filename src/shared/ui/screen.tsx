@@ -1,5 +1,12 @@
 import { ReactNode } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View, StatusBar as RNStatusBar } from 'react-native';
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  View,
+  StatusBar as RNStatusBar,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { colors } from '@/shared/theme/colors';
@@ -51,9 +58,7 @@ export function Screen({
   // footer carries the home-indicator inset itself.
   const paddingBottom = footer ? spacing.footerGap : safeBottom + bottomInset;
 
-  const content = (
-    <View style={[styles.flex, { paddingHorizontal: gutter }]}>{children}</View>
-  );
+  const content = <View style={[styles.flex, { paddingHorizontal: gutter }]}>{children}</View>;
 
   return (
     <KeyboardAvoidingView
@@ -76,7 +81,9 @@ export function Screen({
         <View style={[styles.flex, { paddingTop, paddingBottom }]}>{content}</View>
       )}
       {footer ? (
-        <View style={{ paddingHorizontal: gutter, paddingBottom: safeBottom + spacing.footerGap }}>{footer}</View>
+        <View style={{ paddingHorizontal: gutter, paddingBottom: safeBottom + spacing.footerGap }}>
+          {footer}
+        </View>
       ) : null}
       {floating}
     </KeyboardAvoidingView>

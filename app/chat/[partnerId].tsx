@@ -1,5 +1,13 @@
 import { useMemo } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import {
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  View,
+} from 'react-native';
 import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Avatar } from '@/shared/ui/avatar';
@@ -24,10 +32,7 @@ export default function ChatScreen() {
   const partner = demoProfiles[partnerId ?? 'mia'] ?? demoProfiles.mia;
 
   const messages = useMemo(
-    () =>
-      demoMessages.filter(
-        (m) => m.sender_id === partner.id || m.recipient_id === partner.id,
-      ),
+    () => demoMessages.filter((m) => m.sender_id === partner.id || m.recipient_id === partner.id),
     [partner.id],
   );
 

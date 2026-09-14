@@ -1,6 +1,11 @@
 import { useEffect } from 'react';
 import { Stack } from 'expo-router';
-import { useFonts, TikTokSans_400Regular, TikTokSans_500Medium, TikTokSans_600SemiBold } from '@expo-google-fonts/tiktok-sans';
+import {
+  useFonts,
+  TikTokSans_400Regular,
+  TikTokSans_500Medium,
+  TikTokSans_600SemiBold,
+} from '@expo-google-fonts/tiktok-sans';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as SplashScreen from 'expo-splash-screen';
@@ -33,7 +38,7 @@ export default function RootLayout() {
     <GestureHandlerRootView style={styles.root}>
       <QueryClientProvider client={queryClient}>
         <SafeAreaProvider>
-            <Stack
+          <Stack
             screenOptions={{
               headerShown: false,
               contentStyle: { backgroundColor: colors.white },

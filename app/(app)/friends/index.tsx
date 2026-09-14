@@ -17,7 +17,14 @@ import { Pill } from '@/features/friends/components/pill';
 import { StoryRail } from '@/features/feed/components/story-rail';
 import { ChatsList } from '@/features/chat/components/chats-list';
 import { TabScreen } from '@/features/navigation/tab-screen';
-import { AVATARS, demoFriendRequests, demoProfiles, demoSentRequests, demoUnreadCount, DEMO_USER_ID } from '@/shared/lib/fixtures';
+import {
+  AVATARS,
+  demoFriendRequests,
+  demoProfiles,
+  demoSentRequests,
+  demoUnreadCount,
+  DEMO_USER_ID,
+} from '@/shared/lib/fixtures';
 import { respondToFriendRequest } from '@/features/friends/data/friends-api';
 import { openProfile } from '@/features/profile/open-profile';
 type Tab = 'friends' | 'chats';
@@ -115,7 +122,11 @@ export default function FriendsScreen() {
                   subtitle={t('friends.search.mutual', { count: r.mutual })}
                   verified={r.verified}
                   trailing={
-                    <Pill label={t('friends.accept')} tone={r.verified ? 'filled' : 'outline'} onPress={() => accept.mutate(r.id)} />
+                    <Pill
+                      label={t('friends.accept')}
+                      tone={r.verified ? 'filled' : 'outline'}
+                      onPress={() => accept.mutate(r.id)}
+                    />
                   }
                   onPress={() => router.push(`/profile/${r.profile.id}`)}
                 />

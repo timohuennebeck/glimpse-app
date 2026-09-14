@@ -40,7 +40,8 @@ export default function ThankYouScreen() {
           </Text>
         </View>
       }
-      scroll>
+      scroll
+    >
       <CloseRow style={styles.topRow} onPress={() => router.replace('/(app)/feed')} />
 
       <Text variant="display" color={colors.ink} center style={styles.title}>

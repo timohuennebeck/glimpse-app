@@ -15,10 +15,10 @@ So it gets its own directory and its own attention.
 **React Native cannot render a homescreen widget on either platform.** There is
 no JS runtime in the widget process:
 
-| | iOS | Android |
-|---|---|---|
-| Technology | WidgetKit + SwiftUI | `AppWidgetProvider` + RemoteViews |
-| Can run JS? | No | No |
+|             | iOS                                     | Android                                       |
+| ----------- | --------------------------------------- | --------------------------------------------- |
+| Technology  | WidgetKit + SwiftUI                     | `AppWidgetProvider` + RemoteViews             |
+| Can run JS? | No                                      | No                                            |
 | Source here | `ios/GlimpseWidget/GlimpseWidget.swift` | `android/src/main/…/GlimpseWidgetProvider.kt` |
 
 Expo does **not** remove this work. What Expo gives you is that you never have

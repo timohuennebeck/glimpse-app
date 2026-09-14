@@ -276,7 +276,8 @@ export const de = {
     shutterLabel: 'Auslösen',
     permissionTitle: 'Kamera nicht erlaubt',
     permissionBody: 'Ohne Kamera kannst du nichts zurücktauschen.',
-    permissionSettingsBody: 'Der Kamerazugriff für Glimpse ist aus. Schalte ihn in den Einstellungen ein, um zu tauschen.',
+    permissionSettingsBody:
+      'Der Kamerazugriff für Glimpse ist aus. Schalte ihn in den Einstellungen ein, um zu tauschen.',
     openSettings: 'Einstellungen öffnen',
   },
 

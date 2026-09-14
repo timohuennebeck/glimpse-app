@@ -33,7 +33,13 @@ export function Text({ variant = 'body', color = colors.inkBody, center, style, 
   return (
     <RNText
       {...rest}
-      style={StyleSheet.flatten([token, { color }, center && styles.center, style, { fontFamily: explicitFamily ?? family }])}
+      style={StyleSheet.flatten([
+        token,
+        { color },
+        center && styles.center,
+        style,
+        { fontFamily: explicitFamily ?? family },
+      ])}
     />
   );
 }

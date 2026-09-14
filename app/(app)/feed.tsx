@@ -62,7 +62,9 @@ export default function FeedScreen() {
         />
 
         <View style={styles.gap12}>
-          <SectionLabel trailing={pending.length > 0 ? t('feed.storiesTrailing', { count: pending.length }) : undefined}>
+          <SectionLabel
+            trailing={pending.length > 0 ? t('feed.storiesTrailing', { count: pending.length }) : undefined}
+          >
             {t('feed.storiesLabel')}
           </SectionLabel>
           <StoryRail

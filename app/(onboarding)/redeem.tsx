@@ -37,7 +37,8 @@ export default function RedeemScreen() {
           </Text>
         </View>
       }
-      scroll>
+      scroll
+    >
       <CloseRow onPress={() => router.back()} />
 
       <Text variant="eyebrowAccent" color={colors.purpleDeep} style={styles.eyebrow}>
@@ -76,7 +77,14 @@ export default function RedeemScreen() {
       <TextInput
         ref={inputRef}
         value={code}
-        onChangeText={(v) => setCode(v.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, LENGTH))}
+        onChangeText={(v) =>
+          setCode(
+            v
+              .toUpperCase()
+              .replace(/[^A-Z0-9]/g, '')
+              .slice(0, LENGTH),
+          )
+        }
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
         autoFocus

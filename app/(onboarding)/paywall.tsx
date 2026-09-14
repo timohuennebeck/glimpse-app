@@ -57,7 +57,9 @@ export default function PaywallScreen() {
           </View>
         </View>
       }
-      scroll backdrop={<BloomBackdrop />}>
+      scroll
+      backdrop={<BloomBackdrop />}
+    >
       <CloseRow onPress={() => router.push('/(onboarding)/heard-about')} />
 
       <Image source={ART.mascot} style={styles.mascot} contentFit="contain" />

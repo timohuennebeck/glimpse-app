@@ -38,7 +38,8 @@ export default function OnboardingFriendsScreen() {
           onSecondary={() => router.push('/(onboarding)/notifications')}
         />
       }
-      scroll>
+      scroll
+    >
       <ProgressHeader step={5} onClose={() => router.back()} />
 
       <Text variant="displaySm" color={colors.ink} style={styles.title}>

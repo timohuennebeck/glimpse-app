@@ -42,7 +42,9 @@ export default function ShareCodeScreen() {
           </Text>
         </View>
       }
-      scroll backdrop={<BloomBackdrop />}>
+      scroll
+      backdrop={<BloomBackdrop />}
+    >
       <CloseRow onPress={() => router.push('/(onboarding)/heard-about')} />
 
       <Image source={ART.mascotHeart} style={styles.mascot} contentFit="contain" />

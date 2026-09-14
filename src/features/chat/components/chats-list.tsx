@@ -44,28 +44,21 @@ export function ChatsList() {
                 style={styles.row}
                 onPress={() => router.push(`/chat/${thread.partner_id}`)}
               >
-                <Avatar
-                  source={partner.photo}
-                  size={52}
-                  ring={isUnread ? 'active' : 'none'}
-                />
+                <Avatar source={partner.photo} size={52} ring={isUnread ? 'active' : 'none'} />
 
                 <View style={styles.rowText}>
                   <Text variant="rowTitleSm" color={colors.ink} numberOfLines={1}>
                     {partner.display_name}
                   </Text>
                   <View style={styles.preview}>
-                    {thread.last_moment_id && !thread.last_body ? (
-                      <CameraBadgeIcon size={14} />
-                    ) : null}
+                    {thread.last_moment_id && !thread.last_body ? <CameraBadgeIcon size={14} /> : null}
                     <Text
                       variant="meta"
                       color={isUnread ? colors.inkBody : colors.mutedViolet}
                       numberOfLines={1}
                       style={[styles.flex, isUnread && styles.unreadText]}
                     >
-                      {(fromMe ? t('chat.youPrefix') : '') +
-                        (thread.last_body ?? t('chat.sentPhoto'))}
+                      {(fromMe ? t('chat.youPrefix') : '') + (thread.last_body ?? t('chat.sentPhoto'))}
                     </Text>
                   </View>
                 </View>

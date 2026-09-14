@@ -78,8 +78,20 @@ export default function FirstGlimpseScreen() {
                 {t('onboarding.firstGlimpse.hint')}
               </Text>
               <View style={styles.ctaRow}>
-                <Button label={t('compose.retake')} variant="outline" size="sm" onPress={() => setShot(null)} style={styles.flex} />
-                <Button label={t('common.next')} variant="purple" size="sm" onPress={next} style={styles.flex} />
+                <Button
+                  label={t('compose.retake')}
+                  variant="outline"
+                  size="sm"
+                  onPress={() => setShot(null)}
+                  style={styles.flex}
+                />
+                <Button
+                  label={t('common.next')}
+                  variant="purple"
+                  size="sm"
+                  onPress={next}
+                  style={styles.flex}
+                />
               </View>
             </>
           ) : granted ? (

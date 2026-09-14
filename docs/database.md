@@ -16,18 +16,18 @@ lock on it.
 
 ## 1. Entity overview
 
-| Table | Purpose |
-|---|---|
-| `profiles` | Public identity mirrored from `auth.users` |
-| `friendships` | One row per directed request; accepted = friends |
-| `user_blocks` | Hard mute, checked before every read |
-| `moments` | A single captured photo (original + pre-blurred rendition) |
-| `trades` | **The core.** One initiating moment + one response, with lock state |
-| `messages` | 1:1 chat, optionally carrying a moment |
-| `device_tokens` | Push targets, needed to refresh the widget |
-| `referral_codes` / `referral_redemptions` | Share-your-code + partner codes |
-| `invites` | Deeplink for "X sent you a moment" before signup |
-| `reports` | Safety queue |
+| Table                                     | Purpose                                                             |
+| ----------------------------------------- | ------------------------------------------------------------------- |
+| `profiles`                                | Public identity mirrored from `auth.users`                          |
+| `friendships`                             | One row per directed request; accepted = friends                    |
+| `user_blocks`                             | Hard mute, checked before every read                                |
+| `moments`                                 | A single captured photo (original + pre-blurred rendition)          |
+| `trades`                                  | **The core.** One initiating moment + one response, with lock state |
+| `messages`                                | 1:1 chat, optionally carrying a moment                              |
+| `device_tokens`                           | Push targets, needed to refresh the widget                          |
+| `referral_codes` / `referral_redemptions` | Share-your-code + partner codes                                     |
+| `invites`                                 | Deeplink for "X sent you a moment" before signup                    |
+| `reports`                                 | Safety queue                                                        |
 
 ---
 
@@ -35,7 +35,7 @@ lock on it.
 
 A naive Locket-style schema is `photos` + `photo_recipients`. That cannot express
 the product, because "is this photo visible to me?" depends on **whether I have
-sent one back**, which is a property of the *pair*, not the photo.
+sent one back**, which is a property of the _pair_, not the photo.
 
 So: when A sends a moment to B, we insert one `trades` row per recipient.
 
@@ -65,8 +65,8 @@ Consequences that fall out for free:
 
 ### Open question this schema deliberately leaves open
 
-Positioning question 02 asks whether an unsent trade *expires* or *unlocks on its
-own*. `auto_unlock_at` + a `status` of `expired` supports both without a
+Positioning question 02 asks whether an unsent trade _expires_ or _unlocks on its
+own_. `auto_unlock_at` + a `status` of `expired` supports both without a
 migration: set `auto_unlock_at` to unlock, or leave it `NULL` and let a job mark
 it `expired` to have the moment disappear instead. Current default: **unlock after
 24h**, configured in `app_config`.
@@ -84,8 +84,8 @@ Blurring on the client is theatre — anyone can read the response body. So:
      role); heavy Gaussian and downscaled
 2. The bucket has **no public access**, and the **RLS policy on `storage.objects`**
    is the lock: `storage_object_readable(name)` allows `SELECT` on the original
-   only for the author or a party to an *open* trade, and on the blurred copy
-   only for a party to *any* trade. Three things stop a client from forging the
+   only for the author or a party to an _open_ trade, and on the blurred copy
+   only for a party to _any_ trade. Three things stop a client from forging the
    row that would grant itself access: a `moments` row may only name paths under
    its own author's prefix (check constraint), paths are unique, and clients have
    **no SELECT on the path columns at all** — they cannot even learn the string.
@@ -103,7 +103,7 @@ when a URL is signed.
 
 ## 4. Friendship model
 
-One row per *directed* request, with a uniqueness guard so A→B and B→A cannot both
+One row per _directed_ request, with a uniqueness guard so A→B and B→A cannot both
 exist:
 
 ```sql

@@ -1,5 +1,24 @@
 import Svg, { Circle, Ellipse, Path, Rect, G } from 'react-native-svg';
-import { X, Plus, Check, Search, MoreHorizontal, SlidersHorizontal, SwitchCamera, Zap, RotateCcw, Star, Clock, Link2, QrCode, Copy, Mail, Eye, ArrowUp, Paperclip } from 'lucide-react-native';
+import {
+  X,
+  Plus,
+  Check,
+  Search,
+  MoreHorizontal,
+  SlidersHorizontal,
+  SwitchCamera,
+  Zap,
+  RotateCcw,
+  Star,
+  Clock,
+  Link2,
+  QrCode,
+  Copy,
+  Mail,
+  Eye,
+  ArrowUp,
+  Paperclip,
+} from 'lucide-react-native';
 import { colors } from '@/shared/theme/colors';
 /**
  * Icon set.
@@ -12,9 +31,16 @@ import { colors } from '@/shared/theme/colors';
  * the camera with its punched-out lens, the two-bar lock puck, and the verified
  * rosette are all transcribed from the original Claude Design mock.
  */
-export interface IconProps { size?: number; color?: string }
+export interface IconProps {
+  size?: number;
+  color?: string;
+}
 
-export function CameraIcon({ size = 21, color = colors.white, lensColor = colors.ink }: IconProps & { lensColor?: string }) {
+export function CameraIcon({
+  size = 21,
+  color = colors.white,
+  lensColor = colors.ink,
+}: IconProps & { lensColor?: string }) {
   return (
     <Svg width={size} height={(size * 18) / 20} viewBox="0 0 20 18">
       <Path
@@ -30,11 +56,19 @@ export function CloseIcon({ size = 12, color = colors.inkFaint }: IconProps) {
   return <X size={size} color={color} strokeWidth={2.2} />;
 }
 
-export function PlusIcon({ size = 19, color = '#1b1b1f', strokeWidth = 2 }: IconProps & { strokeWidth?: number }) {
+export function PlusIcon({
+  size = 19,
+  color = '#1b1b1f',
+  strokeWidth = 2,
+}: IconProps & { strokeWidth?: number }) {
   return <Plus size={size} color={color} strokeWidth={strokeWidth} />;
 }
 
-export function CheckIcon({ size = 13, color = colors.white, strokeWidth = 2.6 }: IconProps & { strokeWidth?: number }) {
+export function CheckIcon({
+  size = 13,
+  color = colors.white,
+  strokeWidth = 2.6,
+}: IconProps & { strokeWidth?: number }) {
   return <Check size={size} color={color} strokeWidth={strokeWidth} />;
 }
 
@@ -48,7 +82,11 @@ export function LockedIcon({ size = 22, color = colors.white }: IconProps) {
   );
 }
 
-export function SearchIcon({ size = 19, color = colors.mutedViolet, strokeWidth = 2 }: IconProps & { strokeWidth?: number }) {
+export function SearchIcon({
+  size = 19,
+  color = colors.mutedViolet,
+  strokeWidth = 2,
+}: IconProps & { strokeWidth?: number }) {
   return <Search size={size} color={color} strokeWidth={strokeWidth} />;
 }
 
@@ -95,7 +133,13 @@ export function VerifiedIcon({ size = 15 }: IconProps) {
         d="M9.00 2.40 Q12.56 0.41 13.67 4.33 Q17.59 5.44 15.60 9.00 Q17.59 12.56 13.67 13.67 Q12.56 17.59 9.00 15.60 Q5.44 17.59 4.33 13.67 Q0.41 12.56 2.40 9.00 Q0.41 5.44 4.33 4.33 Q5.44 0.41 9.00 2.40 Z"
         fill={colors.purple}
       />
-      <Path d="M5.4 9.3l2.5 2.4 5.1-5.1" stroke={colors.white} strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" />
+      <Path
+        d="M5.4 9.3l2.5 2.4 5.1-5.1"
+        stroke={colors.white}
+        strokeWidth={1.7}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </Svg>
   );
 }
@@ -120,17 +164,30 @@ export function CopyIcon({ size = 22, color = colors.inkFaint }: IconProps) {
   return <Copy size={size} color={color} strokeWidth={2} />;
 }
 
-export function MailIcon({ size = 26, color = colors.white, strokeWidth = 1.9 }: IconProps & { strokeWidth?: number }) {
+export function MailIcon({
+  size = 26,
+  color = colors.white,
+  strokeWidth = 1.9,
+}: IconProps & { strokeWidth?: number }) {
   return <Mail size={size} color={color} strokeWidth={strokeWidth} />;
 }
 
 export function GoogleIcon({ size = 24 }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24">
-      <Path d="M21.6 12.2c0-.7-.06-1.35-.18-2H12v3.8h5.4a4.6 4.6 0 01-2 3v2.5h3.2c1.9-1.75 3-4.3 3-7.3z" fill="#4285F4" />
-      <Path d="M12 22c2.7 0 4.96-.9 6.6-2.45l-3.2-2.5c-.9.6-2.05.95-3.4.95-2.6 0-4.8-1.75-5.6-4.1H3.1v2.6A10 10 0 0012 22z" fill="#34A853" />
+      <Path
+        d="M21.6 12.2c0-.7-.06-1.35-.18-2H12v3.8h5.4a4.6 4.6 0 01-2 3v2.5h3.2c1.9-1.75 3-4.3 3-7.3z"
+        fill="#4285F4"
+      />
+      <Path
+        d="M12 22c2.7 0 4.96-.9 6.6-2.45l-3.2-2.5c-.9.6-2.05.95-3.4.95-2.6 0-4.8-1.75-5.6-4.1H3.1v2.6A10 10 0 0012 22z"
+        fill="#34A853"
+      />
       <Path d="M6.4 13.9a6 6 0 010-3.8V7.5H3.1a10 10 0 000 9l3.3-2.6z" fill="#FBBC05" />
-      <Path d="M12 5.95c1.47 0 2.8.5 3.84 1.5l2.85-2.85C16.95 2.99 14.7 2 12 2a10 10 0 00-8.9 5.5l3.3 2.6C7.2 7.7 9.4 5.95 12 5.95z" fill="#EA4335" />
+      <Path
+        d="M12 5.95c1.47 0 2.8.5 3.84 1.5l2.85-2.85C16.95 2.99 14.7 2 12 2a10 10 0 00-8.9 5.5l3.3 2.6C7.2 7.7 9.4 5.95 12 5.95z"
+        fill="#EA4335"
+      />
     </Svg>
   );
 }
@@ -187,7 +244,13 @@ export function LaurelIcon({ size = 42, flip = false }: IconProps & { flip?: boo
       viewBox="0 0 60 72"
       style={flip ? { transform: [{ scaleX: -1 }] } : undefined}
     >
-      <Path d="M46 66 Q10 50 18 6" fill="none" stroke={colors.purpleSoft} strokeWidth={2.4} strokeLinecap="round" />
+      <Path
+        d="M46 66 Q10 50 18 6"
+        fill="none"
+        stroke={colors.purpleSoft}
+        strokeWidth={2.4}
+        strokeLinecap="round"
+      />
       <G fill={colors.purpleSoft}>
         {leaves.map(([cx, cy, rx, ry, rot]) => (
           <Ellipse

@@ -35,11 +35,7 @@ export function StoryRail({
   onPressPlaceholder,
 }: StoryRailProps) {
   return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={styles.row}
-    >
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
       {items.map((item) => (
         <Pressable
           key={item.id}
@@ -66,12 +62,7 @@ export function StoryRail({
         >
           <View style={[styles.dashed, { width: size, height: size, borderRadius: size / 2 }]}>
             <Svg width={size * 0.36} height={size * 0.36} viewBox="0 0 20 20" fill="none">
-              <Path
-                d="M10 4v12M4 10h12"
-                stroke={colors.dashedIdle}
-                strokeWidth={2.2}
-                strokeLinecap="round"
-              />
+              <Path d="M10 4v12M4 10h12" stroke={colors.dashedIdle} strokeWidth={2.2} strokeLinecap="round" />
             </Svg>
           </View>
           <Text variant="metaXs" color={colors.mutedLilac} numberOfLines={1}>

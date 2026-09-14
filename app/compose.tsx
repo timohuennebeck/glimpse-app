@@ -87,7 +87,12 @@ export default function ComposeScreen() {
           <GlassButton size={38} onDark onPress={() => router.back()} accessibilityLabel={t('common.close')}>
             <CloseIcon size={12} color={colors.white} />
           </GlassButton>
-          <GlassButton size={38} onDark onPress={() => router.back()} accessibilityLabel={t('compose.retake')}>
+          <GlassButton
+            size={38}
+            onDark
+            onPress={() => router.back()}
+            accessibilityLabel={t('compose.retake')}
+          >
             <RetakeIcon size={17} />
           </GlassButton>
         </View>

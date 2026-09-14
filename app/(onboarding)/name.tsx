@@ -73,7 +73,9 @@ function group(tokens: HeadlineToken[]): HeadlineToken[][] {
 export default function NameScreen() {
   const [name, setName] = useState('');
   const suggestions = tList<string>('onboarding.name.suggestions');
-  const groups = group(tokenize(t('onboarding.name.title', { friends: FRIENDS_SLOT, placeholder: NAME_SLOT })));
+  const groups = group(
+    tokenize(t('onboarding.name.title', { friends: FRIENDS_SLOT, placeholder: NAME_SLOT })),
+  );
 
   return (
     <Screen

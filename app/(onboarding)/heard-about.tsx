@@ -10,7 +10,15 @@ import { colors } from '@/shared/theme/colors';
 import { radius } from '@/shared/theme/page-structure';
 import { t } from '@/shared/i18n/i18n';
 import type { Translations } from '@/shared/i18n/locales/de';
-import { AppStoreChannelIcon, FriendChannelIcon, InstagramChannelIcon, OtherChannelIcon, SearchChannelIcon, TiktokChannelIcon, YoutubeChannelIcon } from '@/features/onboarding/components/channel-icons';
+import {
+  AppStoreChannelIcon,
+  FriendChannelIcon,
+  InstagramChannelIcon,
+  OtherChannelIcon,
+  SearchChannelIcon,
+  TiktokChannelIcon,
+  YoutubeChannelIcon,
+} from '@/features/onboarding/components/channel-icons';
 type ChannelKey = keyof Translations['onboarding']['heardAbout']['options'];
 
 interface ChannelOption {
@@ -51,7 +59,8 @@ export default function HeardAboutScreen() {
           onSecondary={() => router.replace('/(onboarding)/thank-you')}
         />
       }
-      scroll>
+      scroll
+    >
       <CloseRow onPress={() => router.back()} />
 
       <Text variant="display" color={colors.ink} style={styles.title}>

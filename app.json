@@ -17,9 +17,7 @@
       "supportsTablet": false,
       "bundleIdentifier": "app.glimpse.mobile",
       "entitlements": {
-        "com.apple.security.application-groups": [
-          "group.app.glimpse.mobile"
-        ]
+        "com.apple.security.application-groups": ["group.app.glimpse.mobile"]
       },
       "infoPlist": {
         "NSCameraUsageDescription": "Glimpse needs the camera so you can capture a moment and trade it back.",
@@ -34,10 +32,7 @@
         "foregroundImage": "./assets/images/mascot.png",
         "backgroundColor": "#F7F3FE"
       },
-      "permissions": [
-        "android.permission.CAMERA",
-        "android.permission.READ_CONTACTS"
-      ],
+      "permissions": ["android.permission.CAMERA", "android.permission.READ_CONTACTS"],
       "edgeToEdgeEnabled": true
     },
     "plugins": [

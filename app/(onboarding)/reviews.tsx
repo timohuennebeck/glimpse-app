@@ -11,7 +11,12 @@ import { colors } from '@/shared/theme/colors';
 import { radius } from '@/shared/theme/page-structure';
 import { t, tList } from '@/shared/i18n/i18n';
 import { AVATARS } from '@/shared/lib/fixtures';
-interface Review { name: string; since: string; score: string; quote: string }
+interface Review {
+  name: string;
+  since: string;
+  score: string;
+  quote: string;
+}
 
 /** Screen `08 Reviews` — social proof between onboarding and the paywall. */
 export default function ReviewsScreen() {
@@ -23,7 +28,8 @@ export default function ReviewsScreen() {
       footer={
         <CtaFooter label={t('onboarding.reviews.cta')} onPress={() => router.push('/(onboarding)/paywall')} />
       }
-      scroll>
+      scroll
+    >
       <CloseRow onPress={() => router.back()} />
 
       <Text variant="display" color={colors.ink} style={styles.title}>
