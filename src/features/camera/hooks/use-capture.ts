@@ -6,8 +6,8 @@ import * as Haptics from 'expo-haptics';
  * camera and the onboarding practice shot; only what happens with the URI differs.
  */
 export function useCapture(cameraRef: RefObject<CameraView | null>, onCaptured: (uri: string) => void) {
-  // A ref, not state: two taps before the next render both read stale state
-  // and used to push the compose screen twice.
+  // A ref, not state: two taps before the next render would both read stale
+  // state and push the compose screen twice.
   const busy = useRef(false);
 
   return async function capture() {

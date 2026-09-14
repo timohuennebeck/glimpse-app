@@ -10,6 +10,7 @@ import { colors } from '@/shared/theme/colors';
 import { avatarSize, radius } from '@/shared/theme/page-structure';
 import { t } from '@/shared/i18n/i18n';
 import { relativeTime } from '@/shared/lib/format';
+import { errorMessage } from '@/shared/lib/use-async-action';
 import { PersonRow } from '@/features/friends/components/person-row';
 import { Pill } from '@/features/friends/components/pill';
 import { StoryRail } from '@/features/feed/components/story-rail';
@@ -41,7 +42,7 @@ export default function FriendsScreen() {
   function accept(id: string) {
     respondToFriendRequest(id, 'accepted')
       .then(() => setRequests((rs) => rs.filter((r) => r.id !== id)))
-      .catch((e: unknown) => setError(e instanceof Error ? e.message : t('errors.generic')));
+      .catch((e: unknown) => setError(errorMessage(e)));
   }
 
   return (

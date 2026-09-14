@@ -12,7 +12,7 @@ import '@/shared/i18n/i18n';
 void SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  // Keys here must match `fontFamily` in src/shared/theme/typography.ts.
+  // Keys here must match `fontFamily` in src/shared/theme/fonts.ts.
   const [fontsLoaded] = useFonts({
     TikTokSans_400Regular,
     TikTokSans_500Medium,

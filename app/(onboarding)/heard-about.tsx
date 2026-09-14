@@ -94,8 +94,8 @@ const styles = StyleSheet.create({
   row: {
     height: 60,
     borderRadius: radius.thumbSm,
-    // Constant width: swapping 1.6 -> 2 on selection changed the row's height
-    // and shifted every row below it.
+    // Constant width: swapping 1.6 -> 2 on selection would change the row's
+    // height and shift every row below it.
     borderWidth: 2,
     borderColor: colors.border,
     backgroundColor: colors.white,

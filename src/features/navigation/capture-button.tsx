@@ -11,9 +11,8 @@ import { TAB_BAR_CLEARANCE } from '@/features/navigation/clearance';
 /**
  * The capture action, floating to the right of the native tab bar.
  *
- * Camera used to be a tab, which was wrong twice over: a viewfinder is a modal
- * task rather than a destination, and the tab never actually opened it. As a
- * floating button it also stays reachable from every tab.
+ * Not a tab: a viewfinder is a modal task rather than a destination, and as a
+ * floating button it stays reachable from every tab.
  *
  * Rendered per-screen because a native tab bar has no slot to inject a sibling
  * view into.

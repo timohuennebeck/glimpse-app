@@ -25,9 +25,8 @@ export default function AppLayout() {
 
   return (
     <NativeTabs minimizeBehavior="onScrollDown">
-      {/* `md` names resolve through expo-symbols on Android; `drawable` would
-          need resources shipped in the app package, which the old system
-          `ic_menu_*` names were not. */}
+      {/* `md` names resolve through expo-symbols on Android; `drawable` names
+          would need resources shipped in the app package. */}
       <NativeTabs.Trigger name="feed">
         <Icon sf="square.stack" md="photo_library" />
         <Label>{t('nav.feed')}</Label>

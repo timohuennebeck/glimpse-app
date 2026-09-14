@@ -342,7 +342,6 @@ export const de = {
     online: 'Gerade aktiv',
     dayToday: 'Heute',
     send: 'Senden',
-    attach: 'Foto anhängen',
   },
 
   profile: {

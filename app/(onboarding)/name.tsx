@@ -15,9 +15,7 @@ import { t, tList } from '@/shared/i18n/i18n';
  * The mock renders the headline with two inline chips — one filled purple, one
  * grey — where the grey chip is the live name field. Typing fills it in place,
  * which is why this screen does not use the shared OnboardingScreen headline.
- */
-/**
- * The headline has two inline chips in the middle of a translated sentence.
+ *
  * The locale string carries `%{friends}` and `%{placeholder}`; those are
  * interpolated with sentinel markers, then the string is split on them so the
  * chips render as real components at the right spot in either language.
@@ -36,7 +34,7 @@ export default function NameScreen() {
       <ProgressHeader step={1} onClose={() => router.back()} />
 
       {/* The chips are inline Views: a borderRadius on a nested Text is ignored
-          by both platforms, which rendered them as hard-cornered blocks. */}
+          by both platforms and would leave them as hard-cornered blocks. */}
       <Text variant="headlineChips" color={colors.ink} style={styles.headline}>
         {headlineParts.map((part, i) =>
           part === FRIENDS_SLOT ? (

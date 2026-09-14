@@ -5,8 +5,7 @@ import type { Translations } from '@/shared/i18n/locales/de';
  * `src/shared/i18n/i18n.ts`.
  *
  * Typed as the full `Translations` rather than a partial, so a missing key is a
- * compile error rather than a screen in two languages — which is exactly the bug
- * this file previously caused.
+ * compile error rather than a screen in two languages.
  */
 export const en: Translations = {
   nav: {
@@ -346,7 +345,6 @@ export const en: Translations = {
     online: 'Active now',
     dayToday: 'Today',
     send: 'Send',
-    attach: 'Attach a photo',
   },
 
   profile: {

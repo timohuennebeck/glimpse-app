@@ -20,7 +20,6 @@ const HIDDEN_FACES = 2;
  * has not been granted, so there is no list to render yet.
  */
 export function ContactsInvite({ onPress }: ContactsInviteProps) {
-
   return (
     <View style={styles.card}>
       <View style={styles.stack}>

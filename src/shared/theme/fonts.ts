@@ -4,7 +4,7 @@ import { Platform, TextStyle } from 'react-native';
  *
  * These names must match the keys `useFonts()` is given in `app/_layout.tsx`
  * exactly — a name with no loaded font does not error, it silently falls back
- * to the system face, which is how this shipped unnoticed at first.
+ * to the system face.
  */
 export const fontFamily = {
   regular: 'TikTokSans_400Regular',

@@ -1,5 +1,6 @@
 import { isSupabaseConfigured, requireSupabase } from '@/shared/lib/supabase';
 import { demoOthers } from '@/shared/lib/fixtures';
+import type { Profile } from '@/shared/lib/database.interfaces';
 import { publicAvatarUrl } from '@/features/moments/data/moments-api';
 
 /** A friend as a picker or list needs them. */
@@ -12,21 +13,13 @@ export interface FriendSummary {
 }
 
 /**
- * Accepted friends, from `v_my_friends` joined to `profiles`.
- *
- * The recipient picker used to read fixtures even against a real project and
- * sent ids like "mia" to a uuid parameter, which failed after the upload had
- * already been committed.
+ * Accepted friends, from `v_my_friends` joined to `profiles`. Against a real
+ * project this must return real uuids: the recipient picker hands them straight
+ * to `send_moment`.
  */
 export async function fetchFriends(): Promise<FriendSummary[]> {
   if (!isSupabaseConfigured) {
-    return demoOthers.slice(0, 3).map((p) => ({
-      id: p.id,
-      name: p.display_name,
-      username: p.username,
-      tagline: p.tagline,
-      avatar: p.photo,
-    }));
+    return demoOthers.slice(0, 3).map((p) => toFriend(p, p.photo));
   }
 
   const sb = requireSupabase();
@@ -41,13 +34,14 @@ export async function fetchFriends(): Promise<FriendSummary[]> {
     .in('id', ids);
   if (profileError) throw profileError;
 
-  return (profiles ?? []).map((p) => ({
-    id: p.id,
-    name: p.display_name,
-    username: p.username,
-    tagline: p.tagline,
-    avatar: p.avatar_path ? publicAvatarUrl(p.avatar_path) : null,
-  }));
+  return (profiles ?? []).map((p) => toFriend(p, p.avatar_path ? publicAvatarUrl(p.avatar_path) : null));
+}
+
+function toFriend(
+  p: Pick<Profile, 'id' | 'display_name' | 'username' | 'tagline'>,
+  avatar: string | number | null,
+): FriendSummary {
+  return { id: p.id, name: p.display_name, username: p.username, tagline: p.tagline, avatar };
 }
 
 /**

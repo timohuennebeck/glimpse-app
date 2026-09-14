@@ -39,6 +39,15 @@ export function GlassButton({
 }: GlassButtonProps) {
   const radius = size / 2;
   const native = isLiquidGlassAvailable();
+  const content = <View style={styles.center}>{children}</View>;
+  // Glass refracts what is behind it, so over a flat white screen the system
+  // material has nothing to work with and all but disappears; a hairline gives
+  // it an edge without fighting it. The fallback always draws its own ring.
+  const edge = native
+    ? onDark
+      ? null
+      : styles.lightEdge
+    : { borderWidth: 1, borderColor: onDark ? alpha.onDarkBorder : alpha.glassBorder };
 
   return (
     <Pressable
@@ -56,57 +65,39 @@ export function GlassButton({
       ]}
     >
       {native ? (
-        <>
-          <GlassView
-            glassEffectStyle="regular"
-            colorScheme={onDark ? 'dark' : 'light'}
-            isInteractive
-            style={[styles.clip, { borderRadius: radius }]}
-          >
-            <View style={styles.center}>{children}</View>
-          </GlassView>
-          {/* Glass refracts what is behind it, so over a flat white screen it
-              has nothing to work with and all but disappears. A hairline plus a
-              soft shadow give it an edge without fighting the material. */}
-          {!onDark ? (
-            <View
-              style={[StyleSheet.absoluteFill, styles.lightEdge, { borderRadius: radius }]}
-              pointerEvents="none"
-            />
-          ) : null}
-        </>
+        <GlassView
+          glassEffectStyle="regular"
+          colorScheme={onDark ? 'dark' : 'light'}
+          isInteractive
+          style={[styles.clip, { borderRadius: radius }]}
+        >
+          {content}
+        </GlassView>
       ) : (
-        <>
-          <View style={[styles.clip, { borderRadius: radius }]}>
-            <BlurView
-              intensity={onDark ? 30 : 24}
-              tint={onDark ? 'dark' : 'light'}
+        <View style={[styles.clip, { borderRadius: radius }]}>
+          <BlurView
+            intensity={onDark ? 30 : 24}
+            tint={onDark ? 'dark' : 'light'}
+            style={StyleSheet.absoluteFill}
+          />
+          {onDark ? (
+            <View style={[StyleSheet.absoluteFill, { backgroundColor: alpha.onDarkFill }]} />
+          ) : (
+            <LinearGradient
+              colors={[alpha.glassTop, alpha.glassBottom]}
+              start={{ x: 0.15, y: 0 }}
+              end={{ x: 0.85, y: 1 }}
               style={StyleSheet.absoluteFill}
             />
-            {onDark ? (
-              <View style={[StyleSheet.absoluteFill, { backgroundColor: alpha.onDarkFill }]} />
-            ) : (
-              <LinearGradient
-                colors={[alpha.glassTop, alpha.glassBottom]}
-                start={{ x: 0.15, y: 0 }}
-                end={{ x: 0.85, y: 1 }}
-                style={StyleSheet.absoluteFill}
-              />
-            )}
-            {/* Stands in for the two inset highlights RN cannot express. */}
-            <View style={[styles.innerEdges, { borderRadius: radius }]} />
-            <View style={styles.center}>{children}</View>
-          </View>
-          <View
-            style={[
-              StyleSheet.absoluteFill,
-              styles.ring,
-              { borderRadius: radius, borderColor: onDark ? alpha.onDarkBorder : alpha.glassBorder },
-            ]}
-            pointerEvents="none"
-          />
-        </>
+          )}
+          {/* Stands in for the two inset highlights RN cannot express. */}
+          <View style={[styles.innerEdges, { borderRadius: radius }]} />
+          {content}
+        </View>
       )}
+      {edge ? (
+        <View style={[StyleSheet.absoluteFill, edge, { borderRadius: radius }]} pointerEvents="none" />
+      ) : null}
     </Pressable>
   );
 }
@@ -121,6 +112,5 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1.5,
     borderBottomColor: 'rgba(139,92,246,.14)',
   },
-  ring: { borderWidth: 1 },
   lightEdge: { borderWidth: StyleSheet.hairlineWidth, borderColor: 'rgba(76,40,120,.16)' },
 });

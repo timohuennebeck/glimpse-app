@@ -19,8 +19,7 @@ import type { MomentPhoto } from '@/features/moments/interfaces';
  * Screen `07c Foto Vollbild` — an unlocked moment, full bleed.
  *
  * Resolves the moment by id rather than searching the inbox: photos opened
- * from a profile's pair grid were never in the inbox, so that lookup always
- * missed and showed a fixture with a blank name.
+ * from a profile's pair grid are not in the inbox.
  */
 export default function PhotoScreen() {
   const { momentId } = useLocalSearchParams<{ momentId: string }>();

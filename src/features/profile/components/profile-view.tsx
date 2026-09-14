@@ -31,8 +31,8 @@ export function ProfileView({ profile, subtitle, leading, onPressTrade }: Profil
   const [pairs, setPairs] = useState<MomentPair[]>([]);
 
   useEffect(() => {
-    // Bug 6 fix: a failed fetch used to be an unhandled rejection that left the
-    // screen silently claiming nothing had been traded.
+    // A failed fetch must not escape as an unhandled rejection; the grid falls
+    // back to its empty state.
     fetchPairs(profile.id)
       .then(setPairs)
       .catch((error: unknown) => {

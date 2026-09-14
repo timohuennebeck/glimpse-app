@@ -1,6 +1,6 @@
 import { isSupabaseConfigured, requireSupabase } from '@/shared/lib/supabase';
 import { demoInbox, demoPairs, demoProfiles } from '@/shared/lib/fixtures';
-import type { InboxRow } from '@/shared/lib/database.interfaces';
+import type { InboxRow, PairRow } from '@/shared/lib/database.interfaces';
 import type { InboxMoment, MomentPair, MomentPhoto } from '@/features/moments/interfaces';
 /**
  * Data access for the trade loop.
@@ -58,7 +58,7 @@ const SIGNED_URL_TTL_SECONDS = 3600;
  * caller's RLS does not allow. The client never chooses — it only asks.
  * See docs/database.md §3.
  */
-export async function signedMomentUrls(momentIds: string[]): Promise<Map<string, string>> {
+async function signedMomentUrls(momentIds: string[]): Promise<Map<string, string>> {
   const result = new Map<string, string>();
   if (!isSupabaseConfigured || momentIds.length === 0) return result;
   const sb = requireSupabase();
@@ -169,15 +169,7 @@ export async function markTradeSeen(tradeId: string) {
 
 export async function fetchPairs(withUserId: string): Promise<MomentPair[]> {
   if (!isSupabaseConfigured) {
-    return demoPairs.map((p) => ({
-      tradeId: p.trade_id,
-      date: p.pair_at,
-      leftMomentId: p.initiator_moment_id,
-      rightMomentId: p.responder_moment_id,
-      left: p.leftPhoto,
-      right: p.rightPhoto,
-      locked: p.locked,
-    }));
+    return demoPairs.map((p) => toPair(p, p.leftPhoto, p.rightPhoto, p.locked));
   }
 
   const sb = requireSupabase();
@@ -190,15 +182,21 @@ export async function fetchPairs(withUserId: string): Promise<MomentPair[]> {
   const pairs = data ?? [];
   const urls = await signedMomentUrls(pairs.flatMap((p) => [p.initiator_moment_id, p.responder_moment_id]));
 
-  return pairs.map((p) => ({
-    tradeId: p.trade_id,
-    date: p.pair_at,
-    leftMomentId: p.initiator_moment_id,
-    rightMomentId: p.responder_moment_id,
-    left: urls.get(p.initiator_moment_id) ?? '',
-    right: urls.get(p.responder_moment_id) ?? '',
-    locked: false,
-  }));
+  return pairs.map((p) =>
+    toPair(p, urls.get(p.initiator_moment_id) ?? '', urls.get(p.responder_moment_id) ?? '', false),
+  );
+}
+
+function toPair(row: PairRow, left: string | number, right: string | number, locked: boolean): MomentPair {
+  return {
+    tradeId: row.trade_id,
+    date: row.pair_at,
+    leftMomentId: row.initiator_moment_id,
+    rightMomentId: row.responder_moment_id,
+    left,
+    right,
+    locked,
+  };
 }
 
 /**

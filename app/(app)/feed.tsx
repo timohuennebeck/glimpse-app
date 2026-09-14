@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
   stack: { gap: 16, flex: 1 },
   gap12: { gap: 12 },
   grid: { flexDirection: 'row', gap: 13, flexWrap: 'wrap' },
-  // Fixed share rather than flex:1 — a single item used to stretch across the
+  // Fixed share rather than flex:1, which would stretch a lone item across the
   // full width and render a portrait photo as a letterbox strip.
   gridCell: { width: '48%' },
   gridImage: { width: '100%', aspectRatio: 4 / 5, borderRadius: radius.thumb },

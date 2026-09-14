@@ -17,6 +17,7 @@ import { useComposer } from '@/features/moments/hooks/use-composer';
 import { reloadInbox } from '@/features/moments/hooks/use-inbox';
 import { createMoment, respondToTrade } from '@/features/moments/data/moments-api';
 import { isSupabaseConfigured } from '@/shared/lib/supabase';
+import { useAsyncAction } from '@/shared/lib/use-async-action';
 import { PHOTOS } from '@/shared/lib/fixtures';
 /**
  * Screen `03b Senden · Bestätigen` — review the shot and add a caption before
@@ -26,8 +27,7 @@ export default function ComposeScreen() {
   const composer = useComposer();
   const insets = useSafeAreaInsets();
   const [caption, setCaption] = useState(composer.caption);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { busy, error, run } = useAsyncAction();
 
   /**
    * Two exits. Answering a frosted moment is the unlock itself — the recipient
@@ -43,9 +43,7 @@ export default function ComposeScreen() {
       return;
     }
 
-    setBusy(true);
-    setError(null);
-    try {
+    await run(async () => {
       if (isSupabaseConfigured && composer.uri) {
         const momentId = await createMoment({
           localUri: composer.uri,
@@ -57,17 +55,11 @@ export default function ComposeScreen() {
       }
       composer.reset();
       // Land on the now-open pair rather than back on the feed. `push`, not
-      // `replace`: replacing swapped out the tab root and left the moment's
-      // close button with nothing to go back to.
+      // `replace`, so the tab root stays underneath and the moment's close
+      // button has somewhere to go back to.
       router.dismissAll();
       router.push(`/moment/${tradeId}`);
-    } catch (e) {
-      // Without this the rejection escaped the press handler and a retry
-      // uploaded the photo a second time.
-      setError(e instanceof Error ? e.message : t('errors.generic'));
-    } finally {
-      setBusy(false);
-    }
+    });
   }
 
   return (

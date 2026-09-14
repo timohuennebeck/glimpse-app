@@ -35,10 +35,9 @@ export function HomescreenPreview({ size = 'small' }: HomescreenPreviewProps) {
   const [scale, setScale] = useState(1);
   const onLayout = (e: LayoutChangeEvent) => setScale(Math.min(1, e.nativeEvent.layout.width / GRID_WIDTH));
 
-  // An iOS homescreen is a 4-column grid. Laying this out as one wrapping flex
-  // row put the 138px widget in the same flow as 58px icons, which is why the
-  // tiles collided with each other and with the dock. The grid is now explicit:
-  // the 2x2 widget occupies the left two columns of the first two rows.
+  // An iOS homescreen is a 4-column grid, laid out explicitly: the 2x2 widget
+  // occupies the left two columns of the first two rows. One wrapping flex row
+  // would put the 138px widget in the same flow as 58px icons and collide.
   const pairs = [
     [IOS_ICONS.weather, t('onboarding.widget.preview.weather')],
     [IOS_ICONS.clock, t('onboarding.widget.preview.clock')],

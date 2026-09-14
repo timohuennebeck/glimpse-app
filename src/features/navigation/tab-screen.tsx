@@ -12,8 +12,8 @@ interface TabScreenProps {
  * A scrollable tab root: reserves room under the content for the tab bar and
  * mounts the capture button, which a native tab bar has no slot for.
  *
- * The button goes in `floating`, not `children` — as a child it lived inside
- * the ScrollView and was only reachable at the very end of a long feed.
+ * The button goes in `floating`, not `children` — as a child it would scroll
+ * with the content and only be reachable at the very end of a long feed.
  */
 export function TabScreen({ children, gutter }: TabScreenProps) {
   return (

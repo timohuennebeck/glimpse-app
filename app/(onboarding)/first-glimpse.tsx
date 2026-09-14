@@ -18,10 +18,9 @@ import { ShutterButton } from '@/features/camera/components/shutter-button';
 /**
  * Screen `02b First glimpse` — step 2.5 of onboarding.
  *
- * This used to be a bare `<Redirect href="/camera" />`, which broke the flow:
- * the app camera exits to compose -> recipients -> feed and never returns here,
- * so steps 3-7 of onboarding were unreachable. It is now its own screen that
- * takes a practice shot and continues to the avatar step.
+ * Its own screen rather than a redirect to `/camera`: the app camera exits to
+ * compose -> recipients -> feed and never returns, which would leave steps 3-7
+ * unreachable. This takes a practice shot and continues to the avatar step.
  *
  * The shot is kept in the composer draft so the thank-you step can offer it as
  * the user's first real trade.

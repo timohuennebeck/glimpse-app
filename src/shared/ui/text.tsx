@@ -17,9 +17,9 @@ export function Text({ variant = 'body', color = colors.inkBody, center, style, 
 
   // Resolve the family from the EFFECTIVE weight, override included.
   // expo-google-fonts registers each weight as its own family, so a bare
-  // `style={{ fontWeight: '600' }}` on a regular token did nothing on iOS and
-  // fake-bolded on Android. Reading the flattened style makes every existing
-  // override render the real semibold face.
+  // `style={{ fontWeight: '600' }}` on a regular token would do nothing on iOS
+  // and fake-bold on Android. Reading the flattened style makes every override
+  // render the real semibold face.
   const weight = String(StyleSheet.flatten([token, style])?.fontWeight ?? '400');
   if (__DEV__ && !['400', '500', '600'].includes(weight)) {
     console.warn(`Text: fontWeight ${weight} is above the 600 cap; rendering as 600.`);

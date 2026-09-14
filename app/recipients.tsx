@@ -17,6 +17,7 @@ import { PersonRow } from '@/features/friends/components/person-row';
 import { Checkbox } from '@/features/friends/components/checkbox';
 import { EmptyState } from '@/features/feed/components/empty-state';
 import { isSupabaseConfigured } from '@/shared/lib/supabase';
+import { errorMessage, useAsyncAction } from '@/shared/lib/use-async-action';
 import { demoOthers } from '@/shared/lib/fixtures';
 import { fetchFriends, type FriendSummary } from '@/features/friends/data/friends-api';
 /**
@@ -34,15 +35,14 @@ export default function RecipientsScreen() {
   const [friends, setFriends] = useState<FriendSummary[]>([]);
   // A friend's profile pre-selects them; otherwise start empty.
   const [selected, setSelected] = useState<string[]>(composer.recipientIds);
-  const [sending, setSending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { busy: sending, error, setError, run } = useAsyncAction();
 
   useEffect(() => {
-    // Real ids from v_my_friends — fixture ids like "mia" are not uuids and
-    // used to reach send_moment after the upload had already been committed.
+    // Real ids from v_my_friends: `send_moment` takes uuids and runs only after
+    // the upload has been committed, so a fixture id here would orphan the photo.
     fetchFriends()
       .then(setFriends)
-      .catch((e: unknown) => setError(e instanceof Error ? e.message : t('errors.generic')));
+      .catch((e: unknown) => setError(errorMessage(e)));
   }, []);
 
   function toggle(id: string) {
@@ -50,13 +50,12 @@ export default function RecipientsScreen() {
   }
 
   async function send() {
-    if (selected.length === 0 || !composer.uri) return;
-    setSending(true);
-    setError(null);
-    try {
+    const uri = composer.uri;
+    if (selected.length === 0 || !uri) return;
+    await run(async () => {
       if (isSupabaseConfigured) {
         const momentId = await createMoment({
-          localUri: composer.uri,
+          localUri: uri,
           caption: composer.caption || null,
           facing: composer.facing,
         });
@@ -66,11 +65,7 @@ export default function RecipientsScreen() {
       composer.reset();
       router.dismissAll();
       router.replace('/(app)/feed');
-    } catch (e) {
-      setError(e instanceof Error ? e.message : t('errors.generic'));
-    } finally {
-      setSending(false);
-    }
+    });
   }
 
   const ctaLabel =

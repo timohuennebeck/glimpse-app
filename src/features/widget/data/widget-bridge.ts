@@ -48,8 +48,6 @@ export async function publishSnapshot(inbox: InboxMoment[]): Promise<void> {
   const module = nativeModule();
   if (!module) return;
 
-  // The widget only ever shows one thing: the oldest unanswered moment, so the
-  // person who has been waiting longest is the one looking back at you.
   const pending = inbox.filter((m) => !m.isOpen);
   const next = pending[pending.length - 1] ?? null;
 
