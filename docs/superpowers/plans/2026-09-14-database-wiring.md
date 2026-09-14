@@ -115,7 +115,7 @@ Deleted: `src/features/moments/hooks/store.ts` (moved to `src/shared/lib/store.t
 ### Task 1: Dependencies and test tooling
 
 **Files:**
-- Modify: `package.json`, `app.json`
+- Modify: `package.json`, `app.json`, `tsconfig.json`
 - Create: `src/shared/lib/format.test.ts`
 - Generate (gitignored, never committed): `expo-env.d.ts`
 
@@ -172,7 +172,7 @@ file rather than trusting these two numbers.
 Run:
 
 ```bash
-npm install --save-dev jest-expo@~57.0.5 @react-native/jest-preset@^0.86.3 jest@^29.7.0 @types/jest
+npm install --save-dev jest-expo@~57.0.5 @react-native/jest-preset@^0.86.3 jest@^29.7.0 @types/jest@^29
 ```
 
 Expected: exits 0; the four appear under `devDependencies`.
@@ -187,6 +187,8 @@ a wrong one installs quietly and only surfaces as a baffling Step 7 failure:
   `@jest/globals@^29.2.1`, `jest-environment-jsdom@^29.2.1`) but pins no `jest`
   of its own. A bare `npm install jest` fetches the 30 line today and splits the
   install across two major versions.
+- `@types/jest` is unpinned on the registry too and resolves to 30, straddling a
+  29 runtime. It happens to typecheck, but pin it for the same reason.
 
 - [ ] **Step 5: Configure Jest**
 
@@ -196,17 +198,35 @@ In `package.json`, add to `"scripts"`:
 "test": "jest"
 ```
 
-and add a top-level block:
+and add a top-level block. Prettier parses any file named `package.json` with
+its `json-stringify` parser, which always expands arrays, so write it exactly
+like this or `format:check` fails on your own edit:
 
 ```json
 "jest": {
   "preset": "jest-expo",
-  "testMatch": ["<rootDir>/src/**/*.test.ts"],
+  "testMatch": [
+    "<rootDir>/src/**/*.test.ts"
+  ],
   "moduleNameMapper": {
     "^@/(.*)$": "<rootDir>/src/$1"
   }
 }
 ```
+
+Then, in `tsconfig.json`, add to `compilerOptions`:
+
+```json
+    // TypeScript 6 no longer pulls in @types/* on its own, and the test files
+    // need Jest's globals.
+    "types": ["jest"],
+```
+
+TypeScript 6.0 dropped the automatic inclusion of every `@types/*` package, and
+`expo/tsconfig.base` sets no `types` of its own. Without this line every test
+file in the plan fails to compile with `TS2593: Cannot find name 'describe'`,
+while Jest itself runs perfectly well — so nothing catches it until a later
+task's typecheck.
 
 - [ ] **Step 6: Write the first test**
 
@@ -236,6 +256,10 @@ describe('timeUntilUnlock', () => {
 Run: `npm test`
 Expected: `Tests: 3 passed, 3 total`. If Jest fails to transform a package, add that package name to a `"transformIgnorePatterns"` entry following the jest-expo default pattern and rerun.
 
+Run: `npm run typecheck`
+Expected: exits 0. Task 1 changes what the compiler sees, so it has to end as
+clean as Step 2 found it — every task after this one assumes that.
+
 - [ ] **Step 8: Register the image picker plugin**
 
 In `app.json`, add to `"plugins"` after `"expo-localization"`:
@@ -252,7 +276,7 @@ In `app.json`, add to `"plugins"` after `"expo-localization"`:
 - [ ] **Step 9: Commit**
 
 ```bash
-git add package.json package-lock.json app.json src/shared/lib/format.test.ts
+git add package.json package-lock.json app.json tsconfig.json src/shared/lib/format.test.ts
 git commit -m "chore: add image picker, crypto, query persistence and jest-expo" -m "Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
 Claude-Session: https://claude.ai/code/session_012A2gz59aWK6CCueq4SYbS6"
 ```
@@ -9418,6 +9442,7 @@ report rather than making an empty commit.
 - `supabase/tests/run.sh` needs a local Postgres server and `psql`. Where none exists, skip the local runs and rely on applying to the project plus the SQL checks inside each task.
 - "Confirm email" must be switched off in the dashboard before Task 5.
 - Task 21 needs the Chrome DevTools MCP.
+- `npm run format:check` runs Prettier over the **whole repository**, `docs/` included, not just the code a task touched. Tasks 6, 14 and 20 assert it passes, so the tree has to be clean before Task 2; `npx prettier --write .` is the one-liner.
 - **This sandbox's proxy denies `api.expo.dev` and `reactnative.directory`**; only `registry.npmjs.org` is reachable. That is why Task 1 Steps 3 and 4 install by explicit version instead of through `npx expo install`. Anything else that reaches for the Expo API degrades the same way — `npx expo start --web` in Task 21 prints "Unable to fetch compatibility data … Skipping check" and carries on, which is fine. Check `curl -sS "$HTTPS_PROXY/__agentproxy/status"` when a command fails with `HTTP Proxy Network Error: Forbidden`.
 - Local baseline before Task 1: `npm run typecheck` reported 6 errors, all from `nativewind` and `tailwind-merge` missing in `node_modules`. `npm install` clears those five; the sixth, TS2882 on `import '../global.css'`, needs the gitignored `expo-env.d.ts` that Task 1 Step 1 now generates.
 - **The tasks are strictly ordered.** Each one ends on a green `npm run typecheck` and a green `npm test`, and several of them deliberately patch a screen minimally — just enough to keep the tree compiling — before a later task rewrites that screen in full. Skipping a task, or doing two out of order, leaves the build red for reasons that look like bugs.
