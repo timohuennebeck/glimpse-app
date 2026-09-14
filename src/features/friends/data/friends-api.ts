@@ -34,7 +34,9 @@ export async function fetchFriends(): Promise<FriendSummary[]> {
     .in('id', ids);
   if (profileError) throw profileError;
 
-  return (profiles ?? []).map((p) => toFriend(p, p.avatar_storage_path ? publicAvatarUrl(p.avatar_storage_path) : null));
+  return (profiles ?? []).map((p) =>
+    toFriend(p, p.avatar_storage_path ? publicAvatarUrl(p.avatar_storage_path) : null),
+  );
 }
 
 function toFriend(

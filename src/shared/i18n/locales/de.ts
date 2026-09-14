@@ -228,7 +228,6 @@ export const de = {
     restore: 'Käufe wiederherstellen',
   },
 
-
   feed: {
     greetingMorning: 'Guten Morgen.',
     greetingDay: 'Schön, dass du da bist.',

@@ -15,24 +15,24 @@ rows after each step.
 
 ## Decisions taken with the owner
 
-| Topic              | Decision                                                                                   |
-| ------------------ | ------------------------------------------------------------------------------------------ |
-| Auth               | Email + password. "Confirm email" is toggled off in the dashboard for now. Google stays inert. |
-| Blur rendition     | Build and deploy the `blur-moment` Edge Function; the client invokes it before sending.    |
-| Fixtures           | Removed entirely, including the "no Supabase configured" fallback. `.env` is required.     |
-| Live data          | Supabase Realtime (Postgres changes) plus presence for the chat header.                    |
-| Invites            | In scope: create, share `glimpse://invite/<token>`, preview and claim on the invite screen. |
-| Push               | Out of scope, both token registration and sending.                                         |
-| Onboarding step 5  | Real @username search plus the share link; the contacts card is removed.                   |
-| i18n keys          | Generated from the locale object, SCREAMING_SNAKE, typed; `t()` accepts only real keys.    |
-| Verification       | Claude drives the web build in Chrome with isolated contexts and checks rows via the MCP.  |
-| Sign out           | Behind the "more" button on the own profile.                                               |
-| Paywall            | Ignored; RevenueCat comes later.                                                           |
-| Data layer shape   | Per-feature api / queries / mutations modules with a persisted query cache (approach A).   |
-| Crossing trades    | A capture sent to someone whose frosted moment is unanswered always answers it. The app never opens a second lock in the reverse direction. |
-| Onboarding done    | `onboarding_done_at` is stamped the first time the signed-in tabs mount, not on the thank-you screen. |
-| Presence           | Per conversation, tracked only while the chat is open. No global online state.            |
-| Own profile grid   | Unanswered outgoing moments show as locked tiles, from one extra query on `trades`.       |
+| Topic             | Decision                                                                                                                                    |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| Auth              | Email + password. "Confirm email" is toggled off in the dashboard for now. Google stays inert.                                              |
+| Blur rendition    | Build and deploy the `blur-moment` Edge Function; the client invokes it before sending.                                                     |
+| Fixtures          | Removed entirely, including the "no Supabase configured" fallback. `.env` is required.                                                      |
+| Live data         | Supabase Realtime (Postgres changes) plus presence for the chat header.                                                                     |
+| Invites           | In scope: create, share `glimpse://invite/<token>`, preview and claim on the invite screen.                                                 |
+| Push              | Out of scope, both token registration and sending.                                                                                          |
+| Onboarding step 5 | Real @username search plus the share link; the contacts card is removed.                                                                    |
+| i18n keys         | Generated from the locale object, SCREAMING_SNAKE, typed; `t()` accepts only real keys.                                                     |
+| Verification      | Claude drives the web build in Chrome with isolated contexts and checks rows via the MCP.                                                   |
+| Sign out          | Behind the "more" button on the own profile.                                                                                                |
+| Paywall           | Ignored; RevenueCat comes later.                                                                                                            |
+| Data layer shape  | Per-feature api / queries / mutations modules with a persisted query cache (approach A).                                                    |
+| Crossing trades   | A capture sent to someone whose frosted moment is unanswered always answers it. The app never opens a second lock in the reverse direction. |
+| Onboarding done   | `onboarding_done_at` is stamped the first time the signed-in tabs mount, not on the thank-you screen.                                       |
+| Presence          | Per conversation, tracked only while the chat is open. No global online state.                                                              |
+| Own profile grid  | Unanswered outgoing moments show as locked tiles, from one extra query on `trades`.                                                         |
 
 ## Backend
 
@@ -46,11 +46,11 @@ One new migration, `supabase/migrations/20260914200000_app_wiring.sql`:
 
 - `alter table public.trades replica identity full;` likewise `messages` and
   `friendships`, then `alter publication supabase_realtime add table
-  public.trades, public.messages, public.friendships;`. Change events carry
+public.trades, public.messages, public.friendships;`. Change events carry
   the full row, so filters work for updates and deletes. Row-level security
   applies to every subscriber.
 - `public.mutual_friends_counts(p_user_ids uuid[]) returns table (user_id
-  uuid, mutual int)`, security definer, the batch form of the existing count,
+uuid, mutual int)`, security definer, the batch form of the existing count,
   granted to `authenticated` and revoked from `anon`/`public`.
 - Whatever the security and performance advisors flag after the first four
   migrations are applied (expected: `search_path` on the two functions that
@@ -218,17 +218,17 @@ Screens navigate at mutate time, never after the response.
 
 Mutations and their optimistic patch:
 
-| Mutation             | Patch                                                                    |
-| -------------------- | ------------------------------------------------------------------------ |
-| send friend request  | append to `friends.sent`; result row flips to "Sent"                    |
-| accept request       | remove from `friends.requests`, append to `friends.list`                 |
-| remove friendship    | remove from whichever list holds it                                       |
-| send message         | append `{ id: temp, status: 'sending' }` to `chat.messages(partner)`; update the thread's last message |
-| mark thread read     | set `unread_count` to 0 for the thread; `read_at` on the messages        |
-| mark trade seen      | set `seenAt` on the inbox item                                           |
-| respond to trade     | set `isOpen: true` on the inbox item (photo sharpens on refetch)         |
-| update profile       | merge the patch into `profile.me`                                        |
-| claim invite         | none; the result drives navigation                                       |
+| Mutation            | Patch                                                                                                  |
+| ------------------- | ------------------------------------------------------------------------------------------------------ |
+| send friend request | append to `friends.sent`; result row flips to "Sent"                                                   |
+| accept request      | remove from `friends.requests`, append to `friends.list`                                               |
+| remove friendship   | remove from whichever list holds it                                                                    |
+| send message        | append `{ id: temp, status: 'sending' }` to `chat.messages(partner)`; update the thread's last message |
+| mark thread read    | set `unread_count` to 0 for the thread; `read_at` on the messages                                      |
+| mark trade seen     | set `seenAt` on the inbox item                                                                         |
+| respond to trade    | set `isOpen: true` on the inbox item (photo sharpens on refetch)                                       |
+| update profile      | merge the patch into `profile.me`                                                                      |
+| claim invite        | none; the result drives navigation                                                                     |
 
 Temporary ids come from `expo-crypto`'s `randomUUID`.
 
@@ -285,15 +285,15 @@ in the foreground.
 session, so it is active on any deep-link entry, not only under the tabs.
 It opens one channel `user:<uid>` with Postgres change listeners:
 
-| Table       | Event         | Filter                          | Cache effect                                          |
-| ----------- | ------------- | ------------------------------- | ----------------------------------------------------- |
-| trades      | INSERT        | `responder_id=eq.<uid>`         | invalidate `moments.inbox`                            |
-| trades      | UPDATE        | `responder_id=eq.<uid>`         | invalidate `moments.inbox`, `moments.pairs`           |
-| trades      | UPDATE        | `initiator_id=eq.<uid>`         | invalidate `moments.pairs`, `moments.outgoingLocked`  |
-| messages    | INSERT        | `recipient_id=eq.<uid>`         | append to `chat.messages(sender)`, invalidate threads |
-| messages    | UPDATE        | `sender_id=eq.<uid>`            | patch `read_at` in `chat.messages(recipient)`         |
-| friendships | INSERT/UPDATE/DELETE | `recipient_id=eq.<uid>`  | invalidate `friends.*`                                |
-| friendships | INSERT/UPDATE/DELETE | `requester_id=eq.<uid>`  | invalidate `friends.*`                                |
+| Table       | Event                | Filter                  | Cache effect                                          |
+| ----------- | -------------------- | ----------------------- | ----------------------------------------------------- |
+| trades      | INSERT               | `responder_id=eq.<uid>` | invalidate `moments.inbox`                            |
+| trades      | UPDATE               | `responder_id=eq.<uid>` | invalidate `moments.inbox`, `moments.pairs`           |
+| trades      | UPDATE               | `initiator_id=eq.<uid>` | invalidate `moments.pairs`, `moments.outgoingLocked`  |
+| messages    | INSERT               | `recipient_id=eq.<uid>` | append to `chat.messages(sender)`, invalidate threads |
+| messages    | UPDATE               | `sender_id=eq.<uid>`    | patch `read_at` in `chat.messages(recipient)`         |
+| friendships | INSERT/UPDATE/DELETE | `recipient_id=eq.<uid>` | invalidate `friends.*`                                |
+| friendships | INSERT/UPDATE/DELETE | `requester_id=eq.<uid>` | invalidate `friends.*`                                |
 
 On `SUBSCRIBED` after a reconnect, every key is invalidated once. The
 channel is removed on sign-out.

@@ -231,7 +231,6 @@ export const en: Translations = {
     restore: 'Restore purchases',
   },
 
-
   feed: {
     greetingMorning: 'Good morning.',
     greetingDay: 'Good to see you.',

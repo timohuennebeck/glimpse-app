@@ -16,17 +16,17 @@ lock on it.
 
 ## 1. Entity overview
 
-| Table                                     | Purpose                                                             |
-| ----------------------------------------- | ------------------------------------------------------------------- |
-| `profiles`                                | Public identity mirrored from `auth.users`                          |
-| `friendships`                             | One row per directed request; accepted = friends                    |
-| `user_blocks`                             | Hard mute, checked before every read                                |
-| `moments`                                 | A single captured photo (original + pre-blurred rendition)          |
-| `trades`                                  | **The core.** One initiating moment + one response, with lock state |
-| `messages`                                | 1:1 chat, optionally carrying a moment                              |
-| `device_tokens`                           | Push targets, needed to refresh the widget                          |
-| `invites`                                 | Deeplink for "X sent you a moment" before signup                    |
-| `reports`                                 | Safety queue                                                        |
+| Table           | Purpose                                                             |
+| --------------- | ------------------------------------------------------------------- |
+| `profiles`      | Public identity mirrored from `auth.users`                          |
+| `friendships`   | One row per directed request; accepted = friends                    |
+| `user_blocks`   | Hard mute, checked before every read                                |
+| `moments`       | A single captured photo (original + pre-blurred rendition)          |
+| `trades`        | **The core.** One initiating moment + one response, with lock state |
+| `messages`      | 1:1 chat, optionally carrying a moment                              |
+| `device_tokens` | Push targets, needed to refresh the widget                          |
+| `invites`       | Deeplink for "X sent you a moment" before signup                    |
+| `reports`       | Safety queue                                                        |
 
 ---
 

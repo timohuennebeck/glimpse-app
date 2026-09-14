@@ -50,59 +50,59 @@
 
 Created:
 
-| Path | Responsibility |
-| --- | --- |
-| `jest.config` block in `package.json` | Jest preset and `@/` alias |
-| `supabase/tests/stubs.sql` | Local stand-ins for `auth`, `storage`, `realtime` schemas |
-| `supabase/tests/run.sh` | Apply all migrations to a throwaway local DB, run SQL test files |
-| `supabase/tests/core.test.sql` | Username generation, decline-as-delete, invite claim |
-| `supabase/tests/app-wiring.test.sql` | Publication, batch mutual counts, presence policies |
-| `supabase/migrations/<version>_app_wiring.sql` | Realtime publication, `mutual_friends_counts`, presence policies, advisor fixes |
-| `supabase/functions/blur-moment/index.ts` | Server-side blurred rendition |
-| `scripts/smoke-blur.mjs` | End-to-end check of `blur-moment` against the real project |
-| `src/shared/lib/database.types.ts` | Row aliases over the generated schema, hand-typed view rows |
-| `src/shared/i18n/keys.ts` (+ test) | Typed SCREAMING_SNAKE key constants |
-| `src/shared/lib/format.test.ts` | The first Jest test, proving the harness runs |
-| `src/shared/lib/error-message.test.ts` | Database error codes to copy a person can read |
-| `src/shared/lib/optimistic.ts` (+ test) | Snapshot, patch, roll back, invalidate |
-| `src/shared/lib/signed-urls.ts` (+ test) | Signed URL cache with injectable store and signer |
-| `src/shared/lib/resize.ts` (+ test) | `fitWithin` and `resizeJpeg` |
-| `src/shared/lib/use-debounced-value.ts` | Debounce hook for search |
-| `src/shared/lib/prefetch.ts` | The four queries the first screen after sign-in reads |
-| `src/shared/ui/dotted-disc.tsx` | The dotted purple disc, shared by avatar step and placeholder |
-| `src/features/auth/hooks/use-session.ts` | Session store fed by Supabase auth |
-| `src/features/auth/entry-route.ts` (+ test) | Where the app opens for a session and profile |
-| `src/features/auth/interpret-sign-up.ts` (+ test) | Pure reading of Supabase's sign-up response |
-| `src/features/auth/data/auth-api.ts` | Sign up, sign in |
-| `src/features/profile/hooks/use-me.ts` | The signed-in user's profile via `profile.byId` |
-| `src/shared/lib/store.ts` | The small external store, moved from `src/features/moments/hooks/store.ts` |
-| `src/features/auth/sign-out.ts` | Sign out and clear every cache and store |
-| `src/features/auth/current-user.ts` | `currentUserId()` for data modules |
-| `src/features/onboarding/hooks/use-onboarding-draft.ts` | First name and avatar before the account exists |
-| `src/features/profile/data/profile-api.ts`, `profile-queries.ts`, `profile-mutations.ts` | Profile reads, updates, avatar upload |
-| `src/features/profile/hooks/use-stamp-onboarding-done.ts` | Stamps `onboarding_done_at` on first tabs mount |
-| `src/features/profile/components/profile-actions-sheet.tsx` | In-app sheet with Sign out |
-| `src/features/friends/interfaces.ts` | `PersonSummary`, `FriendshipWithPeople`, `Relationship` |
-| `src/features/friends/relationships.ts` (+ test) | Selectors over my friendships |
-| `src/features/friends/data/friends-mutations.ts` | Send, accept, remove with optimistic patches |
-| `src/features/friends/components/relationship-pill.tsx` | Add / Requested / Friends / Accept |
-| `src/features/moments/selectors.ts` (+ test) | `nextUnlockDelay`, `lockedTiles`, `waitingBySender`, `splitSelection` |
-| `src/features/moments/data/moment-urls.ts` | App instance of the signed URL cache |
-| `src/features/moments/data/moments-mutations.ts` | Mark seen |
-| `src/features/moments/outbox.ts` (+ test) | Outbox entry type and `runEntry` |
-| `src/features/moments/hooks/use-outbox.ts` | Outbox store, enqueue, retry |
-| `src/features/feed/components/outbox-line.tsx` | "Sending to Mia…" / "Couldn't send · Retry" |
-| `src/features/chat/interfaces.ts` | `ChatMessage`, `Thread` |
-| `src/features/chat/messages.ts` (+ test) | `appendMessage`, `pairKey` |
-| `src/features/chat/data/chat-api.ts`, `chat-queries.ts`, `chat-mutations.ts` | Threads, messages, send, mark read |
-| `src/features/chat/hooks/use-unread-total.ts` | Unread messages across every conversation |
-| `src/features/chat/hooks/use-partner-presence.ts` | Conversation presence |
-| `src/features/live/live-actions.ts` (+ test) | Realtime payload → semantic actions |
-| `src/features/live/use-live-updates.ts` | One channel per user, applies actions to the cache |
-| `src/features/invites/data/invites-api.ts`, `invites-queries.ts` | Create, preview, claim |
-| `src/features/invites/share-invite.ts` | Create an invite and share or copy the link |
-| `src/features/invites/hooks/use-pending-invite.ts` | Token held while a signed-out visitor onboards |
-| `src/shared/lib/assets.ts` | Bundled design images that remain after fixtures go |
+| Path                                                                                     | Responsibility                                                                  |
+| ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| `jest.config` block in `package.json`                                                    | Jest preset and `@/` alias                                                      |
+| `supabase/tests/stubs.sql`                                                               | Local stand-ins for `auth`, `storage`, `realtime` schemas                       |
+| `supabase/tests/run.sh`                                                                  | Apply all migrations to a throwaway local DB, run SQL test files                |
+| `supabase/tests/core.test.sql`                                                           | Username generation, decline-as-delete, invite claim                            |
+| `supabase/tests/app-wiring.test.sql`                                                     | Publication, batch mutual counts, presence policies                             |
+| `supabase/migrations/<version>_app_wiring.sql`                                           | Realtime publication, `mutual_friends_counts`, presence policies, advisor fixes |
+| `supabase/functions/blur-moment/index.ts`                                                | Server-side blurred rendition                                                   |
+| `scripts/smoke-blur.mjs`                                                                 | End-to-end check of `blur-moment` against the real project                      |
+| `src/shared/lib/database.types.ts`                                                       | Row aliases over the generated schema, hand-typed view rows                     |
+| `src/shared/i18n/keys.ts` (+ test)                                                       | Typed SCREAMING_SNAKE key constants                                             |
+| `src/shared/lib/format.test.ts`                                                          | The first Jest test, proving the harness runs                                   |
+| `src/shared/lib/error-message.test.ts`                                                   | Database error codes to copy a person can read                                  |
+| `src/shared/lib/optimistic.ts` (+ test)                                                  | Snapshot, patch, roll back, invalidate                                          |
+| `src/shared/lib/signed-urls.ts` (+ test)                                                 | Signed URL cache with injectable store and signer                               |
+| `src/shared/lib/resize.ts` (+ test)                                                      | `fitWithin` and `resizeJpeg`                                                    |
+| `src/shared/lib/use-debounced-value.ts`                                                  | Debounce hook for search                                                        |
+| `src/shared/lib/prefetch.ts`                                                             | The four queries the first screen after sign-in reads                           |
+| `src/shared/ui/dotted-disc.tsx`                                                          | The dotted purple disc, shared by avatar step and placeholder                   |
+| `src/features/auth/hooks/use-session.ts`                                                 | Session store fed by Supabase auth                                              |
+| `src/features/auth/entry-route.ts` (+ test)                                              | Where the app opens for a session and profile                                   |
+| `src/features/auth/interpret-sign-up.ts` (+ test)                                        | Pure reading of Supabase's sign-up response                                     |
+| `src/features/auth/data/auth-api.ts`                                                     | Sign up, sign in                                                                |
+| `src/features/profile/hooks/use-me.ts`                                                   | The signed-in user's profile via `profile.byId`                                 |
+| `src/shared/lib/store.ts`                                                                | The small external store, moved from `src/features/moments/hooks/store.ts`      |
+| `src/features/auth/sign-out.ts`                                                          | Sign out and clear every cache and store                                        |
+| `src/features/auth/current-user.ts`                                                      | `currentUserId()` for data modules                                              |
+| `src/features/onboarding/hooks/use-onboarding-draft.ts`                                  | First name and avatar before the account exists                                 |
+| `src/features/profile/data/profile-api.ts`, `profile-queries.ts`, `profile-mutations.ts` | Profile reads, updates, avatar upload                                           |
+| `src/features/profile/hooks/use-stamp-onboarding-done.ts`                                | Stamps `onboarding_done_at` on first tabs mount                                 |
+| `src/features/profile/components/profile-actions-sheet.tsx`                              | In-app sheet with Sign out                                                      |
+| `src/features/friends/interfaces.ts`                                                     | `PersonSummary`, `FriendshipWithPeople`, `Relationship`                         |
+| `src/features/friends/relationships.ts` (+ test)                                         | Selectors over my friendships                                                   |
+| `src/features/friends/data/friends-mutations.ts`                                         | Send, accept, remove with optimistic patches                                    |
+| `src/features/friends/components/relationship-pill.tsx`                                  | Add / Requested / Friends / Accept                                              |
+| `src/features/moments/selectors.ts` (+ test)                                             | `nextUnlockDelay`, `lockedTiles`, `waitingBySender`, `splitSelection`           |
+| `src/features/moments/data/moment-urls.ts`                                               | App instance of the signed URL cache                                            |
+| `src/features/moments/data/moments-mutations.ts`                                         | Mark seen                                                                       |
+| `src/features/moments/outbox.ts` (+ test)                                                | Outbox entry type and `runEntry`                                                |
+| `src/features/moments/hooks/use-outbox.ts`                                               | Outbox store, enqueue, retry                                                    |
+| `src/features/feed/components/outbox-line.tsx`                                           | "Sending to Mia…" / "Couldn't send · Retry"                                     |
+| `src/features/chat/interfaces.ts`                                                        | `ChatMessage`, `Thread`                                                         |
+| `src/features/chat/messages.ts` (+ test)                                                 | `appendMessage`, `pairKey`                                                      |
+| `src/features/chat/data/chat-api.ts`, `chat-queries.ts`, `chat-mutations.ts`             | Threads, messages, send, mark read                                              |
+| `src/features/chat/hooks/use-unread-total.ts`                                            | Unread messages across every conversation                                       |
+| `src/features/chat/hooks/use-partner-presence.ts`                                        | Conversation presence                                                           |
+| `src/features/live/live-actions.ts` (+ test)                                             | Realtime payload → semantic actions                                             |
+| `src/features/live/use-live-updates.ts`                                                  | One channel per user, applies actions to the cache                              |
+| `src/features/invites/data/invites-api.ts`, `invites-queries.ts`                         | Create, preview, claim                                                          |
+| `src/features/invites/share-invite.ts`                                                   | Create an invite and share or copy the link                                     |
+| `src/features/invites/hooks/use-pending-invite.ts`                                       | Token held while a signed-out visitor onboards                                  |
+| `src/shared/lib/assets.ts`                                                               | Bundled design images that remain after fixtures go                             |
 
 Rewritten in place: `src/shared/lib/supabase.ts`, `src/shared/lib/database.interfaces.ts` (regenerated), `src/shared/lib/query-client.ts`, `src/shared/lib/error-message.ts`, `src/features/moments/interfaces.ts`, `src/features/moments/data/moments-api.ts`, `src/features/moments/data/moments-queries.ts`, `src/features/friends/data/friends-api.ts`, `src/features/friends/data/friends-queries.ts`, `src/features/profile/open-profile.ts`, `src/features/profile/components/profile-view.tsx`, `src/features/profile/components/pair-grid.tsx`, `src/features/chat/components/chats-list.tsx`, and these screens: `app/_layout.tsx`, `app/index.tsx`, `app/(app)/feed.tsx`, `app/(app)/profile.tsx`, `app/(app)/friends/index.tsx`, `app/(app)/friends/search.tsx`, `app/(onboarding)/friends.tsx`, `app/(onboarding)/details.tsx`, `app/(onboarding)/avatar.tsx`, `app/compose.tsx`, `app/recipients.tsx`, `app/moment/[tradeId].tsx`, `app/chat/[partnerId].tsx`, `app/invite/[token].tsx`, `app/profile/[userId].tsx`.
 
@@ -115,11 +115,13 @@ Deleted: `src/features/moments/hooks/store.ts` (moved to `src/shared/lib/store.t
 ### Task 1: Dependencies and test tooling
 
 **Files:**
+
 - Modify: `package.json`, `app.json`, `tsconfig.json`
 - Create: `src/shared/lib/format.test.ts`
 - Generate (gitignored, never committed): `expo-env.d.ts`
 
 **Interfaces:**
+
 - Consumes: nothing.
 - Produces: `npm test` runs Jest over `src/**/*.test.ts` with the `@/` alias. Packages `expo-image-picker`, `expo-crypto`, `@tanstack/react-query-persist-client`, `@tanstack/query-async-storage-persister` installed.
 
@@ -286,10 +288,12 @@ Claude-Session: https://claude.ai/code/session_012A2gz59aWK6CCueq4SYbS6"
 ### Task 2: Local migration harness and applying the four migrations
 
 **Files:**
+
 - Create: `supabase/tests/stubs.sql`, `supabase/tests/run.sh`, `supabase/tests/core.test.sql`
 - Rename after applying: the four files in `supabase/migrations/`
 
 **Interfaces:**
+
 - Consumes: nothing.
 - Produces: `bash supabase/tests/run.sh <test files…>` applies every migration to a throwaway local database and runs the tests; prints `OK` on success. The remote project has all tables, functions, policies, buckets and views.
 
@@ -445,12 +449,12 @@ Expected: last line `OK`. Any `assert` failure prints its message and the script
 
 For each file below, in this order, call the MCP tool `apply_migration` with `project_id: "rzpydvnppvbziusxngfm"`, the `name` shown, and `query` set to the file's full contents:
 
-| File | `name` |
-| --- | --- |
-| `supabase/migrations/20260913120000_init_core.sql` | `init_core` |
+| File                                                        | `name`               |
+| ----------------------------------------------------------- | -------------------- |
+| `supabase/migrations/20260913120000_init_core.sql`          | `init_core`          |
 | `supabase/migrations/20260913120100_functions_triggers.sql` | `functions_triggers` |
-| `supabase/migrations/20260913120200_rls.sql` | `rls` |
-| `supabase/migrations/20260913120300_storage_and_views.sql` | `storage_and_views` |
+| `supabase/migrations/20260913120200_rls.sql`                | `rls`                |
+| `supabase/migrations/20260913120300_storage_and_views.sql`  | `storage_and_views`  |
 
 Expected: each call succeeds. If one fails, stop; do not edit an applied file.
 
@@ -504,10 +508,12 @@ Claude-Session: https://claude.ai/code/session_012A2gz59aWK6CCueq4SYbS6"
 ### Task 3: The `app_wiring` migration
 
 **Files:**
+
 - Create: `supabase/migrations/20260914200000_app_wiring.sql` (renamed to the remote version in Step 6)
 - Create: `supabase/tests/app-wiring.test.sql`
 
 **Interfaces:**
+
 - Consumes: the harness from Task 2.
 - Produces: RPC `mutual_friends_counts(p_user_ids uuid[]) returns table (user_id uuid, mutual int)`; tables `trades`, `messages`, `friendships` in `supabase_realtime`; private presence on topics `chat:<lower uuid>:<higher uuid>` readable and writable only by those two users.
 
@@ -759,11 +765,13 @@ Claude-Session: https://claude.ai/code/session_012A2gz59aWK6CCueq4SYbS6"
 ### Task 4: Environment, generated types and the typed client
 
 **Files:**
+
 - Create: `.env` (gitignored), `src/shared/lib/database.types.ts`
 - Replace: `src/shared/lib/database.interfaces.ts` (generated)
 - Modify: `src/shared/lib/supabase.ts`, every file importing `@/shared/lib/database.interfaces`, `src/features/moments/data/moments-api.ts`, `src/features/friends/data/friends-api.ts`
 
 **Interfaces:**
+
 - Consumes: the remote schema from Tasks 2–3.
 - Produces:
   - `supabase: SupabaseClient<Database>` from `@/shared/lib/supabase`, always defined; throws at import when `.env` is missing.
@@ -980,9 +988,11 @@ Claude-Session: https://claude.ai/code/session_012A2gz59aWK6CCueq4SYbS6"
 ### Task 5: The `blur-moment` Edge Function
 
 **Files:**
+
 - Create: `supabase/functions/blur-moment/index.ts`, `scripts/smoke-blur.mjs`
 
 **Interfaces:**
+
 - Consumes: `.env` from Task 4; buckets and `moments` table from Task 2.
 - Produces: `POST /functions/v1/blur-moment` with body `{ "moment_id": "<uuid>" }` and the caller's session JWT. Returns `200 { "blurred_storage_path": "blurred/<author>/<file>" }`; `401` without a valid session; `403 { "error": "not_moment_author" }` for someone else's moment. Idempotent: a second call returns the existing path.
 
@@ -1011,7 +1021,9 @@ const WASM_CDN = 'https://cdn.jsdelivr.net/npm/@imagemagick/magick-wasm@0.0.43/d
 /** The bundled wasm when the runtime exposes package files, the CDN copy otherwise. */
 async function loadWasm(): Promise<Uint8Array> {
   try {
-    return await Deno.readFile(new URL(import.meta.resolve('npm:@imagemagick/magick-wasm@0.0.43/magick.wasm')));
+    return await Deno.readFile(
+      new URL(import.meta.resolve('npm:@imagemagick/magick-wasm@0.0.43/magick.wasm')),
+    );
   } catch {
     const response = await fetch(WASM_CDN);
     if (!response.ok) throw new Error(`magick.wasm download failed: ${response.status}`);
@@ -1093,6 +1105,7 @@ Deno.serve(async (req) => {
 - [ ] **Step 2: Deploy**
 
 Call `deploy_edge_function` with:
+
 - `project_id`: `rzpydvnppvbziusxngfm`
 - `name`: `blur-moment`
 - `entrypoint_path`: `index.ts`
@@ -1133,7 +1146,8 @@ const { data: signUp, error: signUpError } = await supabase.auth.signUp({
   options: { data: { first_name: 'Smoke' } },
 });
 if (signUpError) throw signUpError;
-if (!signUp.session) throw new Error('No session: switch off "Confirm email" in Authentication → Providers → Email.');
+if (!signUp.session)
+  throw new Error('No session: switch off "Confirm email" in Authentication → Providers → Email.');
 const userId = signUp.user.id;
 
 const objectKey = `original/${userId}/${Date.now()}.jpg`;
@@ -1211,10 +1225,12 @@ Claude-Session: https://claude.ai/code/session_012A2gz59aWK6CCueq4SYbS6"
 ### Task 6: Typed translation key constants and the new strings
 
 **Files:**
+
 - Create: `src/shared/i18n/keys.ts`, `src/shared/i18n/keys.test.ts`, `src/shared/lib/error-message.test.ts`
 - Modify: `src/shared/i18n/i18n.ts`, `src/shared/i18n/locales/en.ts`, `src/shared/i18n/locales/de.ts`, `src/shared/lib/error-message.ts`, `app/(onboarding)/heard-about.tsx`, `app/(app)/friends/index.tsx`, and every file with a `t('…')` or `tList('…')` call
 
 **Interfaces:**
+
 - Consumes: nothing.
 - Produces:
   - From `@/shared/i18n/keys`: constants `NAV`, `COMMON`, `TIME`, `ONBOARDING`, `PAYWALL`, `FEED`, `CAMERA`, `COMPOSE`, `MOMENT`, `FRIENDS`, `CHAT`, `PROFILE`, `PHOTO`, `INVITE`, `ERRORS`; types `TranslationKey`, `TranslationListKey`; functions `screamingSnake(key: string): string`, `buildKeys(node, prefix?)`.
@@ -1327,7 +1343,13 @@ export type TranslationListKey = ListPaths<Translations>;
 
 /** `storiesLabel` → `STORIES_LABEL`, `variantA` → `VARIANT_A`. */
 export function screamingSnake(key: string): string {
-  return key.charAt(0).toUpperCase() + key.slice(1).replace(/[A-Z]/g, (letter) => `_${letter}`).toUpperCase();
+  return (
+    key.charAt(0).toUpperCase() +
+    key
+      .slice(1)
+      .replace(/[A-Z]/g, (letter) => `_${letter}`)
+      .toUpperCase()
+  );
 }
 
 export function buildKeys(node: Record<string, unknown>, prefix = ''): Record<string, unknown> {
@@ -1397,7 +1419,12 @@ Create `$TMPDIR/migrate-i18n-keys.mjs` (one-off, not committed):
 import { execSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
 
-const snake = (key) => key.charAt(0).toUpperCase() + key.slice(1).replace(/[A-Z]/g, (c) => `_${c}`).toUpperCase();
+const snake = (key) =>
+  key.charAt(0).toUpperCase() +
+  key
+    .slice(1)
+    .replace(/[A-Z]/g, (c) => `_${c}`)
+    .toUpperCase();
 const CALL = /\b(t|tList)(<[^>()]*>)?\(\s*(['"])([a-zA-Z0-9_.]+)\3/g;
 const IMPORT_ANCHOR = /^import .* from '@\/shared\/i18n\/i18n';\n/m;
 
@@ -1457,7 +1484,9 @@ and replace the template-literal lookup in the row with `{t(option.label)}`. Mak
 In `app/(app)/friends/index.tsx`, replace the tab label lookup with:
 
 ```tsx
-{t(key === 'friends' ? FRIENDS.TAB_FRIENDS : FRIENDS.TAB_CHATS)}
+{
+  t(key === 'friends' ? FRIENDS.TAB_FRIENDS : FRIENDS.TAB_CHATS);
+}
 ```
 
 and add `FRIENDS` to the file's keys import.
@@ -1654,9 +1683,11 @@ Claude-Session: https://claude.ai/code/session_012A2gz59aWK6CCueq4SYbS6"
 ### Task 7: Optimistic cache patches and the signed URL cache
 
 **Files:**
+
 - Create: `src/shared/lib/optimistic.ts`, `src/shared/lib/optimistic.test.ts`, `src/shared/lib/signed-urls.ts`, `src/shared/lib/signed-urls.test.ts`
 
 **Interfaces:**
+
 - Consumes: nothing.
 - Produces:
   - `patch<TData, TVariables>(queryKey: QueryKey, update: (old: TData, variables: TVariables) => TData): CachePatch<TVariables>`
@@ -1768,7 +1799,10 @@ export function patch<TData, TVariables>(
   queryKey: QueryKey,
   update: (old: TData, variables: TVariables) => TData,
 ): CachePatch<TVariables> {
-  return { queryKey, update: (old, variables) => (old === undefined ? old : update(old as TData, variables)) };
+  return {
+    queryKey,
+    update: (old, variables) => (old === undefined ? old : update(old as TData, variables)),
+  };
 }
 
 export function optimistic<TVariables>(queryClient: QueryClient, patches: CachePatch<TVariables>[]) {
@@ -1806,7 +1840,12 @@ Expected: PASS (6 tests).
 Create `src/shared/lib/signed-urls.test.ts`:
 
 ```ts
-import { createSignedUrlCache, KeyValueStore, RESIGN_BELOW_MS, SIGN_TTL_SECONDS } from '@/shared/lib/signed-urls';
+import {
+  createSignedUrlCache,
+  KeyValueStore,
+  RESIGN_BELOW_MS,
+  SIGN_TTL_SECONDS,
+} from '@/shared/lib/signed-urls';
 
 function memoryStore(): KeyValueStore {
   const data = new Map<string, string>();
@@ -1823,7 +1862,10 @@ function memoryStore(): KeyValueStore {
 
 function signer(clock: { now: number }) {
   return jest.fn(async (paths: string[]) =>
-    paths.map((path) => ({ path, signedUrl: path === 'missing' ? null : `https://signed/${path}?at=${clock.now}` })),
+    paths.map((path) => ({
+      path,
+      signedUrl: path === 'missing' ? null : `https://signed/${path}?at=${clock.now}`,
+    })),
   );
 }
 
@@ -1981,11 +2023,13 @@ Claude-Session: https://claude.ai/code/session_012A2gz59aWK6CCueq4SYbS6"
 ### Task 8: Session, protected routes and the persisted cache
 
 **Files:**
+
 - Create: `src/shared/lib/store.ts` (moved), `src/features/auth/hooks/use-session.ts`, `src/features/auth/current-user.ts`, `src/features/auth/entry-route.ts`, `src/features/auth/entry-route.test.ts`, `src/features/profile/data/profile-api.ts`, `src/features/profile/data/profile-queries.ts`, `src/features/profile/hooks/use-me.ts`
 - Delete: `src/features/moments/hooks/store.ts` (moved)
 - Modify: `src/features/moments/hooks/use-composer.ts`, `src/shared/lib/queries.ts`, `src/shared/lib/query-client.ts`, `app/_layout.tsx`, `app/index.tsx`
 
 **Interfaces:**
+
 - Consumes: `supabase` and `Profile` (Task 4); the persistence packages (Task 1).
 - Produces:
   - `create<T extends object>(initial: T)` from `@/shared/lib/store` — unchanged, new home.
@@ -2434,10 +2478,12 @@ Claude-Session: https://claude.ai/code/session_012A2gz59aWK6CCueq4SYbS6"
 ### Task 9: Sign up and sign in
 
 **Files:**
+
 - Create: `src/shared/lib/resize.ts`, `src/shared/lib/resize.test.ts`, `src/features/auth/interpret-sign-up.ts`, `src/features/auth/interpret-sign-up.test.ts`, `src/features/auth/data/auth-api.ts`, `src/features/onboarding/hooks/use-onboarding-draft.ts`
 - Modify: `app/(onboarding)/welcome.tsx`, `app/(onboarding)/name.tsx`, `app/(onboarding)/avatar.tsx`, `app/(onboarding)/details.tsx`
 
 **Interfaces:**
+
 - Consumes: `useSession` and `create` (Task 8); the key constants and the new `ONBOARDING.DETAILS.*` strings (Task 6); `expo-image-picker` (Task 1).
 - Produces:
   - From `@/shared/lib/resize`: `interface Size { width: number; height: number }`, `interface ResizedImage extends Size { uri: string }`, `fitWithin(width: number, height: number, max: number): Size`, `resizeJpeg(uri: string, source: Size, max: number): Promise<ResizedImage>`, `MAX_CAPTURE_EDGE = 1600`, `MAX_AVATAR_EDGE = 512`.
@@ -2574,7 +2620,10 @@ Create `src/features/auth/interpret-sign-up.test.ts`:
 ```ts
 import { interpretSignUp, type SignUpResponseLike } from '@/features/auth/interpret-sign-up';
 
-const response = (over: Partial<SignUpResponseLike['data']> = {}, error: SignUpResponseLike['error'] = null) => ({
+const response = (
+  over: Partial<SignUpResponseLike['data']> = {},
+  error: SignUpResponseLike['error'] = null,
+) => ({
   data: { user: null, session: null, ...over },
   error,
 });
@@ -2637,9 +2686,7 @@ Create `src/features/auth/interpret-sign-up.ts`:
  * is an error, and neither may let the flow walk on into the app.
  */
 export type SignUpOutcome =
-  | { kind: 'signed-in'; userId: string }
-  | { kind: 'confirmation-required' }
-  | { kind: 'already-registered' };
+  { kind: 'signed-in'; userId: string } | { kind: 'confirmation-required' } | { kind: 'already-registered' };
 
 /** Structural subset of supabase-js's `AuthResponse` — only what is read here. */
 export interface SignUpResponseLike {
@@ -2747,19 +2794,19 @@ import { useOnboardingDraft } from '@/features/onboarding/hooks/use-onboarding-d
 and inside `NameScreen`, replace the `useState` line and the footer with:
 
 ```tsx
-  const draft = useOnboardingDraft();
-  const [name, setName] = useState(draft.firstName);
+const draft = useOnboardingDraft();
+const [name, setName] = useState(draft.firstName);
 ```
 
 ```tsx
-        <CtaFooter
-          label={t(ONBOARDING.NAME.CTA)}
-          onPress={() => {
-            draft.set({ firstName: name.trim() });
-            router.push('/(onboarding)/camera');
-          }}
-          disabled={name.trim().length === 0}
-        />
+<CtaFooter
+  label={t(ONBOARDING.NAME.CTA)}
+  onPress={() => {
+    draft.set({ firstName: name.trim() });
+    router.push('/(onboarding)/camera');
+  }}
+  disabled={name.trim().length === 0}
+/>
 ```
 
 - [ ] **Step 11: Pick a real photo on the avatar step**
@@ -3150,10 +3197,12 @@ Claude-Session: https://claude.ai/code/session_012A2gz59aWK6CCueq4SYbS6"
 ### Task 10: Profile reads, writes, the avatar placeholder and sign-out
 
 **Files:**
+
 - Create: `src/shared/ui/dotted-disc.tsx`, `src/features/profile/data/profile-mutations.ts`, `src/features/profile/hooks/use-stamp-onboarding-done.ts`, `src/features/profile/components/profile-actions-sheet.tsx`, `src/features/auth/sign-out.ts`
 - Modify: `src/features/profile/data/profile-api.ts`, `src/shared/ui/avatar.tsx`, `src/features/feed/components/feed-header.tsx`, `src/features/profile/components/profile-view.tsx`, `app/_layout.tsx`, `app/(app)/_layout.tsx`, `app/(app)/profile.tsx`, `app/(app)/feed.tsx`, `app/profile/[userId].tsx`, `app/(onboarding)/avatar.tsx`, `app/(onboarding)/details.tsx`, `app/(onboarding)/heard-about.tsx`
 
 **Interfaces:**
+
 - Consumes: `optimistic` / `patch` (Task 7), `queries.profile.byId` and `useMe` (Task 8), `resizeJpeg` / `MAX_AVATAR_EDGE` and the onboarding draft (Task 9), `PROFILE.SIGN_OUT` (Task 6).
 - Produces:
   - `DottedDisc({ size, letter?, gapColor? })` from `@/shared/ui/dotted-disc`.
@@ -3461,7 +3510,7 @@ import { useStampOnboardingDone } from '@/features/profile/hooks/use-stamp-onboa
 ```
 
 ```ts
-  useStampOnboardingDone();
+useStampOnboardingDone();
 ```
 
 - [ ] **Step 5: Sign out**
@@ -3514,12 +3563,12 @@ import { clearUserData } from '@/features/auth/sign-out';
 change the session read to `const { status, userId } = useSession();` and add, next to the other effects in `RootLayout`:
 
 ```tsx
-  // A session that ends, expires, or returns as somebody else.
-  const previousUserId = useRef<string | null>(null);
-  useEffect(() => {
-    if (previousUserId.current && previousUserId.current !== userId) void clearUserData(queryClient);
-    previousUserId.current = userId;
-  }, [userId]);
+// A session that ends, expires, or returns as somebody else.
+const previousUserId = useRef<string | null>(null);
+useEffect(() => {
+  if (previousUserId.current && previousUserId.current !== userId) void clearUserData(queryClient);
+  previousUserId.current = userId;
+}, [userId]);
 ```
 
 - [ ] **Step 6: The sheet behind the "more" button**
@@ -3625,7 +3674,14 @@ interface ProfileViewProps {
  * tab) and a friend's profile (pushed from the feed). The two artboards differ
  * only in the top-left control, what the grid holds, and where the CTA sends you.
  */
-export function ProfileView({ profile, subtitle, leading, pairs, onPressTrade, onPressMore }: ProfileViewProps) {
+export function ProfileView({
+  profile,
+  subtitle,
+  leading,
+  pairs,
+  onPressTrade,
+  onPressMore,
+}: ProfileViewProps) {
   return (
     <>
       <View className="flex-row items-start justify-between">
@@ -3779,11 +3835,11 @@ export default function ProfileScreen() {
 In `src/features/feed/components/feed-header.tsx`, widen the prop and pass the name through:
 
 ```ts
-  avatar: string | number | null;
+avatar: string | number | null;
 ```
 
 ```tsx
-        <Avatar source={avatar} name={name} size={52} ring="halo" />
+<Avatar source={avatar} name={name} size={52} ring="halo" />
 ```
 
 In `app/(app)/feed.tsx`, add:
@@ -3794,7 +3850,7 @@ import { useMe } from '@/features/profile/hooks/use-me';
 ```
 
 ```ts
-  const { data: me } = useMe();
+const { data: me } = useMe();
 ```
 
 and replace the three fixture props on `<FeedHeader>`:
@@ -3819,13 +3875,13 @@ import { useOnboardingDraft } from '@/features/onboarding/hooks/use-onboarding-d
 (the draft import is already there) and replace the sign-up branch of `mutationFn` with:
 
 ```ts
-      const outcome = await signUp({ email, password, firstName: draft.firstName, locale: getLocale() });
-      if (outcome.kind === 'signed-in') {
-        // The account exists now, so the picture finally has somewhere to go.
-        if (draft.avatar) await uploadAvatar(draft.avatar);
-        useOnboardingDraft.reset();
-      }
-      return outcome.kind;
+const outcome = await signUp({ email, password, firstName: draft.firstName, locale: getLocale() });
+if (outcome.kind === 'signed-in') {
+  // The account exists now, so the picture finally has somewhere to go.
+  if (draft.avatar) await uploadAvatar(draft.avatar);
+  useOnboardingDraft.reset();
+}
+return outcome.kind;
 ```
 
 - [ ] **Step 11: Record where they heard about Glimpse**
@@ -3837,7 +3893,7 @@ import { useUpdateProfile } from '@/features/profile/data/profile-mutations';
 ```
 
 ```ts
-  const update = useUpdateProfile();
+const update = useUpdateProfile();
 ```
 
 change the initial choice from the mock's pre-selected state to none — a
@@ -3845,24 +3901,24 @@ pre-ticked radio would write "tiktok" as the answer of everyone who taps Next
 without reading:
 
 ```ts
-  const [choice, setChoice] = useState<ChannelKey | null>(null);
+const [choice, setChoice] = useState<ChannelKey | null>(null);
 ```
 
 and write the answer on the way out:
 
 ```tsx
-        <CtaFooter
-          label={t(ONBOARDING.HEARD_ABOUT.CTA)}
-          disabled={!choice}
-          onPress={() => {
-            // Optimistic like everything else: attribution input is not
-            // something the next screen depends on.
-            if (choice) update.mutate({ heard_about: choice });
-            router.replace('/(onboarding)/thank-you');
-          }}
-          secondary={t(ONBOARDING.HEARD_ABOUT.SKIP)}
-          onSecondary={() => router.replace('/(onboarding)/thank-you')}
-        />
+<CtaFooter
+  label={t(ONBOARDING.HEARD_ABOUT.CTA)}
+  disabled={!choice}
+  onPress={() => {
+    // Optimistic like everything else: attribution input is not
+    // something the next screen depends on.
+    if (choice) update.mutate({ heard_about: choice });
+    router.replace('/(onboarding)/thank-you');
+  }}
+  secondary={t(ONBOARDING.HEARD_ABOUT.SKIP)}
+  onSecondary={() => router.replace('/(onboarding)/thank-you')}
+/>
 ```
 
 - [ ] **Step 12: Typecheck, format and test**
@@ -3886,11 +3942,13 @@ Claude-Session: https://claude.ai/code/session_012A2gz59aWK6CCueq4SYbS6"
 ### Task 11: Friends data
 
 **Files:**
+
 - Create: `src/features/friends/interfaces.ts`, `src/features/friends/relationships.ts`, `src/features/friends/relationships.test.ts`, `src/features/friends/data/friends-mutations.ts`
 - Replace: `src/features/friends/data/friends-api.ts`, `src/features/friends/data/friends-queries.ts`
 - Modify: `src/features/friends/components/person-row.tsx`, `app/recipients.tsx`
 
 **Interfaces:**
+
 - Consumes: `optimistic` / `patch` (Task 7), `currentUserId` (Task 8), `avatarUrl` and `useMe` (Task 10), `mutual_friends_counts` (Task 3).
 - Produces:
   - From `@/features/friends/interfaces`: `PersonSummary { id; name; username: string | null; tagline: string | null; avatarUrl: string | null }`, `FriendshipWithPeople { id; status: FriendshipStatus; createdAt: string; requester: PersonSummary; recipient: PersonSummary }`, `Relationship = { kind: 'none' } | { kind: 'friends' | 'sent' | 'received'; friendshipId: string }`.
@@ -4035,11 +4093,7 @@ export function sentRequests(list: FriendshipWithPeople[], me: string): Friendsh
 }
 
 /** What a search result's pill should say, and which row it would act on. */
-export function relationshipWith(
-  list: FriendshipWithPeople[],
-  me: string,
-  otherId: string,
-): Relationship {
+export function relationshipWith(list: FriendshipWithPeople[], me: string, otherId: string): Relationship {
   const found = list.find((f) => otherParty(f, me).id === otherId);
   if (!found) return { kind: 'none' };
   if (found.status === 'accepted') return { kind: 'friends', friendshipId: found.id };
@@ -4298,11 +4352,11 @@ In `src/features/friends/components/person-row.tsx`, widen the prop and hand the
 name to the placeholder:
 
 ```ts
-  avatar: string | number | null;
+avatar: string | number | null;
 ```
 
 ```tsx
-      <Avatar source={avatar} name={name} size={size} dimmed={dimmed} ring="halo" />
+<Avatar source={avatar} name={name} size={size} dimmed={dimmed} ring="halo" />
 ```
 
 - [ ] **Step 9: Keep the recipients screen compiling**
@@ -4318,23 +4372,23 @@ import { useMe } from '@/features/profile/hooks/use-me';
 ```
 
 ```ts
-  const { data: me } = useMe();
-  const { data: friendships = [], error: friendsError } = useQuery(queries.friends.all);
-  const friends = useMemo(() => friendsOf(friendships, me?.id ?? ''), [friendships, me?.id]);
+const { data: me } = useMe();
+const { data: friendships = [], error: friendsError } = useQuery(queries.friends.all);
+const friends = useMemo(() => friendsOf(friendships, me?.id ?? ''), [friendships, me?.id]);
 ```
 
 ```tsx
-              <PersonRow
-                key={f.id}
-                avatar={f.avatarUrl}
-                name={f.name}
-                subtitle={f.tagline ?? undefined}
-                size={46}
-                onPress={() => toggle(f.id)}
-                accessibilityRole="checkbox"
-                accessibilityState={{ checked: selected.includes(f.id) }}
-                trailing={<Checkbox checked={selected.includes(f.id)} />}
-              />
+<PersonRow
+  key={f.id}
+  avatar={f.avatarUrl}
+  name={f.name}
+  subtitle={f.tagline ?? undefined}
+  size={46}
+  onPress={() => toggle(f.id)}
+  accessibilityRole="checkbox"
+  accessibilityState={{ checked: selected.includes(f.id) }}
+  trailing={<Checkbox checked={selected.includes(f.id)} />}
+/>
 ```
 
 - [ ] **Step 10: Typecheck, format and test**
@@ -4364,12 +4418,14 @@ Claude-Session: https://claude.ai/code/session_012A2gz59aWK6CCueq4SYbS6"
 ### Task 12: Friends screens
 
 **Files:**
+
 - Create: `src/shared/lib/use-debounced-value.ts`, `src/features/friends/components/relationship-pill.tsx`
 - Delete: `src/features/onboarding/components/contacts-invite.tsx`
 - Replace: `app/(onboarding)/friends.tsx`, `app/(app)/friends/search.tsx`, `app/(app)/friends/index.tsx`, `src/features/profile/open-profile.ts`
 - Modify: `src/features/feed/components/story-rail.tsx`, `app/(app)/feed.tsx`
 
 **Interfaces:**
+
 - Consumes: the friends data layer (Task 11), `useMe` (Task 10), `useInbox` (existing), `FRIENDS.WITHDRAW` (Task 6).
 - Produces:
   - `useDebouncedValue<T>(value: T, delay?: number): T` from `@/shared/lib/use-debounced-value` (default 250ms).
@@ -4407,10 +4463,7 @@ Create `src/features/friends/components/relationship-pill.tsx`:
 import { t } from '@/shared/i18n/i18n';
 import { FRIENDS } from '@/shared/i18n/keys';
 import { Pill } from '@/features/friends/components/pill';
-import {
-  useAcceptFriendRequest,
-  useSendFriendRequest,
-} from '@/features/friends/data/friends-mutations';
+import { useAcceptFriendRequest, useSendFriendRequest } from '@/features/friends/data/friends-mutations';
 import type { PersonSummary, Relationship } from '@/features/friends/interfaces';
 interface RelationshipPillProps {
   person: PersonSummary;
@@ -4459,11 +4512,11 @@ export function RelationshipPill({ person, relationship, compact = false }: Rela
 In `src/features/feed/components/story-rail.tsx`, widen the item and pass the name on:
 
 ```ts
-  avatar: string | number | null;
+avatar: string | number | null;
 ```
 
 ```tsx
-          <Avatar source={item.avatar} name={item.name} size={size} ring={item.waiting ? 'active' : 'idle'} />
+<Avatar source={item.avatar} name={item.name} size={size} ring={item.waiting ? 'active' : 'idle'} />
 ```
 
 - [ ] **Step 4: Your own avatar leads to your own tab**
@@ -4792,12 +4845,7 @@ import { queries } from '@/shared/lib/queries';
 import { PersonRow } from '@/features/friends/components/person-row';
 import { Pill } from '@/features/friends/components/pill';
 import { useAcceptFriendRequest, useRemoveFriendship } from '@/features/friends/data/friends-mutations';
-import {
-  friendsOf,
-  incomingRequests,
-  otherParty,
-  sentRequests,
-} from '@/features/friends/relationships';
+import { friendsOf, incomingRequests, otherParty, sentRequests } from '@/features/friends/relationships';
 import { StoryRail } from '@/features/feed/components/story-rail';
 import { ChatsList } from '@/features/chat/components/chats-list';
 import { avatarUrl } from '@/features/profile/data/profile-api';
@@ -5015,11 +5063,13 @@ Claude-Session: https://claude.ai/code/session_012A2gz59aWK6CCueq4SYbS6"
 ### Task 13: Moments data
 
 **Files:**
+
 - Create: `src/features/moments/data/moment-urls.ts`, `src/features/moments/selectors.ts`, `src/features/moments/selectors.test.ts`, `src/features/moments/data/moments-mutations.ts`
 - Replace: `src/features/moments/interfaces.ts`, `src/features/moments/data/moments-api.ts`, `src/features/moments/data/moments-queries.ts`
 - Modify: `src/features/moments/hooks/use-inbox.ts`, `src/features/auth/sign-out.ts`, `src/features/feed/components/locked-moment-card.tsx`, `src/features/profile/components/pair-grid.tsx`, `app/(app)/feed.tsx`, `app/moment/[tradeId].tsx`, `app/photo/[momentId].tsx`, `app/compose.tsx`, `app/recipients.tsx`
 
 **Interfaces:**
+
 - Consumes: `createSignedUrlCache` (Task 7), `currentUserId` (Task 8), `resizeJpeg` / `MAX_CAPTURE_EDGE` (Task 9), `avatarUrl` (Task 10), the `blur-moment` function (Task 5).
 - Produces:
   - From `@/features/moments/interfaces`: `MomentSender { id; name; username: string | null; avatarUrl: string | null }`, `InboxMoment` (with `from: MomentSender` and `photo: string`), `MomentPair` (with `rightMomentId: string | null` meaning "nobody has traded back yet", `left`/`right` as `string`, and **no `locked` flag**), `MomentPhoto { photo: string; fromName: string; fromAvatarUrl: string | null; capturedAt: string }`, `WaitingSender { person: MomentSender; tradeId: string }`, `OutgoingLockedTrade { tradeId; momentId; createdAt }`.
@@ -5106,12 +5156,7 @@ export interface OutgoingLockedTrade {
 Create `src/features/moments/selectors.test.ts`:
 
 ```ts
-import {
-  lockedTiles,
-  nextUnlockDelay,
-  splitSelection,
-  waitingBySender,
-} from '@/features/moments/selectors';
+import { lockedTiles, nextUnlockDelay, splitSelection, waitingBySender } from '@/features/moments/selectors';
 import type { InboxMoment } from '@/features/moments/interfaces';
 
 const NOW = Date.parse('2026-09-14T12:00:00.000Z');
@@ -5132,7 +5177,9 @@ const moment = (over: Partial<InboxMoment> & Pick<InboxMoment, 'tradeId'>): Inbo
 
 describe('nextUnlockDelay', () => {
   it('is null with nothing frosted', () => {
-    expect(nextUnlockDelay([moment({ tradeId: 't1', isOpen: true, autoUnlockAt: at(3_600_000) })], NOW)).toBeNull();
+    expect(
+      nextUnlockDelay([moment({ tradeId: 't1', isOpen: true, autoUnlockAt: at(3_600_000) })], NOW),
+    ).toBeNull();
   });
 
   it('is null when no frosted moment has a deadline', () => {
@@ -5197,9 +5244,7 @@ describe('waitingBySender', () => {
 });
 
 describe('splitSelection', () => {
-  const waiting = [
-    { person: { id: 'mia', name: 'Mia', username: null, avatarUrl: null }, tradeId: 't-mia' },
-  ];
+  const waiting = [{ person: { id: 'mia', name: 'Mia', username: null, avatarUrl: null }, tradeId: 't-mia' }];
 
   it('answers the people who are waiting and opens a lock for the rest', () => {
     expect(splitSelection(['mia', 'ben'], waiting)).toEqual({
@@ -5380,7 +5425,7 @@ import { momentUrlCache } from '@/features/moments/data/moment-urls';
 ```
 
 ```ts
-  await momentUrlCache.clear();
+await momentUrlCache.clear();
 ```
 
 - [ ] **Step 7: Rewrite the API**
@@ -5584,7 +5629,11 @@ export async function fetchMomentPhoto(momentId: string): Promise<MomentPhoto | 
   if (!moment) return null;
 
   const [{ data: author }, urls] = await Promise.all([
-    supabase.from('profiles').select('first_name, avatar_storage_path').eq('id', moment.author_id).maybeSingle(),
+    supabase
+      .from('profiles')
+      .select('first_name, avatar_storage_path')
+      .eq('id', moment.author_id)
+      .maybeSingle(),
     signedMomentUrls([moment.id]),
   ]);
   const photo = urls.get(moment.id);
@@ -5718,13 +5767,13 @@ rewrite all five files properly; this keeps them compiling and correct now.
 In `src/features/feed/components/locked-moment-card.tsx`:
 
 ```tsx
-        <Avatar source={moment.from.avatarUrl} name={moment.from.name} size={46} ring="halo" />
+<Avatar source={moment.from.avatarUrl} name={moment.from.name} size={46} ring="halo" />
 ```
 
 In `app/moment/[tradeId].tsx`:
 
 ```tsx
-          <Avatar source={moment.from.avatarUrl} name={moment.from.name} size={52} />
+<Avatar source={moment.from.avatarUrl} name={moment.from.name} size={52} />
 ```
 
 In `app/(app)/feed.tsx`, in the `stories` list:
@@ -5741,9 +5790,9 @@ In `app/(app)/feed.tsx`, in the `stories` list:
 In `app/photo/[momentId].tsx`:
 
 ```tsx
-          {moment?.fromAvatarUrl ? (
-            <Avatar source={moment.fromAvatarUrl} name={moment.fromName} size={52} />
-          ) : null}
+{
+  moment?.fromAvatarUrl ? <Avatar source={moment.fromAvatarUrl} name={moment.fromName} size={52} /> : null;
+}
 ```
 
 In `src/features/profile/components/pair-grid.tsx`, `locked` is gone and the
@@ -5751,17 +5800,19 @@ right tile is now optional. Replace both tiles inside `Pair` (Task 15 gives the
 empty right tile its frosted treatment):
 
 ```tsx
-        <Pressable className="flex-1" onPress={() => onPressPhoto?.(pair.leftMomentId)}>
-          <Image source={pair.left} className="h-[111px] w-full rounded-tile" contentFit="cover" />
-        </Pressable>
+<Pressable className="flex-1" onPress={() => onPressPhoto?.(pair.leftMomentId)}>
+  <Image source={pair.left} className="h-[111px] w-full rounded-tile" contentFit="cover" />
+</Pressable>;
 
-        {pair.rightMomentId ? (
-          <Pressable className="flex-1" onPress={() => onPressPhoto?.(pair.rightMomentId ?? '')}>
-            <Image source={pair.right} className="h-[111px] w-full rounded-tile" contentFit="cover" />
-          </Pressable>
-        ) : (
-          <View className="flex-1" />
-        )}
+{
+  pair.rightMomentId ? (
+    <Pressable className="flex-1" onPress={() => onPressPhoto?.(pair.rightMomentId ?? '')}>
+      <Image source={pair.right} className="h-[111px] w-full rounded-tile" contentFit="cover" />
+    </Pressable>
+  ) : (
+    <View className="flex-1" />
+  );
+}
 ```
 
 and drop the now-unused `BLUR` / `LockedImage` import. The left half of a locked
@@ -5772,13 +5823,13 @@ In `app/compose.tsx` and `app/recipients.tsx`, `createMoment` now insists on a
 real pixel size. Replace the guard at the top of each `mutationFn`:
 
 ```ts
-      if (!composer.uri || composer.width === null || composer.height === null) return;
-      const momentId = await createMoment({
-        localUri: composer.uri,
-        caption: caption || null,
-        width: composer.width,
-        height: composer.height,
-      });
+if (!composer.uri || composer.width === null || composer.height === null) return;
+const momentId = await createMoment({
+  localUri: composer.uri,
+  caption: caption || null,
+  width: composer.width,
+  height: composer.height,
+});
 ```
 
 (in `recipients.tsx` the caption is `composer.caption || null`), and drop the
@@ -5810,11 +5861,13 @@ Claude-Session: https://claude.ai/code/session_012A2gz59aWK6CCueq4SYbS6"
 ### Task 14: The outbox and the capture flow
 
 **Files:**
+
 - Create: `src/features/moments/outbox.ts`, `src/features/moments/outbox.test.ts`, `src/features/moments/hooks/use-outbox.ts`, `src/features/feed/components/outbox-line.tsx`
 - Replace: `app/compose.tsx`, `app/recipients.tsx`
 - Modify: `src/features/auth/sign-out.ts`, `app/(app)/feed.tsx`
 
 **Interfaces:**
+
 - Consumes: `createMoment` / `respondToTrade` / `sendMoment`, `waitingBySender` / `splitSelection`, `useInbox` (Task 13); `friendsOf` (Task 11); `FEED.OUTBOX.*` (Task 6); `expo-crypto` (Task 1).
 - Produces:
   - From `@/features/moments/outbox`: `OutboxEntry`, `OutboxDeps`, `runEntry(entry, deps, onProgress): Promise<void>`.
@@ -5888,7 +5941,12 @@ describe('runEntry', () => {
     const d = deps();
 
     await runEntry(
-      entry({ momentId: 'm1', answeredTradeIds: ['t-a'], replyToTradeIds: ['t-a', 't-b'], recipientIds: ['ben'] }),
+      entry({
+        momentId: 'm1',
+        answeredTradeIds: ['t-a'],
+        replyToTradeIds: ['t-a', 't-b'],
+        recipientIds: ['ben'],
+      }),
       d,
       () => {},
     );
@@ -5908,9 +5966,9 @@ describe('runEntry', () => {
       }),
     });
 
-    await expect(
-      runEntry(entry({ replyToTradeIds: ['t-a'] }), d, (p) => progress.push(p)),
-    ).rejects.toThrow('trade_already_answered');
+    await expect(runEntry(entry({ replyToTradeIds: ['t-a'] }), d, (p) => progress.push(p))).rejects.toThrow(
+      'trade_already_answered',
+    );
     expect(progress).toEqual([{ momentId: 'm1' }]);
   });
 });
@@ -6041,9 +6099,7 @@ export interface SendInput {
 
 function update(id: string, values: Partial<OutboxEntry>) {
   useOutbox.set({
-    entries: useOutbox.getState().entries.map((entry) =>
-      entry.id === id ? { ...entry, ...values } : entry,
-    ),
+    entries: useOutbox.getState().entries.map((entry) => (entry.id === id ? { ...entry, ...values } : entry)),
   });
 }
 
@@ -6104,7 +6160,7 @@ import { useOutbox } from '@/features/moments/hooks/use-outbox';
 ```
 
 ```ts
-  useOutbox.reset();
+useOutbox.reset();
 ```
 
 - [ ] **Step 6: Say so on the feed**
@@ -6183,7 +6239,7 @@ import { OutboxLine } from '@/features/feed/components/outbox-line';
 ```
 
 ```tsx
-            <OutboxLine />
+<OutboxLine />
 ```
 
 - [ ] **Step 7: Compose enqueues instead of waiting**
@@ -6284,12 +6340,7 @@ export default function ComposeScreen() {
           <GlassButton size={38} onDark onPress={() => router.back()} accessibilityLabel={t(COMMON.CLOSE)}>
             <X size={12} color={colors.white} strokeWidth={2.2} />
           </GlassButton>
-          <GlassButton
-            size={38}
-            onDark
-            onPress={() => router.back()}
-            accessibilityLabel={t(COMPOSE.RETAKE)}
-          >
+          <GlassButton size={38} onDark onPress={() => router.back()} accessibilityLabel={t(COMPOSE.RETAKE)}>
             <RotateCcw size={17} color={colors.white} strokeWidth={1.9} />
           </GlassButton>
         </View>
@@ -6499,12 +6550,7 @@ export default function RecipientsScreen() {
       </ScrollView>
 
       <View className="px-gutter pt-3">
-        <Button
-          label={ctaLabel}
-          onPress={send}
-          size="lg"
-          disabled={selected.length === 0 || !composer.uri}
-        />
+        <Button label={ctaLabel} onPress={send} size="lg" disabled={selected.length === 0 || !composer.uri} />
       </View>
     </Screen>
   );
@@ -6535,10 +6581,12 @@ Claude-Session: https://claude.ai/code/session_012A2gz59aWK6CCueq4SYbS6"
 ### Task 15: Feed, profile grid, moment and photo screens
 
 **Files:**
+
 - Replace: `app/(app)/feed.tsx`, `src/features/profile/components/pair-grid.tsx`, `app/moment/[tradeId].tsx`
 - Modify: `app/(app)/profile.tsx`, `app/photo/[momentId].tsx`
 
 **Interfaces:**
+
 - Consumes: `useInbox`, `queries.moments.*`, `useMarkTradeSeen` (Task 13); `OutboxLine` (Task 14); `friendsOf` (Task 11); `useMe` and `avatarUrl` (Task 10).
 - Produces: no new modules. The own-profile grid now shows completed pairs and unanswered outgoing moments together, newest first.
 
@@ -6795,14 +6843,14 @@ In `app/(app)/profile.tsx`, add `useMemo` to the React import and replace the
 pairs query with the two queries and their merge:
 
 ```ts
-  const { data: pairs = [] } = useQuery({ ...queries.moments.pairs(null), enabled: me != null });
-  const { data: locked = [] } = useQuery({ ...queries.moments.outgoingLocked, enabled: me != null });
-  // One sequence, newest first: a moment you sent an hour ago belongs above a
-  // pair you completed yesterday.
-  const grid = useMemo(
-    () => [...locked, ...pairs].sort((a, b) => Date.parse(b.date) - Date.parse(a.date)),
-    [locked, pairs],
-  );
+const { data: pairs = [] } = useQuery({ ...queries.moments.pairs(null), enabled: me != null });
+const { data: locked = [] } = useQuery({ ...queries.moments.outgoingLocked, enabled: me != null });
+// One sequence, newest first: a moment you sent an hour ago belongs above a
+// pair you completed yesterday.
+const grid = useMemo(
+  () => [...locked, ...pairs].sort((a, b) => Date.parse(b.date) - Date.parse(a.date)),
+  [locked, pairs],
+);
 ```
 
 and pass `pairs={grid}` to `<ProfileView>`.
@@ -6879,12 +6927,7 @@ export default function MomentScreen() {
                 </Text>
               ) : null}
             </View>
-            <GlassButton
-              size={34}
-              onDark
-              onPress={() => router.back()}
-              accessibilityLabel={t(COMMON.CLOSE)}
-            >
+            <GlassButton size={34} onDark onPress={() => router.back()} accessibilityLabel={t(COMMON.CLOSE)}>
               <X size={12} color={colors.white} strokeWidth={2.2} />
             </GlassButton>
           </View>
@@ -7006,22 +7049,22 @@ In `app/photo/[momentId].tsx`, read the query's settled state and say so rather
 than leaving a black screen:
 
 ```ts
-  const { data: moment, isPending } = useQuery({
-    ...queries.moments.photo(momentId ?? ''),
-    enabled: Boolean(momentId),
-  });
+const { data: moment, isPending } = useQuery({
+  ...queries.moments.photo(momentId ?? ''),
+  enabled: Boolean(momentId),
+});
 ```
 
 and, inside the top row's centre column, under the meta text:
 
 ```tsx
-          <Text variant="subtitle" weight="medium" className="shrink text-on-dark-text" numberOfLines={1}>
-            {moment
-              ? t(PHOTO.META, { name: moment.fromName, date: pairDate(moment.capturedAt) })
-              : isPending
-                ? ''
-                : t(MOMENT.NOT_FOUND)}
-          </Text>
+<Text variant="subtitle" weight="medium" className="shrink text-on-dark-text" numberOfLines={1}>
+  {moment
+    ? t(PHOTO.META, { name: moment.fromName, date: pairDate(moment.capturedAt) })
+    : isPending
+      ? ''
+      : t(MOMENT.NOT_FOUND)}
+</Text>
 ```
 
 Add `MOMENT` to the file's keys import.
@@ -7053,10 +7096,12 @@ Claude-Session: https://claude.ai/code/session_012A2gz59aWK6CCueq4SYbS6"
 ### Task 16: Chat data
 
 **Files:**
+
 - Create: `src/features/chat/interfaces.ts`, `src/features/chat/messages.ts`, `src/features/chat/messages.test.ts`, `src/features/chat/data/chat-api.ts`, `src/features/chat/data/chat-queries.ts`, `src/features/chat/data/chat-mutations.ts`, `src/features/chat/hooks/use-unread-total.ts`, `src/shared/lib/prefetch.ts`
 - Modify: `src/features/friends/data/friends-api.ts`, `src/shared/lib/queries.ts`, `app/_layout.tsx`, `app/(app)/_layout.tsx`, `app/(app)/friends/index.tsx`
 
 **Interfaces:**
+
 - Consumes: `ThreadRow` (Task 4), `optimistic` / `patch` (Task 7), `currentUserId` (Task 8), `PersonSummary` (Task 11), `signedMomentUrls` (Task 13), `expo-crypto` (Task 1).
 - Produces:
   - From `@/features/chat/interfaces`: `ChatMessage { id; senderId; recipientId; content: string | null; momentId: string | null; tradeId: string | null; createdAt: string; readAt: string | null; pending?: boolean }`, `Thread { partner: PersonSummary; lastMessageId; lastContent: string | null; lastMomentId: string | null; lastSenderId; lastAt; unreadCount: number; photo: string | null }`.
@@ -7468,9 +7513,7 @@ export function useSendMessage(partnerId: string) {
     // Swap the pending bubble for the stored row before the refetch lands, so
     // the "sending" state does not linger for a round trip longer than it is.
     onSuccess: (saved) => {
-      queryClient.setQueryData<ChatMessage[]>(messagesKey, (old) =>
-        old ? appendMessage(old, saved) : old,
-      );
+      queryClient.setQueryData<ChatMessage[]>(messagesKey, (old) => (old ? appendMessage(old, saved) : old));
     },
   });
 }
@@ -7520,15 +7563,15 @@ import { useUnreadTotal } from '@/features/chat/hooks/use-unread-total';
 ```
 
 ```ts
-  const unread = useUnreadTotal();
-  // Friends carries both incoming moments and unread messages.
-  const friendsBadge = unread > 0 ? String(unread) : undefined;
+const unread = useUnreadTotal();
+// Friends carries both incoming moments and unread messages.
+const friendsBadge = unread > 0 ? String(unread) : undefined;
 ```
 
 In `app/(app)/friends/index.tsx`, replace the placeholder from Task 12:
 
 ```ts
-  const unreadTotal = useUnreadTotal();
+const unreadTotal = useUnreadTotal();
 ```
 
 and add the import.
@@ -7564,13 +7607,13 @@ import { prefetchForUser } from '@/shared/lib/prefetch';
 ```
 
 ```tsx
-  // A session that ends, expires, or returns as somebody else.
-  const previousUserId = useRef<string | null>(null);
-  useEffect(() => {
-    if (previousUserId.current && previousUserId.current !== userId) void clearUserData(queryClient);
-    previousUserId.current = userId;
-    if (userId) prefetchForUser(queryClient, userId);
-  }, [userId]);
+// A session that ends, expires, or returns as somebody else.
+const previousUserId = useRef<string | null>(null);
+useEffect(() => {
+  if (previousUserId.current && previousUserId.current !== userId) void clearUserData(queryClient);
+  previousUserId.current = userId;
+  if (userId) prefetchForUser(queryClient, userId);
+}, [userId]);
 ```
 
 - [ ] **Step 11: Typecheck, format and test**
@@ -7594,11 +7637,13 @@ Claude-Session: https://claude.ai/code/session_012A2gz59aWK6CCueq4SYbS6"
 ### Task 17: Chat screens and conversation presence
 
 **Files:**
+
 - Create: `src/features/chat/hooks/use-partner-presence.ts`
 - Replace: `src/features/chat/components/chats-list.tsx`, `app/chat/[partnerId].tsx`
 - Modify: `app/moment/[tradeId].tsx`
 
 **Interfaces:**
+
 - Consumes: the chat data layer and `pairKey` (Task 16); `queries.profile.byId` (Task 8); `avatarUrl` (Task 10); the presence policies on `realtime.messages` (Task 3).
 - Produces: `usePartnerPresence(myId: string, partnerId: string): boolean`.
 
@@ -7953,40 +7998,40 @@ and add these **above** the `if (!moment)` early return, so the hook order never
 changes between the two branches:
 
 ```ts
-  const [reply, setReply] = useState('');
-  const { data: me } = useMe();
-  const myId = me?.id ?? '';
-  const senderId = moment?.from.id ?? '';
-  const sendReply = useSendMessage(senderId);
+const [reply, setReply] = useState('');
+const { data: me } = useMe();
+const myId = me?.id ?? '';
+const senderId = moment?.from.id ?? '';
+const sendReply = useSendMessage(senderId);
 ```
 
 Then replace the reply `TextInput` with:
 
 ```tsx
-            <TextInput
-              value={reply}
-              onChangeText={setReply}
-              placeholder={t(MOMENT.REPLY_PLACEHOLDER)}
-              placeholderTextColor={alpha.onDarkTextSoft}
-              className="p-0 font-sans text-[15.5px] text-white"
-              editable={!locked}
-              returnKeyType="send"
-              onSubmitEditing={() => {
-                const content = reply.trim();
-                if (content.length === 0 || myId.length === 0) return;
-                // `trade_id` ties the message to the moment it is about, which
-                // is what makes the chat readable later.
-                sendReply.mutate(
-                  draftMessage({
-                    senderId: myId,
-                    recipientId: moment.from.id,
-                    content,
-                    tradeId: moment.tradeId,
-                  }),
-                );
-                setReply('');
-              }}
-            />
+<TextInput
+  value={reply}
+  onChangeText={setReply}
+  placeholder={t(MOMENT.REPLY_PLACEHOLDER)}
+  placeholderTextColor={alpha.onDarkTextSoft}
+  className="p-0 font-sans text-[15.5px] text-white"
+  editable={!locked}
+  returnKeyType="send"
+  onSubmitEditing={() => {
+    const content = reply.trim();
+    if (content.length === 0 || myId.length === 0) return;
+    // `trade_id` ties the message to the moment it is about, which
+    // is what makes the chat readable later.
+    sendReply.mutate(
+      draftMessage({
+        senderId: myId,
+        recipientId: moment.from.id,
+        content,
+        tradeId: moment.tradeId,
+      }),
+    );
+    setReply('');
+  }}
+/>
 ```
 
 and drop the "Task 17 makes the field send…" line from the comment above the
@@ -8016,10 +8061,12 @@ Claude-Session: https://claude.ai/code/session_012A2gz59aWK6CCueq4SYbS6"
 ### Task 18: Live updates
 
 **Files:**
+
 - Create: `src/features/live/live-actions.ts`, `src/features/live/live-actions.test.ts`, `src/features/live/use-live-updates.ts`
 - Modify: `app/_layout.tsx`
 
 **Interfaces:**
+
 - Consumes: the publication from Task 3; `appendMessage` and the chat keys (Task 16); the moments and friends keys (Tasks 11, 13).
 - Produces:
   - From `@/features/live/live-actions`: `LiveEvent { table: 'trades' | 'messages' | 'friendships'; eventType: 'INSERT' | 'UPDATE'; new: Record<string, unknown> }`, `LiveAction` (a union of `inbox-changed`, `pairs-changed`, `outgoing-changed`, `friendships-changed`, `message-received`, `message-read`), `actionsFor(event: LiveEvent, me: string): LiveAction[]`.
@@ -8123,12 +8170,16 @@ describe('actionsFor', () => {
   });
 
   it('ignores my own message coming back and an unread update', () => {
-    expect(
-      actionsFor(event({ table: 'messages', new: { sender_id: ME, recipient_id: 'mia' } }), ME),
-    ).toEqual([]);
+    expect(actionsFor(event({ table: 'messages', new: { sender_id: ME, recipient_id: 'mia' } }), ME)).toEqual(
+      [],
+    );
     expect(
       actionsFor(
-        event({ table: 'messages', eventType: 'UPDATE', new: { sender_id: ME, recipient_id: 'mia', read_at: null } }),
+        event({
+          table: 'messages',
+          eventType: 'UPDATE',
+          new: { sender_id: ME, recipient_id: 'mia', read_at: null },
+        }),
         ME,
       ),
     ).toEqual([]);
@@ -8390,7 +8441,7 @@ import { useLiveUpdates } from '@/features/live/use-live-updates';
 give `RootStack` the id as well:
 
 ```tsx
-          <RootStack signedIn={status === 'signed-in'} userId={userId} />
+<RootStack signedIn={status === 'signed-in'} userId={userId} />
 ```
 
 ```tsx
@@ -8429,11 +8480,13 @@ Claude-Session: https://claude.ai/code/session_012A2gz59aWK6CCueq4SYbS6"
 ### Task 19: Invites and share links
 
 **Files:**
+
 - Create: `src/features/invites/data/invites-api.ts`, `src/features/invites/data/invites-queries.ts`, `src/features/invites/share-invite.ts`, `src/features/invites/hooks/use-pending-invite.ts`
 - Replace: `app/invite/[token].tsx`
 - Modify: `src/shared/lib/queries.ts`, `src/features/auth/sign-out.ts`, `app/(onboarding)/details.tsx`, `app/(onboarding)/friends.tsx`, `app/(app)/friends/search.tsx`, `app/(app)/friends/index.tsx`
 
 **Interfaces:**
+
 - Consumes: `invite_preview` / `claim_invite` (existing migrations), `SIGN_TTL_SECONDS` (Task 7), `currentUserId` (Task 8), `avatarUrl` (Task 10), `INVITE.SHARE_MESSAGE` and `COMMON.COPIED` (Task 6).
 - Produces:
   - From `@/features/invites/data/invites-api`: `INVITE_BASE`, `inviteLink(token): string`, `InvitePreview`, `ClaimResult`, `createInvite(momentId?): Promise<string>`, `fetchInvitePreview(token): Promise<InvitePreview | null>`, `claimInvite(token): Promise<ClaimResult | null>`.
@@ -8632,7 +8685,7 @@ import { usePendingInvite } from '@/features/invites/hooks/use-pending-invite';
 ```
 
 ```ts
-  usePendingInvite.reset();
+usePendingInvite.reset();
 ```
 
 - [ ] **Step 3: The invite screen**
@@ -8800,17 +8853,17 @@ import { usePendingInvite } from '@/features/invites/hooks/use-pending-invite';
 and extend the signed-in branch of `mutationFn`, after the avatar upload:
 
 ```ts
-      if (outcome.kind === 'signed-in') {
-        // The account exists now, so the picture finally has somewhere to go.
-        if (draft.avatar) await uploadAvatar(draft.avatar);
-        // And the invite that brought them here can be spent.
-        const pendingToken = usePendingInvite.getState().token;
-        if (pendingToken) {
-          await claimInvite(pendingToken);
-          usePendingInvite.reset();
-        }
-        useOnboardingDraft.reset();
-      }
+if (outcome.kind === 'signed-in') {
+  // The account exists now, so the picture finally has somewhere to go.
+  if (draft.avatar) await uploadAvatar(draft.avatar);
+  // And the invite that brought them here can be spent.
+  const pendingToken = usePendingInvite.getState().token;
+  if (pendingToken) {
+    await claimInvite(pendingToken);
+    usePendingInvite.reset();
+  }
+  useOnboardingDraft.reset();
+}
 ```
 
 - [ ] **Step 5: The share rows mint real links**
@@ -8823,7 +8876,7 @@ import { copyInvite, shareInvite } from '@/features/invites/share-invite';
 ```
 
 ```ts
-  const [copied, setCopied] = useState(false);
+const [copied, setCopied] = useState(false);
 ```
 
 and replace the two `ShareRow` actions (`Clipboard` and `Share` are no longer
@@ -8870,10 +8923,7 @@ import { shareInvite } from '@/features/invites/share-invite';
 ```
 
 ```tsx
-          <CtaFooter
-            label={t(FRIENDS.ADD_CTA)}
-            onPress={() => void shareInvite(me?.first_name ?? '')}
-          />
+<CtaFooter label={t(FRIENDS.ADD_CTA)} onPress={() => void shareInvite(me?.first_name ?? '')} />
 ```
 
 - [ ] **Step 6: Typecheck, format and test**
@@ -8898,10 +8948,12 @@ Claude-Session: https://claude.ai/code/session_012A2gz59aWK6CCueq4SYbS6"
 ### Task 20: Cleanup and docs
 
 **Files:**
+
 - Rename: `src/shared/lib/fixtures.ts` → `src/shared/lib/assets.ts` (rewritten)
 - Modify: `src/shared/lib/supabase.ts`, `app/(onboarding)/reviews.tsx`, `src/features/widget/components/homescreen-preview.tsx`, every file importing `@/shared/lib/fixtures`, `README.md`, `docs/database.md`
 
 **Interfaces:**
+
 - Consumes: nothing new.
 - Produces:
   - From `@/shared/lib/assets`: `ART`, `IOS_ICONS`, `PHOTOS` (`viewfinder`, `widgetCard`) and `SAMPLE_FACES` (`mia`, `ben`, `lina`). Nothing else.
@@ -9047,22 +9099,22 @@ In the **Generated types** bullet, replace the hand-written note with:
 ```markdown
 - **Generated types.** `src/shared/lib/database.interfaces.ts` is generated from
   the project — regenerate it after every migration (`supabase gen types
-  typescript`, or the MCP's `generate_typescript_types`) and never edit it by
+typescript`, or the MCP's `generate_typescript_types`) and never edit it by
   hand. App code imports row names from `src/shared/lib/database.types.ts`.
 ```
 
 Add `npm test` to the command block, above `npm run typecheck`:
 
 ```markdown
-npm test                           # jest — pure logic: keys, selectors, caches
+npm test # jest — pure logic: keys, selectors, caches
 ```
 
 In **What is deliberately not built**, replace the "Blurred renditions" row with
 a "Push notifications" row, and the "Contacts import" row's state:
 
 ```markdown
-| Push notifications     | No token registration and nothing sent. `device_tokens` and `register_device_token()` exist; the sender does not.                                                                                                                              |
-| Contacts import        | Not built and not shown. Onboarding step 5 is real `@username` search plus a share link.                                                                                                                                                       |
+| Push notifications | No token registration and nothing sent. `device_tokens` and `register_device_token()` exist; the sender does not. |
+| Contacts import | Not built and not shown. Onboarding step 5 is real `@username` search plus a share link. |
 ```
 
 Replace the whole **Known issues** section with:
@@ -9085,7 +9137,7 @@ Replace the whole **Known issues** section with:
 
 At the end of `docs/database.md`, add:
 
-````markdown
+```markdown
 ## 7. Realtime, presence and the blur function
 
 Three tables are in the `supabase_realtime` publication: `trades`, `messages`
@@ -9119,7 +9171,7 @@ row and before `send_moment` or `respond_to_trade`, and a failure fails the send
 — so a recipient never receives a moment with nothing to show them, and a
 client that could upload its own "blurred" copy (which could just be the
 original) never gets the chance.
-````
+```
 
 In §3, after the paragraph explaining `visible_moment_paths()`, add:
 
@@ -9151,6 +9203,7 @@ Claude-Session: https://claude.ai/code/session_012A2gz59aWK6CCueq4SYbS6"
 **Files:** none. This task changes no code; it proves the code works and writes the report.
 
 **Interfaces:**
+
 - Consumes: everything. The Supabase MCP for the row checks, the Chrome DevTools MCP for the browser.
 - Produces: a report of what passed and what did not, with rows as evidence.
 
@@ -9425,6 +9478,7 @@ Report, in this order:
 
    Profiles, moments, trades and messages cascade; the storage objects under
    `original/`, `blurred/` and `avatars/` do not, so list those names too.
+
 4. Anything found and fixed along the way, and anything found and not fixed.
 
 - [ ] **Step 16: Commit whatever the run changed**
