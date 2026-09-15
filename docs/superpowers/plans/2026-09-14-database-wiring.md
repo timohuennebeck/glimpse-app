@@ -28,6 +28,7 @@
 - Chat loads the last 200 messages. Presence uses private channel `chat:<lower uuid>:<higher uuid>`.
 - The outbox lives in memory only.
 - The paywall screen is not touched.
+- Where a step says `Expected: FAIL, ``Cannot find module '@/…'``, Jest's actual wording for a `@/`-aliased path is `Configuration error: Could not locate module @/… mapped as: …/src/$1`. Same cause — the module does not exist yet — so treat it as the expected failure.
 - Shell snippets are written for **GNU** userland (Linux): `sed -i "s/…/…/"` with no argument after `-i`. On macOS every one of them needs `sed -i ''` instead, and `sips` in place of the JPEG encoder in Task 5.
 - Out of scope: push notifications, contacts import, chat attachments, universal links, Google sign-in, RevenueCat, blocking and reporting UI, the native widget module, password reset, account deletion, editing name and tagline, message pagination.
 - Commit subjects use a conventional prefix (`feat:`, `fix:`, `refactor:`, `chore:`, `docs:`, `test:`) and every commit message ends with:
@@ -1357,7 +1358,7 @@ Claude-Session: https://claude.ai/code/session_012A2gz59aWK6CCueq4SYbS6"
 - Produces:
   - From `@/shared/i18n/keys`: constants `NAV`, `COMMON`, `TIME`, `ONBOARDING`, `PAYWALL`, `FEED`, `CAMERA`, `COMPOSE`, `MOMENT`, `FRIENDS`, `CHAT`, `PROFILE`, `PHOTO`, `INVITE`, `ERRORS`; types `TranslationKey`, `TranslationListKey`; functions `screamingSnake(key: string): string`, `buildKeys(node, prefix?)`.
   - `t(key: TranslationKey, options?: Record<string, unknown>): string` and `tList<T>(key: TranslationListKey): T[]`.
-  - New strings used by later tasks: `ONBOARDING.DETAILS.SIGN_IN_TITLE`, `SIGN_IN_SUBTITLE`, `SIGN_IN_CTA`, `NO_ACCOUNT`, `CREATE_ACCOUNT`, `ERRORS.ALREADY_REGISTERED`, `ERRORS.CONFIRMATION_REQUIRED` (under `ONBOARDING.DETAILS`); `FEED.OUTBOX.SENDING`, `FEED.OUTBOX.FAILED`, `FEED.OUTBOX.RETRY`; `FRIENDS.WITHDRAW`; `PROFILE.SIGN_OUT`; `INVITE.SHARE_MESSAGE`; `COMMON.COPIED`; `ERRORS.FRIEND_CAP_REACHED`, `ERRORS.NOT_FRIENDS`, `ERRORS.TRADE_ALREADY_ANSWERED`, `ERRORS.TRADE_EXPIRED`.
+  - New strings used by later tasks: `ONBOARDING.DETAILS.SIGN_IN_TITLE`, `SIGN_IN_SUBTITLE`, `SIGN_IN_CTA`, `NO_ACCOUNT`, `CREATE_ACCOUNT`, `ONBOARDING.DETAILS.ERRORS.ALREADY_REGISTERED`, `ONBOARDING.DETAILS.ERRORS.CONFIRMATION_REQUIRED` (the Step 9 snippets nest an `errors` object inside `details`, so the constants are three levels deep, not under the top-level `ERRORS`); `FEED.OUTBOX.SENDING`, `FEED.OUTBOX.FAILED`, `FEED.OUTBOX.RETRY`; `FRIENDS.WITHDRAW`; `PROFILE.SIGN_OUT`; `INVITE.SHARE_MESSAGE`; `COMMON.COPIED`; `ERRORS.FRIEND_CAP_REACHED`, `ERRORS.NOT_FRIENDS`, `ERRORS.TRADE_ALREADY_ANSWERED`, `ERRORS.TRADE_EXPIRED`.
   - `errorMessage(error: unknown): string` translates the database error codes above.
 
 - [ ] **Step 1: Write the failing key tests**
@@ -1634,7 +1635,11 @@ Replace `subtitle: 'Wir schicken dir einen Code zur Bestätigung. Keine Werbung,
       subtitle: 'Keine Werbung, versprochen.',
 ```
 
-After `signIn: 'Anmelden',` inside `details`, add:
+After `signIn: 'Anmelden',` **inside `details`** — that exact line appears twice
+in each locale file, once under `onboarding.welcome` and once under
+`onboarding.details`, so anchor on the preceding `hasAccount: 'Schon ein
+Konto?',` (English: `hasAccount: 'Already have an account?',`) and assert a
+single match rather than replacing the first hit — add:
 
 ```ts
       signInTitle: 'Willkommen zurück',
