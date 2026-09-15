@@ -10,7 +10,7 @@
 
 **Spec:** `docs/superpowers/specs/2026-09-14-database-wiring-design.md`
 
-> **Status (2026-09-14):** All 21 tasks are written in full, and reviewed against the spec for coverage, placeholders and type consistency. **Nothing in this plan has been executed yet.** See "Handoff notes" at the end before starting in a new environment.
+> **Status (2026-09-15):** Tasks 1–4 are complete and pushed. Task 5 is complete except its smoke run: the function is written and **deployed ACTIVE**, but Steps 4–6 need HTTPS egress to the project, which this sandbox denies — see "Handoff notes". Tasks 6–21 are not started. Task 21 needs that same egress plus the Chrome DevTools MCP. Every task through 5 left `npm run typecheck`, `npm test` and `npx prettier --check .` green.
 
 ## Global Constraints
 
@@ -1085,11 +1085,25 @@ Claude-Session: https://claude.ai/code/session_012A2gz59aWK6CCueq4SYbS6"
 - Consumes: `.env` from Task 4; buckets and `moments` table from Task 2.
 - Produces: `POST /functions/v1/blur-moment` with body `{ "moment_id": "<uuid>" }` and the caller's session JWT. Returns `200 { "blurred_storage_path": "blurred/<author>/<file>" }`; `401` without a valid session; `403 { "error": "not_moment_author" }` for someone else's moment. Idempotent: a second call returns the existing path.
 
-**Prerequisite:** "Confirm email" is off (Authentication → Providers → Email). If the smoke script in Step 4 reports "No session", stop and ask the owner to switch it off.
+**Prerequisites:**
+
+- "Confirm email" is off (Authentication → Providers → Email). If the smoke script in Step 4 reports "No session", stop and ask the owner to switch it off.
+- **Steps 4–6 need outbound HTTPS to `<project-ref>.supabase.co` from wherever you run them.** Steps 1–3 and 7 do not: the deploy goes through the MCP. A sandbox whose proxy denies the project host fails at the smoke script's first call — `signUp` returns a proxy error page, not a GoTrue response (`AuthUnknownError: Unexpected token 'H', "Host not i"…`). That is a policy denial, not a bug to route around: report it and leave Steps 4–6 for an environment with egress.
 
 - [ ] **Step 1: Write the function**
 
-Create `supabase/functions/blur-moment/index.ts`:
+`tsconfig.json` has `include: ["**/*.ts", …]`, so this Deno file would otherwise
+join the React Native program and fail `tsc` with ten errors — two `npm:`
+specifiers it cannot resolve, `Deno` as an unknown global, and implicit `any` on
+the handler arguments. Add it to `exclude` first:
+
+```json
+  // supabase/functions is Deno, not React Native: it resolves `npm:` specifiers
+  // and Deno globals that this program has no types for.
+  "exclude": ["node_modules", "project", "supabase/functions"]
+```
+
+Then create `supabase/functions/blur-moment/index.ts`:
 
 ```ts
 // Makes the frosted rendition of a moment on the server. The recipient's app is
@@ -1323,7 +1337,7 @@ Expected: one row deleted; its profile and moment rows cascade. The two storage 
 - [ ] **Step 7: Commit**
 
 ```bash
-git add supabase/functions/blur-moment/index.ts scripts/smoke-blur.mjs
+git add supabase/functions/blur-moment/index.ts scripts/smoke-blur.mjs tsconfig.json
 git commit -m "feat: blur-moment edge function for server-made frosted renditions" -m "Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
 Claude-Session: https://claude.ai/code/session_012A2gz59aWK6CCueq4SYbS6"
 ```
@@ -9605,6 +9619,7 @@ report rather than making an empty commit.
 - "Confirm email" must be switched off in the dashboard before Task 5.
 - Task 21 needs the Chrome DevTools MCP.
 - `npm run format:check` runs Prettier over the **whole repository**, `docs/` included, not just the code a task touched. Tasks 6, 14 and 20 assert it passes, so the tree has to be clean before Task 2; `npx prettier --write .` is the one-liner.
+- **This sandbox has no HTTPS egress to the Supabase project.** `https://<project-ref>.supabase.co` answers `CONNECT tunnel failed, response 403`, as does the general internet; only package registries and the MCP endpoints are reachable. The Supabase **MCP** works throughout, so migrations, SQL, deploys, types and advisors are all fine. What cannot run here is anything speaking to the project's Auth / REST / Storage / Functions endpoints from this box: **Task 5 Steps 4–6** (the smoke run) and **all of Task 21** (the web build in a browser). Both need either the project host added to the environment's network allowlist, or a machine with egress. Do not attempt to tunnel around the denial.
 - **This sandbox's proxy denies `api.expo.dev` and `reactnative.directory`**; only `registry.npmjs.org` is reachable. That is why Task 1 Steps 3 and 4 install by explicit version instead of through `npx expo install`. Anything else that reaches for the Expo API degrades the same way — `npx expo start --web` in Task 21 prints "Unable to fetch compatibility data … Skipping check" and carries on, which is fine. Check `curl -sS "$HTTPS_PROXY/__agentproxy/status"` when a command fails with `HTTP Proxy Network Error: Forbidden`.
 - Local baseline before Task 1: `npm run typecheck` reported 6 errors, all from `nativewind` and `tailwind-merge` missing in `node_modules`. `npm install` clears those five; the sixth, TS2882 on `import '../global.css'`, needs the gitignored `expo-env.d.ts` that Task 1 Step 1 now generates.
 - **The tasks are strictly ordered.** Each one ends on a green `npm run typecheck` and a green `npm test`, and several of them deliberately patch a screen minimally — just enough to keep the tree compiling — before a later task rewrites that screen in full. Skipping a task, or doing two out of order, leaves the build red for reasons that look like bugs.
