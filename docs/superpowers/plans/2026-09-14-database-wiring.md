@@ -509,7 +509,7 @@ Claude-Session: https://claude.ai/code/session_012A2gz59aWK6CCueq4SYbS6"
 
 **Files:**
 
-- Create: `supabase/migrations/20260914200000_app_wiring.sql` (renamed to the remote version in Step 6)
+- Create: `supabase/migrations/20260915070000_app_wiring.sql` (renamed to the remote version in Step 6)
 - Create: `supabase/tests/app-wiring.test.sql`
 
 **Interfaces:**
@@ -598,7 +598,11 @@ Expected: FAIL with `trades, messages and friendships must be published`.
 
 - [ ] **Step 3: Write the migration**
 
-Create `supabase/migrations/20260914200000_app_wiring.sql`:
+Create `supabase/migrations/20260915070000_app_wiring.sql`. The prefix is a
+placeholder until Step 6 renames it, but it still has to sort **after** the four
+versions the project assigned in Task 2 — `run.sh` applies
+`supabase/migrations/*.sql` in glob order, so a lower prefix would run this
+before the tables it alters exist:
 
 ```sql
 -- What the app needs on top of the core schema: live change events, batch
