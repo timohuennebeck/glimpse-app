@@ -3983,6 +3983,14 @@ import { avatarUrl } from '@/features/profile/data/profile-api';
 import { useMe } from '@/features/profile/hooks/use-me';
 ```
 
+and narrow the fixtures import to what the screen still uses — the header was
+`demoProfiles`'s only consumer here, while the story rail still wants the other
+two until Task 15:
+
+```ts
+import { AVATARS, DEMO_USER_ID } from '@/shared/lib/fixtures';
+```
+
 ```ts
 const { data: me } = useMe();
 ```
