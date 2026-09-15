@@ -7,7 +7,7 @@ import { avatarSize } from '@/shared/theme/page-structure';
 export interface StoryItem {
   id: string;
   name: string;
-  avatar: string | number;
+  avatar: string | number | null;
   /** Purple ring = they are waiting on you, grey = nothing new. */
   waiting: boolean;
 }
@@ -53,7 +53,7 @@ export function StoryRail({
           accessibilityRole="button"
           accessibilityLabel={item.name}
         >
-          <Avatar source={item.avatar} size={size} ring={item.waiting ? 'active' : 'idle'} />
+          <Avatar source={item.avatar} name={item.name} size={size} ring={item.waiting ? 'active' : 'idle'} />
           <Text variant="metaXs" className="text-ink-faint" numberOfLines={1}>
             {item.name}
           </Text>

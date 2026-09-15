@@ -1,6 +1,7 @@
-import { useState } from 'react';
-import { Share, TextInput, View, Pressable } from 'react-native';
+import { useMemo, useState } from 'react';
+import { Pressable, Share, TextInput, View } from 'react-native';
 import { router } from 'expo-router';
+import { useQuery } from '@tanstack/react-query';
 import { MoreHorizontal, QrCode, Search, X } from 'lucide-react-native';
 import { GlassButton } from '@/shared/ui/glass-button';
 import { Screen } from '@/shared/ui/screen';
@@ -11,28 +12,27 @@ import { colors } from '@/shared/theme/colors';
 import { spacing } from '@/shared/theme/page-structure';
 import { t } from '@/shared/i18n/i18n';
 import { COMMON, FRIENDS } from '@/shared/i18n/keys';
+import { queries } from '@/shared/lib/queries';
+import { useDebouncedValue } from '@/shared/lib/use-debounced-value';
 import { PersonRow } from '@/features/friends/components/person-row';
-import { Pill } from '@/features/friends/components/pill';
+import { RelationshipPill } from '@/features/friends/components/relationship-pill';
 import { ShareRow } from '@/features/friends/components/share-row';
-import { demoFriendRequests, demoOthers } from '@/shared/lib/fixtures';
-type RequestState = 'add' | 'sent' | 'friends';
-
+import { relationshipWith } from '@/features/friends/relationships';
+import type { PersonSummary } from '@/features/friends/interfaces';
+import { useMe } from '@/features/profile/hooks/use-me';
 /** Screen `D Freund suchen` — search by @username, or share your link. */
 export default function FriendSearchScreen() {
   const [query, setQuery] = useState('');
-  const [states, setStates] = useState<Record<string, RequestState>>({
-    ben: 'add',
-    lina: 'sent',
-    alex: 'friends',
-  });
+  const debounced = useDebouncedValue(query);
+  const { data: me } = useMe();
+  const { data: friendships = [] } = useQuery(queries.friends.all);
+  const searching = debounced.trim().length > 0;
+  const { data: results = [] } = useQuery({ ...queries.friends.search(debounced), enabled: searching });
 
-  const needle = query.toLowerCase().replace('@', '');
-  const results = demoOthers.filter(
-    (p) =>
-      query.length === 0 ||
-      p.first_name.toLowerCase().includes(needle) ||
-      (p.username ?? '').includes(needle),
-  );
+  // Sorted, so the same set of people is one cache entry however it was found.
+  const ids = useMemo(() => results.map((p) => p.id).sort(), [results]);
+  const { data: mutual = {} } = useQuery({ ...queries.friends.mutual(ids), enabled: ids.length > 0 });
+  const handle = me?.username ? `@${me.username}` : '';
 
   return (
     <Screen scroll bottomInset={spacing.contentBottom}>
@@ -74,55 +74,39 @@ export default function FriendSearchScreen() {
         ) : null}
       </View>
 
-      <View className="mt-[26px] gap-3.5">
-        <SectionLabel>{t(FRIENDS.SEARCH.RESULTS_SECTION, { count: results.length })}</SectionLabel>
-        <View className="gap-[18px]">
-          {results.map((p) => {
-            const state = states[p.id] ?? 'add';
-            // Mutual count only where the fixture actually has one; no invented numbers.
-            const mutual = demoFriendRequests.find((r) => r.profile.id === p.id)?.mutual;
-            const detail =
-              state === 'friends'
-                ? t(FRIENDS.SEARCH.ALREADY_FRIENDS)
-                : mutual
-                  ? t(FRIENDS.SEARCH.MUTUAL, { count: mutual })
-                  : null;
-            return (
+      {searching ? (
+        <View className="mt-[26px] gap-3.5">
+          <SectionLabel>{t(FRIENDS.SEARCH.RESULTS_SECTION, { count: results.length })}</SectionLabel>
+          <View className="gap-[18px]">
+            {results.map((person) => (
               <PersonRow
-                key={p.id}
-                avatar={p.photo}
-                name={p.first_name}
-                subtitle={detail ? `@${p.username} · ${detail}` : `@${p.username}`}
-                verified={state === 'friends'}
-                onPress={() => router.push(`/profile/${p.id}`)}
+                key={person.id}
+                avatar={person.avatarUrl}
+                name={person.name}
+                subtitle={subtitleFor(person, mutual[person.id] ?? 0)}
+                onPress={() => router.push(`/profile/${person.id}`)}
                 trailing={
-                  state === 'add' ? (
-                    <Pill
-                      label={t(FRIENDS.SEARCH.ADD)}
-                      tone="filled"
-                      onPress={() => setStates((s) => ({ ...s, [p.id]: 'sent' }))}
-                    />
-                  ) : state === 'sent' ? (
-                    <Pill label={t(FRIENDS.SEARCH.SENT)} tone="quiet" />
-                  ) : (
-                    <Pill label={t(FRIENDS.SEARCH.REQUEST)} tone="outline" />
-                  )
+                  <RelationshipPill
+                    person={person}
+                    relationship={relationshipWith(friendships, me?.id ?? '', person.id)}
+                  />
                 }
               />
-            );
-          })}
-          {results.length === 0 ? (
-            <Text variant="bodySm" className="text-muted-lilac">
-              {t(FRIENDS.SEARCH.EMPTY)}
-            </Text>
-          ) : null}
+            ))}
+            {results.length === 0 ? (
+              <Text variant="bodySm" className="text-muted-lilac">
+                {t(FRIENDS.SEARCH.EMPTY)}
+              </Text>
+            ) : null}
+          </View>
         </View>
-      </View>
+      ) : null}
 
+      {/* QR is designed but inert; Task 19 wires the two share actions. */}
       <ShareRow
         className="mt-[30px]"
         dividerLabel={t(FRIENDS.SEARCH.DIVIDER_SHARE)}
-        link={t(COMMON.PROFILE_LINK)}
+        link={handle}
         linkLabel={t(FRIENDS.SEARCH.LINK)}
         actions={[
           {
@@ -132,10 +116,19 @@ export default function FriendSearchScreen() {
           {
             label: t(FRIENDS.SEARCH.MORE),
             icon: <MoreHorizontal size={22} color={colors.inkFaint} strokeWidth={2.4} />,
-            onPress: () => void Share.share({ message: t(COMMON.PROFILE_LINK) }),
+            onPress: () => void Share.share({ message: handle }),
           },
         ]}
       />
     </Screen>
   );
+}
+
+/** "@miahartmann · 3 mutual", with either half left out when there is none. */
+function subtitleFor(person: PersonSummary, mutual: number): string | undefined {
+  const parts = [
+    person.username ? `@${person.username}` : null,
+    mutual > 0 ? t(FRIENDS.SEARCH.MUTUAL, { count: mutual }) : null,
+  ].filter((part): part is string => part !== null);
+  return parts.length > 0 ? parts.join(' · ') : undefined;
 }

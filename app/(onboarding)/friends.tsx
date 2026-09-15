@@ -1,32 +1,40 @@
 import { useState } from 'react';
-import { Share, View } from 'react-native';
+import { Share, TextInput, View } from 'react-native';
 import { router } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
+import { useQuery } from '@tanstack/react-query';
 import { Copy, MoreHorizontal, Search } from 'lucide-react-native';
 import { CtaFooter } from '@/shared/ui/cta-footer';
 import { ProgressHeader } from '@/shared/ui/progress-header';
 import { Screen } from '@/shared/ui/screen';
+import { SectionLabel } from '@/shared/ui/section-label';
 import { Text } from '@/shared/ui/text';
 import { colors } from '@/shared/theme/colors';
 import { t } from '@/shared/i18n/i18n';
-import { COMMON, ONBOARDING } from '@/shared/i18n/keys';
+import { FRIENDS, ONBOARDING } from '@/shared/i18n/keys';
+import { queries } from '@/shared/lib/queries';
+import { useDebouncedValue } from '@/shared/lib/use-debounced-value';
 import { PersonRow } from '@/features/friends/components/person-row';
-import { Pill } from '@/features/friends/components/pill';
+import { RelationshipPill } from '@/features/friends/components/relationship-pill';
 import { ShareRow } from '@/features/friends/components/share-row';
-import { ContactsInvite } from '@/features/onboarding/components/contacts-invite';
-import { demoOthers } from '@/shared/lib/fixtures';
+import { relationshipWith } from '@/features/friends/relationships';
+import { useMe } from '@/features/profile/hooks/use-me';
 /**
- * Screens `05 Friends · 5 of 7` and `05a · no contacts access`.
+ * Screen `05 Friends · 5 of 7`.
  *
- * Both artboards are here: without contacts permission the list is replaced by
- * the stacked-avatars invite card. The positioning note is emphatic that a pair
- * is the unit of value, so this step is the most important in the flow.
+ * The positioning note is emphatic that a pair is the unit of value, so this is
+ * the most important step in the flow: it is the only one that can end with two
+ * people able to trade. Artboard `05a`'s contacts card is gone — contacts
+ * import is out of scope, and a card that mimics it leads nowhere.
  */
 export default function OnboardingFriendsScreen() {
-  const [hasContacts, setHasContacts] = useState(false);
-  const [invited, setInvited] = useState<string[]>([]);
-
-  const suggestions = demoOthers.slice(0, 3);
+  const [query, setQuery] = useState('');
+  const debounced = useDebouncedValue(query);
+  const { data: me } = useMe();
+  const { data: friendships = [] } = useQuery(queries.friends.all);
+  const searching = debounced.trim().length > 0;
+  const { data: results = [] } = useQuery({ ...queries.friends.search(debounced), enabled: searching });
+  const handle = me?.username ? `@${me.username}` : '';
 
   return (
     <Screen
@@ -51,69 +59,62 @@ export default function OnboardingFriendsScreen() {
 
       <View className="mt-5 h-field flex-row items-center gap-3 rounded-pill bg-surface-lilac px-[18px]">
         <Search size={20} color={colors.mutedLilac} strokeWidth={2.2} />
-        <Text variant="rowTitleSm" weight="regular" className="text-muted-cool">
-          {t(ONBOARDING.FRIENDS.SEARCH_PLACEHOLDER)}
-        </Text>
+        <TextInput
+          value={query}
+          onChangeText={setQuery}
+          placeholder={t(ONBOARDING.FRIENDS.SEARCH_PLACEHOLDER)}
+          placeholderTextColor={colors.mutedCool}
+          autoCapitalize="none"
+          autoCorrect={false}
+          className="flex-1 p-0 font-sans text-[16.5px] text-ink"
+        />
       </View>
 
-      {hasContacts ? (
+      {searching ? (
         <View className="mt-6 gap-3.5">
-          <View className="flex-row items-center justify-between">
-            <Text variant="eyebrow" className="text-muted-grey">
-              {t(ONBOARDING.FRIENDS.CONTACTS_SECTION)}
-            </Text>
-            <View className="rounded-pill bg-surface-violet-chip px-2.5 py-1">
-              <Text variant="caption" weight="semibold" className="text-purple-muted">
-                {String(suggestions.length)}
-              </Text>
-            </View>
-          </View>
-
+          <SectionLabel>{t(FRIENDS.SEARCH.RESULTS_SECTION, { count: results.length })}</SectionLabel>
           <View className="gap-3.5">
-            {suggestions.map((p) => {
-              const done = invited.includes(p.id);
-              return (
-                <PersonRow
-                  key={p.id}
-                  avatar={p.photo}
-                  name={p.first_name}
-                  subtitle={p.tagline ?? undefined}
-                  trailing={
-                    done ? (
-                      <Pill label={t(ONBOARDING.FRIENDS.ADDED)} tone="quiet" compact />
-                    ) : (
-                      <Pill
-                        label={t(ONBOARDING.FRIENDS.ADD)}
-                        tone="filled"
-                        compact
-                        onPress={() => setInvited((s) => [...s, p.id])}
-                      />
-                    )
-                  }
-                />
-              );
-            })}
+            {results.map((person) => (
+              <PersonRow
+                key={person.id}
+                avatar={person.avatarUrl}
+                name={person.name}
+                subtitle={person.username ? `@${person.username}` : undefined}
+                trailing={
+                  <RelationshipPill
+                    person={person}
+                    relationship={relationshipWith(friendships, me?.id ?? '', person.id)}
+                    compact
+                  />
+                }
+              />
+            ))}
+            {results.length === 0 ? (
+              <Text variant="bodySm" className="text-muted-lilac">
+                {t(FRIENDS.SEARCH.EMPTY)}
+              </Text>
+            ) : null}
           </View>
         </View>
-      ) : (
-        <ContactsInvite onPress={() => setHasContacts(true)} />
-      )}
+      ) : null}
 
+      {/* The actions still copy and share the handle; Task 19 makes them mint a
+          real invite link. */}
       <ShareRow
         className="mt-[22px]"
         dividerLabel={t(ONBOARDING.FRIENDS.DIVIDER_SHARE)}
-        link={t(COMMON.PROFILE_LINK)}
+        link={handle}
         linkLabel={t(ONBOARDING.FRIENDS.SHARE_LINK)}
         actions={[
           {
             label: t(ONBOARDING.FRIENDS.SHARE_COPY),
             icon: <Copy size={22} color={colors.inkFaint} strokeWidth={2} />,
-            onPress: () => void Clipboard.setStringAsync(t(COMMON.PROFILE_LINK)),
+            onPress: () => void Clipboard.setStringAsync(handle),
           },
           {
             label: t(ONBOARDING.FRIENDS.SHARE_MORE),
             icon: <MoreHorizontal size={22} color={colors.inkFaint} strokeWidth={2.4} />,
-            onPress: () => void Share.share({ message: t(COMMON.PROFILE_LINK) }),
+            onPress: () => void Share.share({ message: handle }),
           },
         ]}
       />

@@ -73,7 +73,7 @@ export default function FeedScreen() {
             items={stories}
             placeholders={Math.max(0, 3 - pending.length)}
             placeholderLabel={t(FEED.ADD_FRIEND)}
-            onPressItem={openProfile}
+            onPressItem={(id) => openProfile(id, me?.id ?? '')}
             onPressPlaceholder={() => router.push('/(app)/friends/search')}
           />
         </View>

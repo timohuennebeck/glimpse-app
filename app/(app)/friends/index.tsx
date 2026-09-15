@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { router } from 'expo-router';
+import { useQuery } from '@tanstack/react-query';
 import { Clock, Plus } from 'lucide-react-native';
 import { CtaFooter } from '@/shared/ui/cta-footer';
 import { GlassButton } from '@/shared/ui/glass-button';
@@ -12,46 +13,71 @@ import { avatarSize } from '@/shared/theme/page-structure';
 import { t } from '@/shared/i18n/i18n';
 import { COMMON, FEED, FRIENDS } from '@/shared/i18n/keys';
 import { relativeTime } from '@/shared/lib/format';
-import { useMutation } from '@tanstack/react-query';
 import { errorMessage } from '@/shared/lib/error-message';
+import { queries } from '@/shared/lib/queries';
 import { PersonRow } from '@/features/friends/components/person-row';
 import { Pill } from '@/features/friends/components/pill';
+import { useAcceptFriendRequest, useRemoveFriendship } from '@/features/friends/data/friends-mutations';
+import { friendsOf, incomingRequests, otherParty, sentRequests } from '@/features/friends/relationships';
 import { StoryRail } from '@/features/feed/components/story-rail';
 import { ChatsList } from '@/features/chat/components/chats-list';
+import { avatarUrl } from '@/features/profile/data/profile-api';
 import { TabScreen } from '@/features/navigation/tab-screen';
-import {
-  AVATARS,
-  demoFriendRequests,
-  demoProfiles,
-  demoSentRequests,
-  demoUnreadCount,
-  DEMO_USER_ID,
-} from '@/shared/lib/fixtures';
-import { acceptFriendRequest } from '@/features/friends/data/friends-api';
+import { useInbox } from '@/features/moments/hooks/use-inbox';
+import { useMe } from '@/features/profile/hooks/use-me';
 import { openProfile } from '@/features/profile/open-profile';
 type Tab = 'friends' | 'chats';
 
 /**
- * Screen `08 Freunde` — the story rail, incoming requests, and outgoing requests
- * still waiting. The three sections map 1:1 onto `friendships` rows read from
- * three angles (see docs/database.md §4).
+ * Screen `08 Freunde` — the story rail, incoming requests, and outgoing
+ * requests still waiting. The three sections are three readings of one list of
+ * `friendships` rows (see `relationships.ts`).
  */
 export default function FriendsScreen() {
   const [tab, setTab] = useState<Tab>('friends');
-  const [requests, setRequests] = useState(demoFriendRequests);
-  // Counts on the toggle, so it says how much is waiting behind each tab.
-  const badges: Record<Tab, number> = { friends: requests.length, chats: demoUnreadCount };
+  /** Withdrawing takes two taps; there is no undo for a deleted row. */
+  const [confirmWithdraw, setConfirmWithdraw] = useState<string | null>(null);
 
-  const rail = [
-    { id: DEMO_USER_ID, name: t(COMMON.YOU), avatar: AVATARS.self, waiting: true },
-    { id: demoProfiles.mia.id, name: demoProfiles.mia.first_name, avatar: AVATARS.mia, waiting: false },
-  ];
+  const { data: me } = useMe();
+  const myId = me?.id ?? '';
+  const { data: friendships = [] } = useQuery(queries.friends.all);
+  const { pending } = useInbox();
+
+  const accept = useAcceptFriendRequest();
+  const remove = useRemoveFriendship();
+
+  const requests = useMemo(() => incomingRequests(friendships, myId), [friendships, myId]);
+  const sent = useMemo(() => sentRequests(friendships, myId), [friendships, myId]);
+  // "3 mutual" is what makes a request from a near-stranger legible. Sorted, so
+  // it shares its cache entry with the search screen's copy of the same ask.
+  const requestIds = useMemo(
+    () => requests.map((friendship) => otherParty(friendship, myId).id).sort(),
+    [requests, myId],
+  );
+  const { data: mutual = {} } = useQuery({
+    ...queries.friends.mutual(requestIds),
+    enabled: requestIds.length > 0,
+  });
+  const rail = useMemo(
+    () => [
+      { id: myId, name: t(COMMON.YOU), avatar: avatarUrl(me?.avatar_storage_path ?? null), waiting: true },
+      ...friendsOf(friendships, myId).map((person) => ({
+        id: person.id,
+        name: person.name,
+        avatar: person.avatarUrl,
+        // A purple ring means they are waiting on me.
+        waiting: pending.some((moment) => moment.from.id === person.id),
+      })),
+    ],
+    [friendships, myId, me, pending],
+  );
   const waiting = rail.filter((item) => item.waiting).length;
 
-  const accept = useMutation({
-    mutationFn: (id: string) => acceptFriendRequest(id),
-    onSuccess: (_, id) => setRequests((rs) => rs.filter((r) => r.id !== id)),
-  });
+  // Counts on the toggle, so it says how much is waiting behind each tab.
+  // Chats stays 0 until Task 16 has the thread totals.
+  const unreadTotal = 0;
+  const badges: Record<Tab, number> = { friends: requests.length, chats: unreadTotal };
+  const error = accept.error ?? remove.error;
 
   return (
     <TabScreen>
@@ -109,9 +135,9 @@ export default function FriendsScreen() {
             <StoryRail
               size={avatarSize.ring}
               items={rail}
-              placeholders={2}
+              placeholders={Math.max(0, 3 - rail.length)}
               placeholderLabel={t(FEED.ADD_FRIEND)}
-              onPressItem={openProfile}
+              onPressItem={(id) => openProfile(id, myId)}
               onPressPlaceholder={() => router.push('/(app)/friends/search')}
             />
           </View>
@@ -119,47 +145,62 @@ export default function FriendsScreen() {
           <View className="mt-[22px] gap-3.5">
             <SectionLabel>{t(FRIENDS.REQUESTS_SECTION, { count: requests.length })}</SectionLabel>
             <View className="gap-4">
-              {requests.map((r) => (
-                <PersonRow
-                  key={r.id}
-                  avatar={r.profile.photo}
-                  name={r.profile.first_name}
-                  subtitle={t(FRIENDS.SEARCH.MUTUAL, { count: r.mutual })}
-                  verified={r.verified}
-                  trailing={
-                    <Pill
-                      label={t(FRIENDS.ACCEPT)}
-                      tone={r.verified ? 'filled' : 'outline'}
-                      onPress={() => accept.mutate(r.id)}
-                    />
-                  }
-                  onPress={() => router.push(`/profile/${r.profile.id}`)}
-                />
-              ))}
-              {accept.error ? (
-                <Text variant="meta" className="text-purple-deep">
-                  {errorMessage(accept.error)}
-                </Text>
-              ) : null}
+              {requests.map((friendship) => {
+                const person = otherParty(friendship, myId);
+                return (
+                  <PersonRow
+                    key={friendship.id}
+                    avatar={person.avatarUrl}
+                    name={person.name}
+                    subtitle={t(FRIENDS.SEARCH.MUTUAL, { count: mutual[person.id] ?? 0 })}
+                    trailing={
+                      <Pill
+                        label={t(FRIENDS.ACCEPT)}
+                        tone="filled"
+                        onPress={() => accept.mutate(friendship.id)}
+                      />
+                    }
+                    onPress={() => router.push(`/profile/${person.id}`)}
+                  />
+                );
+              })}
             </View>
           </View>
 
           <View className="mt-[22px] gap-3.5">
-            <SectionLabel>{t(FRIENDS.SENT_SECTION, { count: demoSentRequests.length })}</SectionLabel>
+            <SectionLabel>{t(FRIENDS.SENT_SECTION, { count: sent.length })}</SectionLabel>
             <View className="gap-4">
-              {demoSentRequests.map((r) => (
-                <PersonRow
-                  key={r.id}
-                  avatar={r.profile.photo}
-                  name={r.profile.first_name}
-                  subtitle={t(FRIENDS.SENT_AGO, { time: relativeTime(r.sentAt) })}
-                  subtitleIcon={<Clock size={14} color={colors.placeholderSoft} strokeWidth={2} />}
-                  dimmed
-                  trailing={<Pill label={t(FRIENDS.PENDING)} tone="muted" />}
-                />
-              ))}
+              {sent.map((friendship) => {
+                const person = otherParty(friendship, myId);
+                const confirming = confirmWithdraw === friendship.id;
+                return (
+                  <PersonRow
+                    key={friendship.id}
+                    avatar={person.avatarUrl}
+                    name={person.name}
+                    subtitle={t(FRIENDS.SENT_AGO, { time: relativeTime(friendship.createdAt) })}
+                    subtitleIcon={<Clock size={14} color={colors.placeholderSoft} strokeWidth={2} />}
+                    dimmed
+                    trailing={
+                      <Pill
+                        label={confirming ? t(FRIENDS.WITHDRAW) : t(FRIENDS.PENDING)}
+                        tone={confirming ? 'filled' : 'muted'}
+                        onPress={() =>
+                          confirming ? remove.mutate(friendship.id) : setConfirmWithdraw(friendship.id)
+                        }
+                      />
+                    }
+                  />
+                );
+              })}
             </View>
           </View>
+
+          {error ? (
+            <Text variant="meta" className="mt-4 text-center text-purple-deep">
+              {errorMessage(error)}
+            </Text>
+          ) : null}
 
           <CtaFooter label={t(FRIENDS.ADD_CTA)} onPress={() => router.push('/(app)/friends/search')} />
         </>
