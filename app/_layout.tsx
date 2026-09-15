@@ -15,6 +15,7 @@ import { APP_VERSION, PERSIST_MAX_AGE, queryClient, queryPersister } from '@/sha
 import { prefetchForUser } from '@/shared/lib/prefetch';
 import { startSessionSync, useSession } from '@/features/auth/hooks/use-session';
 import { clearUserData } from '@/features/auth/sign-out';
+import { useLiveUpdates } from '@/features/live/use-live-updates';
 // Side-effect imports: locale, Tailwind stylesheet, className support for third-party views.
 import '@/shared/i18n/i18n';
 import '../global.css';
@@ -59,7 +60,7 @@ export default function RootLayout() {
         persistOptions={{ persister: queryPersister, maxAge: PERSIST_MAX_AGE, buster: APP_VERSION }}
       >
         <SafeAreaProvider>
-          <RootStack signedIn={status === 'signed-in'} />
+          <RootStack signedIn={status === 'signed-in'} userId={userId} />
         </SafeAreaProvider>
       </PersistQueryClientProvider>
     </GestureHandlerRootView>
@@ -68,6 +69,7 @@ export default function RootLayout() {
 
 interface RootStackProps {
   signedIn: boolean;
+  userId: string | null;
 }
 
 /**
@@ -78,7 +80,9 @@ interface RootStackProps {
  * `invite/[token]` is deliberately open: the whole point of the link is that
  * the visitor has no account yet.
  */
-function RootStack({ signedIn }: RootStackProps) {
+function RootStack({ signedIn, userId }: RootStackProps) {
+  useLiveUpdates(userId);
+
   return (
     <Stack
       screenOptions={{
