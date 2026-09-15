@@ -5,7 +5,7 @@ import { Text } from '@/shared/ui/text';
 import { VerifiedIcon } from '@/shared/ui/icons';
 import { avatarSize } from '@/shared/theme/page-structure';
 export interface PersonRowProps {
-  avatar: string | number;
+  avatar: string | number | null;
   name: string;
   subtitle?: string;
   /** Purple rosette next to the name. */
@@ -48,7 +48,7 @@ export function PersonRow({
       accessibilityState={accessibilityState}
       accessibilityLabel={name}
     >
-      <Avatar source={avatar} size={size} dimmed={dimmed} ring="halo" />
+      <Avatar source={avatar} name={name} size={size} dimmed={dimmed} ring="halo" />
       <View className="min-w-0 flex-1 gap-[3px]">
         <View className="flex-row items-center gap-1.5">
           <Text variant="rowTitleSm" className="text-ink" numberOfLines={1}>

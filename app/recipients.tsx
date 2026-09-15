@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { router } from 'expo-router';
 import { X } from 'lucide-react-native';
@@ -20,6 +20,8 @@ import { EmptyState } from '@/features/feed/components/empty-state';
 import { isSupabaseConfigured } from '@/shared/lib/supabase';
 import { errorMessage } from '@/shared/lib/error-message';
 import { queries } from '@/shared/lib/queries';
+import { friendsOf } from '@/features/friends/relationships';
+import { useMe } from '@/features/profile/hooks/use-me';
 import { demoOthers } from '@/shared/lib/fixtures';
 /**
  * Screen `03c Senden · Empfänger wählen`.
@@ -36,7 +38,9 @@ export default function RecipientsScreen() {
   const queryClient = useQueryClient();
   // Real ids from v_my_friends: `send_moment` takes uuids and runs only after
   // the upload has been committed, so a fixture id here would orphan the photo.
-  const { data: friends = [], error: friendsError } = useQuery(queries.friends.list);
+  const { data: me } = useMe();
+  const { data: friendships = [], error: friendsError } = useQuery(queries.friends.all);
+  const friends = useMemo(() => friendsOf(friendships, me?.id ?? ''), [friendships, me?.id]);
   // A friend's profile pre-selects them; otherwise start empty.
   const [selected, setSelected] = useState<string[]>(composer.recipientIds);
 
@@ -93,7 +97,7 @@ export default function RecipientsScreen() {
             {friends.map((f) => (
               <PersonRow
                 key={f.id}
-                avatar={f.avatar ?? ''}
+                avatar={f.avatarUrl}
                 name={f.name}
                 subtitle={f.tagline ?? undefined}
                 size={46}
