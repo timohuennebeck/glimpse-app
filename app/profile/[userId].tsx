@@ -8,7 +8,6 @@ import { Text } from '@/shared/ui/text';
 import { colors } from '@/shared/theme/colors';
 import { spacing } from '@/shared/theme/page-structure';
 import { t } from '@/shared/i18n/i18n';
-import { COMMON, PROFILE } from '@/shared/i18n/keys';
 import { memberSince } from '@/shared/lib/format';
 import { queries } from '@/shared/lib/queries';
 import { ProfileView } from '@/features/profile/components/profile-view';
@@ -43,7 +42,7 @@ export default function ProfileScreen() {
   const areFriends = relationshipWith(friendships, me?.id ?? '', userId ?? '').kind === 'friends';
 
   const close = (
-    <GlassButton size={44} onPress={() => router.back()} accessibilityLabel={t(COMMON.CLOSE)}>
+    <GlassButton size={44} onPress={() => router.back()} accessibilityLabel={t('common.close')}>
       <X size={15} color={colors.inkSoft} strokeWidth={2.2} />
     </GlassButton>
   );
@@ -57,7 +56,7 @@ export default function ProfileScreen() {
         <View className="flex-row">{close}</View>
         {!isPending || isError ? (
           <Text variant="bodyXs" className="mt-6 text-center text-muted">
-            {t(PROFILE.NOT_FOUND)}
+            {t('profile.notFound')}
           </Text>
         ) : null}
       </Screen>

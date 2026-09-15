@@ -12,7 +12,6 @@ import { Text } from '@/shared/ui/text';
 import { colors } from '@/shared/theme/colors';
 import { spacing } from '@/shared/theme/page-structure';
 import { getLocale, t } from '@/shared/i18n/i18n';
-import { ONBOARDING } from '@/shared/i18n/keys';
 import { errorMessage } from '@/shared/lib/error-message';
 import { signIn, signUp } from '@/features/auth/data/auth-api';
 import { uploadAvatar } from '@/features/profile/data/profile-api';
@@ -93,8 +92,8 @@ export default function DetailsScreen() {
         setNotice(
           t(
             kind === 'already-registered'
-              ? ONBOARDING.DETAILS.ERRORS.ALREADY_REGISTERED
-              : ONBOARDING.DETAILS.ERRORS.CONFIRMATION_REQUIRED,
+              ? 'onboarding.details.errors.alreadyRegistered'
+              : 'onboarding.details.errors.confirmationRequired',
           ),
         );
         setMode('signin');
@@ -123,21 +122,23 @@ export default function DetailsScreen() {
     setMode(signingUp ? 'signin' : 'signup');
   }
 
+  // `as const` keeps these literal dot paths rather than widening to string,
+  // which `t()` does not accept.
   const copy = signingUp
-    ? {
-        title: ONBOARDING.DETAILS.TITLE,
-        subtitle: ONBOARDING.DETAILS.SUBTITLE,
-        cta: ONBOARDING.DETAILS.CTA,
-        prompt: ONBOARDING.DETAILS.HAS_ACCOUNT,
-        action: ONBOARDING.DETAILS.SIGN_IN,
-      }
-    : {
-        title: ONBOARDING.DETAILS.SIGN_IN_TITLE,
-        subtitle: ONBOARDING.DETAILS.SIGN_IN_SUBTITLE,
-        cta: ONBOARDING.DETAILS.SIGN_IN_CTA,
-        prompt: ONBOARDING.DETAILS.NO_ACCOUNT,
-        action: ONBOARDING.DETAILS.CREATE_ACCOUNT,
-      };
+    ? ({
+        title: 'onboarding.details.title',
+        subtitle: 'onboarding.details.subtitle',
+        cta: 'onboarding.details.cta',
+        prompt: 'onboarding.details.hasAccount',
+        action: 'onboarding.details.signIn',
+      } as const)
+    : ({
+        title: 'onboarding.details.signInTitle',
+        subtitle: 'onboarding.details.signInSubtitle',
+        cta: 'onboarding.details.signInCta',
+        prompt: 'onboarding.details.noAccount',
+        action: 'onboarding.details.createAccount',
+      } as const);
 
   const message = notice ?? (submit.error ? errorMessage(submit.error) : null);
 
@@ -193,14 +194,14 @@ export default function DetailsScreen() {
       <View className="mt-7 gap-[18px]">
         <View className="gap-2">
           <Text variant="meta" className="text-muted">
-            {t(ONBOARDING.DETAILS.EMAIL_LABEL)}
+            {t('onboarding.details.emailLabel')}
           </Text>
           <View className={cn(INPUT, email.length > 0 && 'border-purple')}>
             <Mail size={21} color={colors.purple} strokeWidth={1.6} />
             <TextInput
               value={email}
               onChangeText={setEmail}
-              placeholder={t(ONBOARDING.DETAILS.EMAIL_PLACEHOLDER)}
+              placeholder={t('onboarding.details.emailPlaceholder')}
               placeholderTextColor={colors.placeholder}
               keyboardType="email-address"
               autoCapitalize="none"
@@ -212,7 +213,7 @@ export default function DetailsScreen() {
 
         <View className="gap-2">
           <Text variant="meta" className="text-muted">
-            {t(ONBOARDING.DETAILS.PASSWORD_LABEL)}
+            {t('onboarding.details.passwordLabel')}
           </Text>
           <View className={cn(INPUT, 'bg-surface-violet-warm')}>
             <TextInput
@@ -228,7 +229,7 @@ export default function DetailsScreen() {
               hitSlop={8}
               accessibilityRole="button"
               accessibilityLabel={
-                reveal ? t(ONBOARDING.DETAILS.HIDE_PASSWORD) : t(ONBOARDING.DETAILS.SHOW_PASSWORD)
+                reveal ? t('onboarding.details.hidePassword') : t('onboarding.details.showPassword')
               }
             >
               <Eye size={21} color={colors.muted} strokeWidth={1.6} />
@@ -251,7 +252,7 @@ export default function DetailsScreen() {
                 ))}
               </View>
               <Text variant="metaSm" className="text-muted">
-                {t(ONBOARDING.DETAILS.PASSWORD_HINT)}
+                {t('onboarding.details.passwordHint')}
               </Text>
             </View>
           ) : null}
@@ -274,9 +275,9 @@ export default function DetailsScreen() {
             {consent ? <Check size={14} color={colors.white} strokeWidth={2.2} /> : null}
           </View>
           <Text variant="subtitle" className="flex-1 text-muted-lilac">
-            {t(ONBOARDING.DETAILS.CONSENT, {
-              terms: t(ONBOARDING.SIGN_UP.TERMS),
-              privacy: t(ONBOARDING.SIGN_UP.PRIVACY),
+            {t('onboarding.details.consent', {
+              terms: t('onboarding.signUp.terms'),
+              privacy: t('onboarding.signUp.privacy'),
             })}
           </Text>
         </Pressable>

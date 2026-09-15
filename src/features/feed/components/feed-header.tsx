@@ -4,7 +4,6 @@ import { Avatar } from '@/shared/ui/avatar';
 import { GlassButton } from '@/shared/ui/glass-button';
 import { Text } from '@/shared/ui/text';
 import { t } from '@/shared/i18n/i18n';
-import { FRIENDS } from '@/shared/i18n/keys';
 interface FeedHeaderProps {
   avatar: string | number | null;
   name: string;
@@ -27,7 +26,7 @@ export function FeedHeader({ avatar, name, subtitle, onPressAdd, onPressAvatar }
           {subtitle}
         </Text>
       </View>
-      <GlassButton size={44} onPress={onPressAdd} accessibilityLabel={t(FRIENDS.SEARCH.TITLE)}>
+      <GlassButton size={44} onPress={onPressAdd} accessibilityLabel={t('friends.search.title')}>
         <Plus size={19} color="#1b1b1f" strokeWidth={2} />
       </GlassButton>
     </View>

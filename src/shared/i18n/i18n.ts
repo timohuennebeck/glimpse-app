@@ -1,7 +1,32 @@
 import { I18n } from 'i18n-js';
-import type { TranslationKey, TranslationListKey } from '@/shared/i18n/keys';
+import type { Translations } from '@/shared/i18n/locales/de';
 import { de } from '@/shared/i18n/locales/de';
 import { en } from '@/shared/i18n/locales/en';
+
+/**
+ * Every dot path into the locale whose value is a string, and every one whose
+ * value is a list. Derived from the locale type, so a renamed or removed string
+ * is a compile error at every call site — `t('feed.empty.title')` is checked,
+ * `t('feed.empty.nope')` does not compile.
+ */
+type StringPaths<T, Prefix extends string = ''> = {
+  [K in keyof T & string]: T[K] extends readonly unknown[]
+    ? never
+    : T[K] extends Record<string, unknown>
+      ? StringPaths<T[K], `${Prefix}${K}.`>
+      : `${Prefix}${K}`;
+}[keyof T & string];
+
+type ListPaths<T, Prefix extends string = ''> = {
+  [K in keyof T & string]: T[K] extends readonly unknown[]
+    ? `${Prefix}${K}`
+    : T[K] extends Record<string, unknown>
+      ? ListPaths<T[K], `${Prefix}${K}.`>
+      : never;
+}[keyof T & string];
+
+export type TranslationKey = StringPaths<Translations>;
+export type TranslationListKey = ListPaths<Translations>;
 export const i18n = new I18n({ de, en });
 
 /**
@@ -24,7 +49,7 @@ i18n.enableFallback = true;
  */
 i18n.locale = 'en';
 
-/** Look up a translation by constant, e.g. `t(FEED.STORIES_LABEL)`. */
+/** Look up a translation by constant, e.g. `t('feed.storiesLabel')`. */
 export function t(key: TranslationKey, options?: Record<string, unknown>): string {
   return i18n.t(key, options);
 }

@@ -11,7 +11,6 @@ import { GlassButton } from '@/shared/ui/glass-button';
 import { Text } from '@/shared/ui/text';
 import { colors } from '@/shared/theme/colors';
 import { t } from '@/shared/i18n/i18n';
-import { CAMERA, COMMON, ONBOARDING } from '@/shared/i18n/keys';
 import { useComposer } from '@/features/moments/hooks/use-composer';
 import { useCapture } from '@/features/camera/hooks/use-capture';
 import { ShutterButton } from '@/features/camera/components/shutter-button';
@@ -59,18 +58,18 @@ export default function CameraScreen() {
       >
         <StatusBar style="light" />
         <Text variant="display" className="text-center text-white">
-          {t(CAMERA.PERMISSION_TITLE)}
+          {t('camera.permissionTitle')}
         </Text>
         <Text variant="bodySm" className="text-center text-on-dark-text">
-          {permission.canAskAgain ? t(CAMERA.PERMISSION_BODY) : t(CAMERA.PERMISSION_SETTINGS_BODY)}
+          {permission.canAskAgain ? t('camera.permissionBody') : t('camera.permissionSettingsBody')}
         </Text>
         <Button
-          label={permission.canAskAgain ? t(ONBOARDING.CAMERA.CTA) : t(CAMERA.OPEN_SETTINGS)}
+          label={permission.canAskAgain ? t('onboarding.camera.cta') : t('camera.openSettings')}
           variant="purple"
           // Once the system stops asking, the only way back in is Settings.
           onPress={permission.canAskAgain ? requestPermission : () => void Linking.openSettings()}
         />
-        <Button label={t(COMMON.BACK)} variant="ghost" onPress={close} />
+        <Button label={t('common.back')} variant="ghost" onPress={close} />
       </View>
     );
   }
@@ -95,7 +94,7 @@ export default function CameraScreen() {
         style={{ paddingTop: insets.top + 12, paddingBottom: insets.bottom + 32 }}
       >
         <View className="h-8 flex-row items-center">
-          <GlassButton size={32} onDark onPress={close} accessibilityLabel={t(COMMON.CLOSE)}>
+          <GlassButton size={32} onDark onPress={close} accessibilityLabel={t('common.close')}>
             <X size={11} color={colors.white} strokeWidth={2.2} />
           </GlassButton>
         </View>
@@ -106,7 +105,7 @@ export default function CameraScreen() {
               size={50}
               onDark
               onPress={() => setFacing((f) => (f === 'back' ? 'front' : 'back'))}
-              accessibilityLabel={t(CAMERA.FLIP_LABEL)}
+              accessibilityLabel={t('camera.flipLabel')}
             >
               <SwitchCamera size={22} color={colors.white} strokeWidth={2} />
             </GlassButton>
@@ -117,7 +116,7 @@ export default function CameraScreen() {
               size={50}
               onDark
               onPress={() => setFlash((f) => (f === 'off' ? 'on' : 'off'))}
-              accessibilityLabel={t(CAMERA.FLASH_LABEL)}
+              accessibilityLabel={t('camera.flashLabel')}
               accessibilityState={{ selected: flash === 'on' }}
             >
               <Zap size={22} color={flash === 'on' ? colors.purpleSoft : colors.white} strokeWidth={2} />
@@ -125,7 +124,7 @@ export default function CameraScreen() {
           </View>
 
           <Text variant="buttonSm" weight="medium" className="text-on-dark-text">
-            {t(CAMERA.HINT)}
+            {t('camera.hint')}
           </Text>
         </View>
       </View>

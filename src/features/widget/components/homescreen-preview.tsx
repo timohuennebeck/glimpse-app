@@ -8,7 +8,6 @@ import { CameraIcon, LockedIcon } from '@/shared/ui/icons';
 import { Text } from '@/shared/ui/text';
 import { colors } from '@/shared/theme/colors';
 import { t } from '@/shared/i18n/i18n';
-import { ONBOARDING } from '@/shared/i18n/keys';
 import { IOS_ICONS, PHOTOS, SAMPLE_FACES } from '@/shared/lib/assets';
 interface HomescreenPreviewProps {
   /** `small` = 2x2 tile (screen 07), `large` = 4x2 tile (screen 07b). */
@@ -42,16 +41,16 @@ export function HomescreenPreview({ size = 'small' }: HomescreenPreviewProps) {
   // occupies the left two columns of the first two rows. One wrapping flex row
   // would put the 138px widget in the same flow as 58px icons and collide.
   const pairs = [
-    [IOS_ICONS.weather, t(ONBOARDING.WIDGET.PREVIEW.WEATHER)],
-    [IOS_ICONS.clock, t(ONBOARDING.WIDGET.PREVIEW.CLOCK)],
-    [IOS_ICONS.calendar, t(ONBOARDING.WIDGET.PREVIEW.CALENDAR)],
-    [IOS_ICONS.maps, t(ONBOARDING.WIDGET.PREVIEW.MAPS)],
+    [IOS_ICONS.weather, t('onboarding.widget.preview.weather')],
+    [IOS_ICONS.clock, t('onboarding.widget.preview.clock')],
+    [IOS_ICONS.calendar, t('onboarding.widget.preview.calendar')],
+    [IOS_ICONS.maps, t('onboarding.widget.preview.maps')],
   ] as const;
   const lastRow = [
-    [IOS_ICONS.mail, t(ONBOARDING.WIDGET.PREVIEW.MAIL)],
-    [IOS_ICONS.contacts, t(ONBOARDING.WIDGET.PREVIEW.CONTACTS)],
-    [IOS_ICONS.stock, t(ONBOARDING.WIDGET.PREVIEW.STOCKS)],
-    [IOS_ICONS.photos, t(ONBOARDING.WIDGET.PREVIEW.PHOTOS)],
+    [IOS_ICONS.mail, t('onboarding.widget.preview.mail')],
+    [IOS_ICONS.contacts, t('onboarding.widget.preview.contacts')],
+    [IOS_ICONS.stock, t('onboarding.widget.preview.stocks')],
+    [IOS_ICONS.photos, t('onboarding.widget.preview.photos')],
   ] as const;
 
   return (
@@ -146,10 +145,10 @@ function SmallWidget() {
         <View className="absolute bottom-2 left-[9px] right-[9px] flex-row items-end gap-[7px]">
           <View className="min-w-0 flex-1">
             <Text variant="captionXs" className="text-[9px] text-[rgba(255,255,255,.75)]">
-              {t(ONBOARDING.WIDGET.PREVIEW.SAMPLE_META)}
+              {t('onboarding.widget.preview.sampleMeta')}
             </Text>
             <Text variant="captionXs" className="text-[11px] leading-[13px] text-white" numberOfLines={2}>
-              {t(ONBOARDING.WIDGET.PREVIEW.SAMPLE_CAPTION)}
+              {t('onboarding.widget.preview.sampleCaption')}
             </Text>
           </View>
           <View className="h-[27px] w-[27px] items-center justify-center rounded-[13.5px] bg-purple">
@@ -158,7 +157,7 @@ function SmallWidget() {
         </View>
       </View>
       <Text variant="captionXs" className="text-center text-[rgba(255,255,255,.92)]" style={LABEL_SHADOW}>
-        {t(ONBOARDING.WIDGET.WIDGET_NAME)}
+        {t('onboarding.widget.widgetName')}
       </Text>
     </View>
   );
@@ -181,27 +180,27 @@ function LargeWidget() {
             <View className="flex-row items-center gap-1.5">
               <Avatar source={SAMPLE_FACES.mia} size={20} />
               <Text variant="caption" weight="semibold" className="text-white">
-                {t(ONBOARDING.WIDGET.PREVIEW.SAMPLE_NAME)}
+                {t('onboarding.widget.preview.sampleName')}
               </Text>
               <Text variant="captionXs" className="text-on-dark-text-faint">
-                {t(ONBOARDING.WIDGET.PREVIEW.SAMPLE_TIME)}
+                {t('onboarding.widget.preview.sampleTime')}
               </Text>
             </View>
             <Text variant="metaXs" className="text-[rgba(255,255,255,.94)]" numberOfLines={3}>
-              {t(ONBOARDING.WIDGET.PREVIEW.SAMPLE_CAPTION_LONG)}
+              {t('onboarding.widget.preview.sampleCaptionLong')}
             </Text>
           </View>
 
           <View className="h-[34px] flex-row items-center justify-center gap-[7px] rounded-pill bg-purple">
             <CameraIcon size={15} lensColor={colors.purple} />
             <Text variant="metaXs" weight="semibold" className="text-white">
-              {t(ONBOARDING.WIDGET.WIDGET_REPLY)}
+              {t('onboarding.widget.widgetReply')}
             </Text>
           </View>
         </View>
       </View>
       <Text variant="captionXs" className="text-center text-[rgba(255,255,255,.92)]" style={LABEL_SHADOW}>
-        {t(ONBOARDING.WIDGET.WIDGET_NAME)}
+        {t('onboarding.widget.widgetName')}
       </Text>
     </View>
   );

@@ -8,8 +8,7 @@ import { CtaFooter } from '@/shared/ui/cta-footer';
 import { Screen } from '@/shared/ui/screen';
 import { Text } from '@/shared/ui/text';
 import { t } from '@/shared/i18n/i18n';
-import { ONBOARDING } from '@/shared/i18n/keys';
-import type { TranslationKey } from '@/shared/i18n/keys';
+import type { TranslationKey } from '@/shared/i18n/i18n';
 import type { Translations } from '@/shared/i18n/locales/de';
 import {
   AppStoreChannelIcon,
@@ -32,13 +31,13 @@ interface ChannelOption {
 // Typed against the locale, so a renamed key fails to compile instead of
 // rendering "missing translation" in a list.
 const OPTIONS: ChannelOption[] = [
-  { key: 'friend', label: ONBOARDING.HEARD_ABOUT.OPTIONS.FRIEND, icon: <FriendChannelIcon /> },
-  { key: 'instagram', label: ONBOARDING.HEARD_ABOUT.OPTIONS.INSTAGRAM, icon: <InstagramChannelIcon /> },
-  { key: 'tiktok', label: ONBOARDING.HEARD_ABOUT.OPTIONS.TIKTOK, icon: <TiktokChannelIcon /> },
-  { key: 'appStore', label: ONBOARDING.HEARD_ABOUT.OPTIONS.APP_STORE, icon: <AppStoreChannelIcon /> },
-  { key: 'youtube', label: ONBOARDING.HEARD_ABOUT.OPTIONS.YOUTUBE, icon: <YoutubeChannelIcon /> },
-  { key: 'search', label: ONBOARDING.HEARD_ABOUT.OPTIONS.SEARCH, icon: <SearchChannelIcon /> },
-  { key: 'other', label: ONBOARDING.HEARD_ABOUT.OPTIONS.OTHER, icon: <OtherChannelIcon /> },
+  { key: 'friend', label: 'onboarding.heardAbout.options.friend', icon: <FriendChannelIcon /> },
+  { key: 'instagram', label: 'onboarding.heardAbout.options.instagram', icon: <InstagramChannelIcon /> },
+  { key: 'tiktok', label: 'onboarding.heardAbout.options.tiktok', icon: <TiktokChannelIcon /> },
+  { key: 'appStore', label: 'onboarding.heardAbout.options.appStore', icon: <AppStoreChannelIcon /> },
+  { key: 'youtube', label: 'onboarding.heardAbout.options.youtube', icon: <YoutubeChannelIcon /> },
+  { key: 'search', label: 'onboarding.heardAbout.options.search', icon: <SearchChannelIcon /> },
+  { key: 'other', label: 'onboarding.heardAbout.options.other', icon: <OtherChannelIcon /> },
 ];
 
 /**
@@ -56,7 +55,7 @@ export default function HeardAboutScreen() {
     <Screen
       footer={
         <CtaFooter
-          label={t(ONBOARDING.HEARD_ABOUT.CTA)}
+          label={t('onboarding.heardAbout.cta')}
           disabled={!choice}
           onPress={() => {
             // Optimistic like everything else: attribution input is not
@@ -64,7 +63,7 @@ export default function HeardAboutScreen() {
             if (choice) update.mutate({ heard_about: choice });
             router.replace('/(onboarding)/thank-you');
           }}
-          secondary={t(ONBOARDING.HEARD_ABOUT.SKIP)}
+          secondary={t('onboarding.heardAbout.skip')}
           onSecondary={() => router.replace('/(onboarding)/thank-you')}
         />
       }
@@ -73,10 +72,10 @@ export default function HeardAboutScreen() {
       <CloseRow onPress={() => router.back()} />
 
       <Text variant="display" className="mt-[26px] text-ink">
-        {t(ONBOARDING.HEARD_ABOUT.TITLE)}
+        {t('onboarding.heardAbout.title')}
       </Text>
       <Text variant="bodySm" className="mt-2.5 text-purple-muted">
-        {t(ONBOARDING.HEARD_ABOUT.SUBTITLE)}
+        {t('onboarding.heardAbout.subtitle')}
       </Text>
 
       <View className="mt-[22px] gap-2">

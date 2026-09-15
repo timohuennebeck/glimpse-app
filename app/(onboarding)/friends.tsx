@@ -10,7 +10,6 @@ import { SectionLabel } from '@/shared/ui/section-label';
 import { Text } from '@/shared/ui/text';
 import { colors } from '@/shared/theme/colors';
 import { t } from '@/shared/i18n/i18n';
-import { COMMON, ERRORS, FRIENDS, ONBOARDING } from '@/shared/i18n/keys';
 import { queries } from '@/shared/lib/queries';
 import { useDebouncedValue } from '@/shared/lib/use-debounced-value';
 import { PersonRow } from '@/features/friends/components/person-row';
@@ -43,9 +42,9 @@ export default function OnboardingFriendsScreen() {
     <Screen
       footer={
         <CtaFooter
-          label={t(ONBOARDING.FRIENDS.CTA)}
+          label={t('onboarding.friends.cta')}
           onPress={() => router.push('/(onboarding)/notifications')}
-          secondary={t(ONBOARDING.FRIENDS.SKIP)}
+          secondary={t('onboarding.friends.skip')}
           onSecondary={() => router.push('/(onboarding)/notifications')}
         />
       }
@@ -54,10 +53,10 @@ export default function OnboardingFriendsScreen() {
       <ProgressHeader step={5} onClose={() => router.back()} />
 
       <Text variant="displaySm" className="mt-[26px] text-ink">
-        {t(ONBOARDING.FRIENDS.TITLE)}
+        {t('onboarding.friends.title')}
       </Text>
       <Text variant="bodySm" className="mt-3 text-muted">
-        {t(ONBOARDING.FRIENDS.SUBTITLE)}
+        {t('onboarding.friends.subtitle')}
       </Text>
 
       <View className="mt-5 h-field flex-row items-center gap-3 rounded-pill bg-surface-lilac px-[18px]">
@@ -65,7 +64,7 @@ export default function OnboardingFriendsScreen() {
         <TextInput
           value={query}
           onChangeText={setQuery}
-          placeholder={t(ONBOARDING.FRIENDS.SEARCH_PLACEHOLDER)}
+          placeholder={t('onboarding.friends.searchPlaceholder')}
           placeholderTextColor={colors.mutedCool}
           autoCapitalize="none"
           autoCorrect={false}
@@ -75,7 +74,7 @@ export default function OnboardingFriendsScreen() {
 
       {searching ? (
         <View className="mt-6 gap-3.5">
-          <SectionLabel>{t(FRIENDS.SEARCH.RESULTS_SECTION, { count: results.length })}</SectionLabel>
+          <SectionLabel>{t('friends.search.resultsSection', { count: results.length })}</SectionLabel>
           <View className="gap-3.5">
             {results.map((person) => (
               <PersonRow
@@ -94,7 +93,7 @@ export default function OnboardingFriendsScreen() {
             ))}
             {results.length === 0 ? (
               <Text variant="bodySm" className="text-muted-lilac">
-                {t(FRIENDS.SEARCH.EMPTY)}
+                {t('friends.search.empty')}
               </Text>
             ) : null}
           </View>
@@ -105,17 +104,17 @@ export default function OnboardingFriendsScreen() {
           token, which is what makes the person who opens it claimable. */}
       <ShareRow
         className="mt-[22px]"
-        dividerLabel={t(ONBOARDING.FRIENDS.DIVIDER_SHARE)}
+        dividerLabel={t('onboarding.friends.dividerShare')}
         link={handle}
-        linkLabel={t(ONBOARDING.FRIENDS.SHARE_LINK)}
+        linkLabel={t('onboarding.friends.shareLink')}
         actions={[
           {
             label:
               shareState === 'copied'
-                ? t(COMMON.COPIED)
+                ? t('common.copied')
                 : shareState === 'failed'
-                  ? t(ERRORS.GENERIC)
-                  : t(ONBOARDING.FRIENDS.SHARE_COPY),
+                  ? t('errors.generic')
+                  : t('onboarding.friends.shareCopy'),
             icon: <Copy size={22} color={colors.inkFaint} strokeWidth={2} />,
             onPress: () => {
               void copyInvite().then(
@@ -125,7 +124,7 @@ export default function OnboardingFriendsScreen() {
             },
           },
           {
-            label: shareState === 'failed' ? t(ERRORS.GENERIC) : t(ONBOARDING.FRIENDS.SHARE_MORE),
+            label: shareState === 'failed' ? t('errors.generic') : t('onboarding.friends.shareMore'),
             icon: <MoreHorizontal size={22} color={colors.inkFaint} strokeWidth={2.4} />,
             onPress: () => {
               void shareInvite(me?.first_name ?? '').then(

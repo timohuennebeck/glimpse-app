@@ -7,7 +7,6 @@ import { CloseRow } from '@/shared/ui/close-row';
 import { Screen } from '@/shared/ui/screen';
 import { Text } from '@/shared/ui/text';
 import { t } from '@/shared/i18n/i18n';
-import { ONBOARDING } from '@/shared/i18n/keys';
 import { ART } from '@/shared/lib/assets';
 /**
  * Screen `11a Welcome · variant A (mascot)`.
@@ -22,7 +21,7 @@ export default function ThankYouScreen() {
       footer={
         <View className="gap-6">
           <Button
-            label={t(ONBOARDING.THANK_YOU.VARIANT_A.CTA)}
+            label={t('onboarding.thankYou.variantA.cta')}
             onPress={() => {
               // The feed has to be underneath, or closing the camera has nowhere to go.
               router.replace('/(app)/feed');
@@ -35,7 +34,7 @@ export default function ThankYouScreen() {
             accessibilityRole="link"
             onPress={() => router.replace('/(app)/feed')}
           >
-            {t(ONBOARDING.THANK_YOU.VARIANT_A.SKIP)}
+            {t('onboarding.thankYou.variantA.skip')}
           </Text>
         </View>
       }
@@ -44,10 +43,10 @@ export default function ThankYouScreen() {
       <CloseRow className="h-9" onPress={() => router.replace('/(app)/feed')} />
 
       <Text variant="display" className="mt-10 text-center text-ink">
-        {t(ONBOARDING.THANK_YOU.VARIANT_A.TITLE)}
+        {t('onboarding.thankYou.variantA.title')}
       </Text>
       <Text variant="bodyMd" className="mt-3 text-center text-purple-muted">
-        {t(ONBOARDING.THANK_YOU.VARIANT_A.SUBTITLE)}
+        {t('onboarding.thankYou.variantA.subtitle')}
       </Text>
 
       <View className="mt-[34px] h-[280px] items-center justify-center">
@@ -59,7 +58,7 @@ export default function ThankYouScreen() {
         <Image source={ART.mascotUnlock} className="h-[250px] w-[250px]" contentFit="contain" />
       </View>
       <Text variant="bodyMd" className="mt-11 text-center text-purple-muted">
-        {t(ONBOARDING.THANK_YOU.VARIANT_A.FOOTNOTE)}
+        {t('onboarding.thankYou.variantA.footnote')}
       </Text>
     </Screen>
   );

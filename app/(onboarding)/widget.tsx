@@ -1,6 +1,5 @@
 import { router } from 'expo-router';
 import { t } from '@/shared/i18n/i18n';
-import { ONBOARDING } from '@/shared/i18n/keys';
 import { OnboardingScreen } from '@/features/onboarding/components/onboarding-screen';
 import { HomescreenPreview } from '@/features/widget/components/homescreen-preview';
 /**
@@ -15,13 +14,13 @@ export default function WidgetScreen() {
   return (
     <OnboardingScreen
       step={7}
-      title={t(ONBOARDING.WIDGET.TITLE)}
-      subtitle={t(ONBOARDING.WIDGET.SUBTITLE)}
-      cta={t(ONBOARDING.WIDGET.CTA)}
+      title={t('onboarding.widget.title')}
+      subtitle={t('onboarding.widget.subtitle')}
+      cta={t('onboarding.widget.cta')}
       onNext={() => router.push('/(onboarding)/reviews')}
-      secondary={t(ONBOARDING.WIDGET.SKIP)}
+      secondary={t('onboarding.widget.skip')}
       onSecondary={() => router.push('/(onboarding)/reviews')}
-      footnote={t(ONBOARDING.WIDGET.NOTE)}
+      footnote={t('onboarding.widget.note')}
     >
       <HomescreenPreview size="small" />
     </OnboardingScreen>

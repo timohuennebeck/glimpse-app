@@ -1,7 +1,6 @@
 import { formatDistanceToNowStrict, isToday, isYesterday, format } from 'date-fns';
 import { de, enUS } from 'date-fns/locale';
 import { getLocale, t } from '@/shared/i18n/i18n';
-import { PROFILE, TIME } from '@/shared/i18n/keys';
 function dfnsLocale() {
   return getLocale().startsWith('de') ? de : enUS;
 }
@@ -20,7 +19,7 @@ export function threadTime(iso: string): string {
   const d = new Date(iso);
   const locale = dfnsLocale();
   if (isToday(d)) return format(d, 'H:mm', { locale });
-  if (isYesterday(d)) return t(TIME.YESTERDAY);
+  if (isYesterday(d)) return t('time.yesterday');
   return format(d, 'EEEEEE', { locale });
 }
 
@@ -32,7 +31,7 @@ export function pairDate(iso: string): string {
 
 /** "Trading since September 2026" — when this person joined. */
 export function memberSince(iso: string): string {
-  return t(PROFILE.MEMBER_SINCE, { when: format(new Date(iso), 'LLLL yyyy', { locale: dfnsLocale() }) });
+  return t('profile.memberSince', { when: format(new Date(iso), 'LLLL yyyy', { locale: dfnsLocale() }) });
 }
 
 /** Remaining time before a frosted moment unlocks itself. */

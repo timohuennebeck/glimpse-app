@@ -1,7 +1,6 @@
 import { Share } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import { t } from '@/shared/i18n/i18n';
-import { INVITE } from '@/shared/i18n/keys';
 import { createInvite, inviteLink } from '@/features/invites/data/invites-api';
 /** Every "invite" button in the app ends up here. */
 export type ShareOutcome = 'shared' | 'copied';
@@ -18,7 +17,7 @@ export async function shareInvite(name: string, momentId?: string | null): Promi
   const link = inviteLink(token);
 
   try {
-    await Share.share({ message: t(INVITE.SHARE_MESSAGE, { name, link }) });
+    await Share.share({ message: t('invite.shareMessage', { name, link }) });
     return 'shared';
   } catch {
     await Clipboard.setStringAsync(link);

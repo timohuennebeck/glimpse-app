@@ -4,7 +4,6 @@ import { cn } from '@/shared/lib/cn';
 import { GlassButton } from '@/shared/ui/glass-button';
 import { colors } from '@/shared/theme/colors';
 import { t } from '@/shared/i18n/i18n';
-import { COMMON } from '@/shared/i18n/keys';
 interface CloseRowProps {
   onPress: () => void;
   className?: string;
@@ -14,7 +13,7 @@ interface CloseRowProps {
 export function CloseRow({ onPress, className }: CloseRowProps) {
   return (
     <View className={cn('h-8 flex-row items-center', className)}>
-      <GlassButton size={32} onPress={onPress} accessibilityLabel={t(COMMON.CLOSE)}>
+      <GlassButton size={32} onPress={onPress} accessibilityLabel={t('common.close')}>
         <X size={11} color={colors.inkFaint} strokeWidth={2.2} />
       </GlassButton>
     </View>

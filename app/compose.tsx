@@ -12,7 +12,6 @@ import { Button } from '@/shared/ui/button';
 import { GlassButton } from '@/shared/ui/glass-button';
 import { alpha, colors } from '@/shared/theme/colors';
 import { t } from '@/shared/i18n/i18n';
-import { COMMON, COMPOSE, MOMENT } from '@/shared/i18n/keys';
 import { useComposer } from '@/features/moments/hooks/use-composer';
 import { useInbox } from '@/features/moments/hooks/use-inbox';
 import { enqueueSend } from '@/features/moments/hooks/use-outbox';
@@ -87,10 +86,15 @@ export default function ComposeScreen() {
         style={{ paddingTop: insets.top + 12 }}
       >
         <View className="flex-row items-start justify-between px-5">
-          <GlassButton size={38} onDark onPress={() => router.back()} accessibilityLabel={t(COMMON.CLOSE)}>
+          <GlassButton size={38} onDark onPress={() => router.back()} accessibilityLabel={t('common.close')}>
             <X size={12} color={colors.white} strokeWidth={2.2} />
           </GlassButton>
-          <GlassButton size={38} onDark onPress={() => router.back()} accessibilityLabel={t(COMPOSE.RETAKE)}>
+          <GlassButton
+            size={38}
+            onDark
+            onPress={() => router.back()}
+            accessibilityLabel={t('compose.retake')}
+          >
             <RotateCcw size={17} color={colors.white} strokeWidth={1.9} />
           </GlassButton>
         </View>
@@ -109,7 +113,7 @@ export default function ComposeScreen() {
               <TextInput
                 value={caption}
                 onChangeText={setCaption}
-                placeholder={t(COMPOSE.CAPTION_PLACEHOLDER)}
+                placeholder={t('compose.captionPlaceholder')}
                 placeholderTextColor={alpha.onDarkText}
                 className="max-h-[90px] flex-1 p-0 font-sans text-[15px] text-white"
                 maxLength={280}
@@ -117,7 +121,7 @@ export default function ComposeScreen() {
               />
             </View>
             <Button
-              label={replyToTradeId ? t(MOMENT.LOCKED_CTA) : t(COMPOSE.CONTINUE)}
+              label={replyToTradeId ? t('moment.lockedCta') : t('compose.continue')}
               variant="purple"
               size="xl"
               onPress={next}

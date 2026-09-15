@@ -1,6 +1,5 @@
 import { NativeTabs } from 'expo-router/unstable-native-tabs';
 import { t } from '@/shared/i18n/i18n';
-import { NAV } from '@/shared/i18n/keys';
 import { useInbox } from '@/features/moments/hooks/use-inbox';
 import { useStampOnboardingDone } from '@/features/profile/hooks/use-stamp-onboarding-done';
 import { useUnreadTotal } from '@/features/chat/hooks/use-unread-total';
@@ -33,19 +32,19 @@ export default function AppLayout() {
           would need resources shipped in the app package. */}
       <NativeTabs.Trigger name="feed">
         <Icon sf="square.stack" md="photo_library" />
-        <Label>{t(NAV.FEED)}</Label>
+        <Label>{t('nav.feed')}</Label>
         {feedBadge ? <Badge>{feedBadge}</Badge> : null}
       </NativeTabs.Trigger>
 
       <NativeTabs.Trigger name="friends">
         <Icon sf="person.2" md="group" />
-        <Label>{t(NAV.FRIENDS)}</Label>
+        <Label>{t('nav.friends')}</Label>
         {friendsBadge ? <Badge>{friendsBadge}</Badge> : null}
       </NativeTabs.Trigger>
 
       <NativeTabs.Trigger name="profile">
         <Icon sf="person.crop.circle" md="account_circle" />
-        <Label>{t(NAV.PROFILE)}</Label>
+        <Label>{t('nav.profile')}</Label>
       </NativeTabs.Trigger>
     </NativeTabs>
   );

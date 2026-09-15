@@ -12,7 +12,6 @@ import { Text } from '@/shared/ui/text';
 import { colors } from '@/shared/theme/colors';
 import { radius } from '@/shared/theme/page-structure';
 import { t } from '@/shared/i18n/i18n';
-import { INVITE, MOMENT } from '@/shared/i18n/keys';
 import { relativeTime } from '@/shared/lib/format';
 import { errorMessage } from '@/shared/lib/error-message';
 import { queries } from '@/shared/lib/queries';
@@ -77,7 +76,7 @@ export default function InviteScreen() {
       <Screen>
         <CloseRow onPress={leave} />
         <Text variant="bodyMd" className="mt-10 text-center text-muted">
-          {t(MOMENT.NOT_FOUND)}
+          {t('moment.notFound')}
         </Text>
       </Screen>
     );
@@ -93,7 +92,7 @@ export default function InviteScreen() {
             </Text>
           ) : null}
           <Button
-            label={t(INVITE.CTA)}
+            label={t('invite.cta')}
             size="lg"
             icon={<CameraIcon size={21} lensColor={colors.ink} />}
             loading={claim.isPending}
@@ -115,7 +114,7 @@ export default function InviteScreen() {
             accessibilityRole="link"
             onPress={leave}
           >
-            {t(INVITE.SECONDARY)}
+            {t('invite.secondary')}
           </Text>
         </View>
       }
@@ -131,10 +130,10 @@ export default function InviteScreen() {
           ring="halo"
         />
         <Text variant="headlineSm" className="text-center text-ink">
-          {t(INVITE.TITLE, { name: preview?.inviterName ?? '' })}
+          {t('invite.title', { name: preview?.inviterName ?? '' })}
         </Text>
         <Text variant="bodySm" className="max-w-[280px] text-center text-muted">
-          {t(INVITE.BODY)}
+          {t('invite.body')}
         </Text>
       </View>
 

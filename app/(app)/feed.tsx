@@ -7,7 +7,6 @@ import { SectionHeading } from '@/shared/ui/section-heading';
 import { SectionLabel } from '@/shared/ui/section-label';
 import { Text } from '@/shared/ui/text';
 import { t } from '@/shared/i18n/i18n';
-import { COMMON, FEED } from '@/shared/i18n/keys';
 import { memberSince } from '@/shared/lib/format';
 import { queries } from '@/shared/lib/queries';
 import { friendsOf } from '@/features/friends/relationships';
@@ -47,7 +46,7 @@ export default function FeedScreen() {
     () => [
       {
         id: myId,
-        name: t(COMMON.YOU),
+        name: t('common.you'),
         avatar: avatarUrl(me?.avatar_storage_path ?? null),
         waiting: true,
       },
@@ -94,30 +93,30 @@ export default function FeedScreen() {
             // People, not trades — the same thing the rail draws a tile for.
             trailing={
               waitingSenders.length > 0
-                ? t(FEED.STORIES_TRAILING, { count: waitingSenders.length })
+                ? t('feed.storiesTrailing', { count: waitingSenders.length })
                 : undefined
             }
           >
-            {t(FEED.STORIES_LABEL)}
+            {t('feed.storiesLabel')}
           </SectionLabel>
           <StoryRail
             items={stories}
             placeholders={Math.max(0, 3 - waitingSenders.length)}
-            placeholderLabel={t(FEED.ADD_FRIEND)}
+            placeholderLabel={t('feed.addFriend')}
             onPressItem={(id) => openProfile(id, myId)}
             onPressPlaceholder={() => router.push('/(app)/friends/search')}
           />
         </View>
 
         <Text variant="headline" className="text-ink">
-          {empty ? t(FEED.EMPTY.HEADLINE) : greetingForNow()}
+          {empty ? t('feed.empty.headline') : greetingForNow()}
         </Text>
 
         {empty ? (
           <EmptyState
-            title={t(FEED.EMPTY.TITLE)}
-            body={t(FEED.EMPTY.BODY)}
-            cta={t(FEED.EMPTY.CTA)}
+            title={t('feed.empty.title')}
+            body={t('feed.empty.body')}
+            cta={t('feed.empty.cta')}
             onPress={() => router.push('/(app)/friends/search')}
           />
         ) : (
@@ -135,7 +134,7 @@ export default function FeedScreen() {
 
             {open.length > 0 ? (
               <>
-                <SectionHeading title={t(FEED.MOMENTS_TITLE)} />
+                <SectionHeading title={t('feed.momentsTitle')} />
 
                 {/* Fixed share rather than flex:1, which would stretch a lone item across
                     the full width and render a portrait photo as a letterbox strip. */}
@@ -167,7 +166,7 @@ export default function FeedScreen() {
 
 function greetingForNow(): string {
   const hour = new Date().getHours();
-  if (hour < 11) return t(FEED.GREETING_MORNING);
-  if (hour >= 18) return t(FEED.GREETING_EVENING);
-  return t(FEED.GREETING_DAY);
+  if (hour < 11) return t('feed.greetingMorning');
+  if (hour >= 18) return t('feed.greetingEvening');
+  return t('feed.greetingDay');
 }

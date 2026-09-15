@@ -1,6 +1,5 @@
 import { Pressable, View } from 'react-native';
 import { t } from '@/shared/i18n/i18n';
-import { CAMERA } from '@/shared/i18n/keys';
 interface ShutterButtonProps {
   onPress: () => void;
 }
@@ -11,7 +10,7 @@ export function ShutterButton({ onPress }: ShutterButtonProps) {
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel={t(CAMERA.SHUTTER_LABEL)}
+      accessibilityLabel={t('camera.shutterLabel')}
       className="h-[84px] w-[84px] items-center justify-center rounded-[42px] border-[5px] border-white active:opacity-70"
     >
       <View className="h-[66px] w-[66px] rounded-[33px] bg-white" />

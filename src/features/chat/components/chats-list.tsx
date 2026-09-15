@@ -10,7 +10,6 @@ import { Text } from '@/shared/ui/text';
 import { cn } from '@/shared/lib/cn';
 import { colors } from '@/shared/theme/colors';
 import { t } from '@/shared/i18n/i18n';
-import { CHAT } from '@/shared/i18n/keys';
 import { threadTime } from '@/shared/lib/format';
 import { queries } from '@/shared/lib/queries';
 import { useMe } from '@/features/profile/hooks/use-me';
@@ -34,13 +33,13 @@ export function ChatsList() {
       <View className="mt-[18px] h-field-xs flex-row items-center gap-2.5 rounded-pill bg-surface-lilac px-4">
         <Search size={16} color={colors.mutedCool} strokeWidth={1.8} />
         <Text variant="bodyXs" className="text-placeholder">
-          {t(CHAT.SEARCH_PLACEHOLDER)}
+          {t('chat.searchPlaceholder')}
         </Text>
       </View>
 
       <View className="mt-6 gap-3.5">
-        <SectionLabel trailing={unread > 0 ? t(CHAT.UNREAD_TRAILING, { count: unread }) : undefined}>
-          {t(CHAT.UNREAD_SECTION)}
+        <SectionLabel trailing={unread > 0 ? t('chat.unreadTrailing', { count: unread }) : undefined}>
+          {t('chat.unreadSection')}
         </SectionLabel>
 
         <View className="gap-[18px]">
@@ -73,7 +72,7 @@ export function ChatsList() {
                       className={cn('flex-1', isUnread ? 'text-ink-body' : 'text-muted-violet')}
                       numberOfLines={1}
                     >
-                      {(fromMe ? t(CHAT.YOU_PREFIX) : '') + (thread.lastContent ?? t(CHAT.SENT_PHOTO))}
+                      {(fromMe ? t('chat.youPrefix') : '') + (thread.lastContent ?? t('chat.sentPhoto'))}
                     </Text>
                   </View>
                 </View>

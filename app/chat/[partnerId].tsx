@@ -11,7 +11,6 @@ import { cn } from '@/shared/lib/cn';
 import { colors } from '@/shared/theme/colors';
 import { shadow } from '@/shared/theme/page-structure';
 import { t } from '@/shared/i18n/i18n';
-import { CHAT, COMMON } from '@/shared/i18n/keys';
 import { threadTime } from '@/shared/lib/format';
 import { queries } from '@/shared/lib/queries';
 import { errorMessage } from '@/shared/lib/error-message';
@@ -79,7 +78,7 @@ export default function ChatScreen() {
   return (
     <Screen gutter={0} bottomInset={0}>
       <View className="h-[60px] flex-row items-center gap-3 px-gutter">
-        <GlassButton size={34} onPress={() => router.back()} accessibilityLabel={t(COMMON.CLOSE)}>
+        <GlassButton size={34} onPress={() => router.back()} accessibilityLabel={t('common.close')}>
           <X size={12} color={colors.inkFaint} strokeWidth={2.2} />
         </GlassButton>
         <Avatar source={partnerAvatar} name={partnerName} size={40} />
@@ -89,11 +88,11 @@ export default function ChatScreen() {
           </Text>
           {present ? (
             <Text variant="metaXs" className="text-muted-lilac">
-              {t(CHAT.ONLINE)}
+              {t('chat.online')}
             </Text>
           ) : null}
         </View>
-        <GlassButton size={34} accessibilityLabel={t(COMMON.MORE)}>
+        <GlassButton size={34} accessibilityLabel={t('common.more')}>
           <MoreHorizontal size={17} color={colors.inkFaint} strokeWidth={2.4} />
         </GlassButton>
       </View>
@@ -148,7 +147,7 @@ export default function ChatScreen() {
           <TextInput
             value={draft}
             onChangeText={setDraft}
-            placeholder={t(CHAT.INPUT_PLACEHOLDER)}
+            placeholder={t('chat.inputPlaceholder')}
             placeholderTextColor={colors.placeholder}
             className="max-h-[100px] p-0 font-sans text-[15.5px] text-ink-body"
             multiline
@@ -166,7 +165,7 @@ export default function ChatScreen() {
               onPress={submit}
               disabled={draft.trim().length === 0}
               accessibilityRole="button"
-              accessibilityLabel={t(CHAT.SEND)}
+              accessibilityLabel={t('chat.send')}
               accessibilityState={{ disabled: draft.trim().length === 0 }}
             >
               <ArrowUp size={17} color={colors.white} strokeWidth={2.4} />

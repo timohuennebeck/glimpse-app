@@ -10,7 +10,6 @@ import { SectionHeading } from '@/shared/ui/section-heading';
 import { Text } from '@/shared/ui/text';
 import { colors } from '@/shared/theme/colors';
 import { t } from '@/shared/i18n/i18n';
-import { COMMON, PROFILE } from '@/shared/i18n/keys';
 import type { Profile } from '@/shared/lib/database.types';
 import type { MomentPair } from '@/features/moments/interfaces';
 import { avatarUrl } from '@/features/profile/data/profile-api';
@@ -53,7 +52,7 @@ export function ProfileView({
           ring="halo"
           className="-mt-1"
         />
-        <GlassButton size={44} onPress={onPressMore} accessibilityLabel={t(COMMON.MORE)}>
+        <GlassButton size={44} onPress={onPressMore} accessibilityLabel={t('common.more')}>
           <MoreHorizontal size={20} color={colors.inkSoft} strokeWidth={2.4} />
         </GlassButton>
       </View>
@@ -69,7 +68,7 @@ export function ProfileView({
 
       {onPressTrade ? (
         <Button
-          label={t(PROFILE.TRADE_CTA)}
+          label={t('profile.tradeCta')}
           size="md"
           className="mt-4"
           icon={<CameraIcon size={22} lensColor={colors.ink} />}
@@ -77,13 +76,13 @@ export function ProfileView({
         />
       ) : null}
 
-      <SectionHeading title={t(PROFILE.MOMENTS_TITLE)} className="mb-3.5 mt-4" />
+      <SectionHeading title={t('profile.momentsTitle')} className="mb-3.5 mt-4" />
 
       {pairs.length > 0 ? (
         <PairGrid pairs={pairs} onPressPhoto={(momentId) => router.push(`/photo/${momentId}`)} />
       ) : (
         <Text variant="bodySm" className="mt-8 text-center text-muted-lilac">
-          {t(PROFILE.PAIRS_EMPTY)}
+          {t('profile.pairsEmpty')}
         </Text>
       )}
     </>

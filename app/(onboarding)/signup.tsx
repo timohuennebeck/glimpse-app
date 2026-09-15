@@ -10,7 +10,6 @@ import { Text } from '@/shared/ui/text';
 import { colors } from '@/shared/theme/colors';
 import { spacing } from '@/shared/theme/page-structure';
 import { t } from '@/shared/i18n/i18n';
-import { ONBOARDING } from '@/shared/i18n/keys';
 import { HeroPanel } from '@/features/onboarding/components/hero-panel';
 import { ART } from '@/shared/lib/assets';
 /**
@@ -29,13 +28,13 @@ export default function SignUpScreen() {
         <View className="gap-[22px]">
           <View className="gap-4">
             <Button
-              label={t(ONBOARDING.SIGN_UP.EMAIL)}
+              label={t('onboarding.signUp.email')}
               size="xl"
               icon={<Mail size={26} color={colors.white} strokeWidth={1.9} />}
               onPress={() => router.push('/(onboarding)/details')}
             />
             <Button
-              label={t(ONBOARDING.SIGN_UP.GOOGLE)}
+              label={t('onboarding.signUp.google')}
               variant="outline"
               size="xl"
               icon={<GoogleIcon size={24} />}
@@ -43,12 +42,12 @@ export default function SignUpScreen() {
               onPress={() => router.push('/(onboarding)/details')}
             />
           </View>
-          <Divider label={t(ONBOARDING.SIGN_UP.DIVIDER)} />
+          <Divider label={t('onboarding.signUp.divider')} />
           {/* 14.5 * 1.6 */}
           <Text variant="subtitle" className="text-center leading-[23.2px] text-muted-lilac">
-            {t(ONBOARDING.SIGN_UP.LEGAL, {
-              terms: t(ONBOARDING.SIGN_UP.TERMS),
-              privacy: t(ONBOARDING.SIGN_UP.PRIVACY),
+            {t('onboarding.signUp.legal', {
+              terms: t('onboarding.signUp.terms'),
+              privacy: t('onboarding.signUp.privacy'),
             })}
           </Text>
         </View>
@@ -57,10 +56,10 @@ export default function SignUpScreen() {
       <ProgressHeader step={4} onClose={() => router.back()} />
 
       <Text variant="displayXl" className="mt-3.5 text-ink">
-        {t(ONBOARDING.SIGN_UP.TITLE)}
+        {t('onboarding.signUp.title')}
       </Text>
       <Text variant="bodyMd" className="mt-3.5 text-muted-violet">
-        {t(ONBOARDING.SIGN_UP.SUBTITLE)}
+        {t('onboarding.signUp.subtitle')}
       </Text>
 
       <HeroPanel source={ART.signupKey} imageClassName="h-[250px] w-[308px]" className="mt-1.5" />

@@ -1,5 +1,4 @@
 import { t } from '@/shared/i18n/i18n';
-import { FRIENDS } from '@/shared/i18n/keys';
 import { Pill } from '@/features/friends/components/pill';
 import { useAcceptFriendRequest, useSendFriendRequest } from '@/features/friends/data/friends-mutations';
 import type { PersonSummary, Relationship } from '@/features/friends/interfaces';
@@ -20,13 +19,13 @@ export function RelationshipPill({ person, relationship, compact = false }: Rela
 
   switch (relationship.kind) {
     case 'friends':
-      return <Pill label={t(FRIENDS.SEARCH.ALREADY_FRIENDS)} tone="outline" compact={compact} />;
+      return <Pill label={t('friends.search.alreadyFriends')} tone="outline" compact={compact} />;
     case 'sent':
-      return <Pill label={t(FRIENDS.SEARCH.SENT)} tone="quiet" compact={compact} />;
+      return <Pill label={t('friends.search.sent')} tone="quiet" compact={compact} />;
     case 'received':
       return (
         <Pill
-          label={t(FRIENDS.ACCEPT)}
+          label={t('friends.accept')}
           tone="filled"
           compact={compact}
           onPress={() => accept.mutate(relationship.friendshipId)}
@@ -35,7 +34,7 @@ export function RelationshipPill({ person, relationship, compact = false }: Rela
     default:
       return (
         <Pill
-          label={t(FRIENDS.SEARCH.ADD)}
+          label={t('friends.search.add')}
           tone="filled"
           compact={compact}
           onPress={() => send.mutate(person)}

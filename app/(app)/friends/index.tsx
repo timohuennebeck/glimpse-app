@@ -11,7 +11,6 @@ import { cn } from '@/shared/lib/cn';
 import { colors } from '@/shared/theme/colors';
 import { avatarSize } from '@/shared/theme/page-structure';
 import { t } from '@/shared/i18n/i18n';
-import { COMMON, ERRORS, FEED, FRIENDS } from '@/shared/i18n/keys';
 import { relativeTime } from '@/shared/lib/format';
 import { errorMessage } from '@/shared/lib/error-message';
 import { queries } from '@/shared/lib/queries';
@@ -65,7 +64,7 @@ export default function FriendsScreen() {
   });
   const rail = useMemo(
     () => [
-      { id: myId, name: t(COMMON.YOU), avatar: avatarUrl(me?.avatar_storage_path ?? null), waiting: true },
+      { id: myId, name: t('common.you'), avatar: avatarUrl(me?.avatar_storage_path ?? null), waiting: true },
       ...friendsOf(friendships, myId).map((person) => ({
         id: person.id,
         name: person.name,
@@ -89,12 +88,12 @@ export default function FriendsScreen() {
     <TabScreen>
       <View className="h-10 flex-row items-center justify-between">
         <Text variant="screenTitle" className="text-ink">
-          {t(FRIENDS.TITLE)}
+          {t('friends.title')}
         </Text>
         <GlassButton
           size={38}
           onPress={() => router.push('/(app)/friends/search')}
-          accessibilityLabel={t(FRIENDS.SEARCH.TITLE)}
+          accessibilityLabel={t('friends.search.title')}
         >
           <Plus size={18} color={colors.purpleMuted} strokeWidth={2.4} />
         </GlassButton>
@@ -117,7 +116,7 @@ export default function FriendsScreen() {
               weight="semibold"
               className={tab === key ? 'text-purple-deep' : 'text-muted-lilac'}
             >
-              {t(key === 'friends' ? FRIENDS.TAB_FRIENDS : FRIENDS.TAB_CHATS)}
+              {t(key === 'friends' ? 'friends.tabFriends' : 'friends.tabChats')}
             </Text>
             {badges[key] > 0 ? (
               <View className="h-5 min-w-[20px] items-center justify-center rounded-pill bg-purple px-1.5">
@@ -135,21 +134,21 @@ export default function FriendsScreen() {
       ) : (
         <>
           <View className="mt-[22px] gap-3.5">
-            <SectionLabel trailing={waiting > 0 ? t(FEED.STORIES_TRAILING, { count: waiting }) : undefined}>
-              {t(FRIENDS.STORIES_LABEL)}
+            <SectionLabel trailing={waiting > 0 ? t('feed.storiesTrailing', { count: waiting }) : undefined}>
+              {t('friends.storiesLabel')}
             </SectionLabel>
             <StoryRail
               size={avatarSize.ring}
               items={rail}
               placeholders={Math.max(0, 3 - rail.length)}
-              placeholderLabel={t(FEED.ADD_FRIEND)}
+              placeholderLabel={t('feed.addFriend')}
               onPressItem={(id) => openProfile(id, myId)}
               onPressPlaceholder={() => router.push('/(app)/friends/search')}
             />
           </View>
 
           <View className="mt-[22px] gap-3.5">
-            <SectionLabel>{t(FRIENDS.REQUESTS_SECTION, { count: requests.length })}</SectionLabel>
+            <SectionLabel>{t('friends.requestsSection', { count: requests.length })}</SectionLabel>
             <View className="gap-4">
               {requests.map((friendship) => {
                 const person = otherParty(friendship, myId);
@@ -158,10 +157,10 @@ export default function FriendsScreen() {
                     key={friendship.id}
                     avatar={person.avatarUrl}
                     name={person.name}
-                    subtitle={t(FRIENDS.SEARCH.MUTUAL, { count: mutual[person.id] ?? 0 })}
+                    subtitle={t('friends.search.mutual', { count: mutual[person.id] ?? 0 })}
                     trailing={
                       <Pill
-                        label={t(FRIENDS.ACCEPT)}
+                        label={t('friends.accept')}
                         tone="filled"
                         onPress={() => accept.mutate(friendship.id)}
                       />
@@ -174,7 +173,7 @@ export default function FriendsScreen() {
           </View>
 
           <View className="mt-[22px] gap-3.5">
-            <SectionLabel>{t(FRIENDS.SENT_SECTION, { count: sent.length })}</SectionLabel>
+            <SectionLabel>{t('friends.sentSection', { count: sent.length })}</SectionLabel>
             <View className="gap-4">
               {sent.map((friendship) => {
                 const person = otherParty(friendship, myId);
@@ -184,12 +183,12 @@ export default function FriendsScreen() {
                     key={friendship.id}
                     avatar={person.avatarUrl}
                     name={person.name}
-                    subtitle={t(FRIENDS.SENT_AGO, { time: relativeTime(friendship.createdAt) })}
+                    subtitle={t('friends.sentAgo', { time: relativeTime(friendship.createdAt) })}
                     subtitleIcon={<Clock size={14} color={colors.placeholderSoft} strokeWidth={2} />}
                     dimmed
                     trailing={
                       <Pill
-                        label={confirming ? t(FRIENDS.WITHDRAW) : t(FRIENDS.PENDING)}
+                        label={confirming ? t('friends.withdraw') : t('friends.pending')}
                         tone={confirming ? 'filled' : 'muted'}
                         onPress={() =>
                           confirming ? remove.mutate(friendship.id) : setConfirmWithdraw(friendship.id)
@@ -211,10 +210,10 @@ export default function FriendsScreen() {
           <CtaFooter
             label={
               shareState === 'copied'
-                ? t(COMMON.COPIED)
+                ? t('common.copied')
                 : shareState === 'failed'
-                  ? t(ERRORS.GENERIC)
-                  : t(FRIENDS.ADD_CTA)
+                  ? t('errors.generic')
+                  : t('friends.addCta')
             }
             onPress={() => {
               void shareInvite(me?.first_name ?? '').then(

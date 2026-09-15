@@ -5,7 +5,6 @@ import { LogOut } from 'lucide-react-native';
 import { Text } from '@/shared/ui/text';
 import { colors } from '@/shared/theme/colors';
 import { t } from '@/shared/i18n/i18n';
-import { COMMON, PROFILE } from '@/shared/i18n/keys';
 import { signOut } from '@/features/auth/sign-out';
 interface ProfileActionsSheetProps {
   visible: boolean;
@@ -27,7 +26,7 @@ export function ProfileActionsSheet({ visible, onClose }: ProfileActionsSheetPro
         className="flex-1 justify-end bg-[rgba(12,10,18,.45)]"
         onPress={onClose}
         accessibilityRole="button"
-        accessibilityLabel={t(COMMON.CLOSE)}
+        accessibilityLabel={t('common.close')}
       >
         {/* Swallows the press, so tapping the sheet itself does not dismiss it.
             accessible={false} because Pressable defaults to true, which made
@@ -51,7 +50,7 @@ export function ProfileActionsSheet({ visible, onClose }: ProfileActionsSheetPro
           >
             <LogOut size={20} color={colors.inkBody} strokeWidth={2} />
             <Text variant="rowTitleSm" className="text-ink">
-              {t(PROFILE.SIGN_OUT)}
+              {t('profile.signOut')}
             </Text>
           </Pressable>
         </Pressable>

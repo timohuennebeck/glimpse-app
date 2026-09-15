@@ -14,7 +14,6 @@ import { Text } from '@/shared/ui/text';
 import { alpha, colors } from '@/shared/theme/colors';
 import { BLUR } from '@/shared/ui/locked-image';
 import { t } from '@/shared/i18n/i18n';
-import { COMMON, MOMENT } from '@/shared/i18n/keys';
 import { relativeTime, timeUntilUnlock } from '@/shared/lib/format';
 import { errorMessage } from '@/shared/lib/error-message';
 import { useInbox } from '@/features/moments/hooks/use-inbox';
@@ -70,11 +69,16 @@ export default function MomentScreen() {
             <View className="min-w-0 flex-1 gap-0.5">
               {!loading ? (
                 <Text variant="bodySm" className="text-on-dark-text">
-                  {t(MOMENT.NOT_FOUND)}
+                  {t('moment.notFound')}
                 </Text>
               ) : null}
             </View>
-            <GlassButton size={34} onDark onPress={() => router.back()} accessibilityLabel={t(COMMON.CLOSE)}>
+            <GlassButton
+              size={34}
+              onDark
+              onPress={() => router.back()}
+              accessibilityLabel={t('common.close')}
+            >
               <X size={12} color={colors.white} strokeWidth={2.2} />
             </GlassButton>
           </View>
@@ -133,7 +137,7 @@ export default function MomentScreen() {
               {relativeTime(moment.capturedAt)}
             </Text>
           </View>
-          <GlassButton size={34} onDark onPress={() => router.back()} accessibilityLabel={t(COMMON.CLOSE)}>
+          <GlassButton size={34} onDark onPress={() => router.back()} accessibilityLabel={t('common.close')}>
             <X size={12} color={colors.white} strokeWidth={2.2} />
           </GlassButton>
         </View>
@@ -144,14 +148,14 @@ export default function MomentScreen() {
               <LockedIcon size={28} />
             </View>
             <Text variant="cardTitleLg" className="text-center text-white">
-              {t(MOMENT.LOCKED_TITLE)}
+              {t('moment.lockedTitle')}
             </Text>
             <Text variant="bodyXs" className="max-w-[250px] text-center text-on-dark-text">
-              {t(MOMENT.LOCKED_BODY, { name: moment.from.name })}
+              {t('moment.lockedBody', { name: moment.from.name })}
             </Text>
             {countdown ? (
               <Text variant="caption" className="text-center text-on-dark-text-faint">
-                {t(MOMENT.AUTO_UNLOCK, { time: countdown })}
+                {t('moment.autoUnlock', { time: countdown })}
               </Text>
             ) : null}
           </View>
@@ -182,7 +186,7 @@ export default function MomentScreen() {
             <TextInput
               value={reply}
               onChangeText={setReply}
-              placeholder={t(MOMENT.REPLY_PLACEHOLDER)}
+              placeholder={t('moment.replyPlaceholder')}
               placeholderTextColor={alpha.onDarkTextSoft}
               className="p-0 font-sans text-[15.5px] text-white"
               editable={!locked}
@@ -213,7 +217,7 @@ export default function MomentScreen() {
           <Pressable
             onPress={tradeBack}
             accessibilityRole="button"
-            accessibilityLabel={t(MOMENT.LOCKED_CTA)}
+            accessibilityLabel={t('moment.lockedCta')}
             className="h-[52px] w-[52px] items-center justify-center rounded-[26px] bg-purple active:opacity-85"
           >
             <CameraIcon size={22} lensColor={colors.purple} />

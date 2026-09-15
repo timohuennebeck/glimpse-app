@@ -11,7 +11,6 @@ import { Text } from '@/shared/ui/text';
 import { colors } from '@/shared/theme/colors';
 import { spacing } from '@/shared/theme/page-structure';
 import { t } from '@/shared/i18n/i18n';
-import { COMMON, COMPOSE } from '@/shared/i18n/keys';
 import { errorMessage } from '@/shared/lib/error-message';
 import { queries } from '@/shared/lib/queries';
 import { PersonRow } from '@/features/friends/components/person-row';
@@ -89,19 +88,19 @@ export default function RecipientsScreen() {
 
   const ctaLabel =
     selectable.length === 0
-      ? t(COMPOSE.SEND_NONE)
+      ? t('compose.sendNone')
       : selectable.length === 1
-        ? t(COMPOSE.SEND_TO, { name: nameById.get(selectable[0]) ?? '' })
-        : t(COMPOSE.SEND_TO_MANY, { count: selectable.length });
+        ? t('compose.sendTo', { name: nameById.get(selectable[0]) ?? '' })
+        : t('compose.sendToMany', { count: selectable.length });
 
   return (
     <Screen gutter={0} bottomInset={spacing.contentBottom}>
       <View className="flex-row items-center gap-3.5 px-gutter">
-        <GlassButton size={38} onPress={() => router.back()} accessibilityLabel={t(COMMON.CLOSE)}>
+        <GlassButton size={38} onPress={() => router.back()} accessibilityLabel={t('common.close')}>
           <X size={12} color={colors.inkFaint} strokeWidth={2.2} />
         </GlassButton>
         <Text variant="cardTitleLg" className="text-ink">
-          {t(COMPOSE.RECIPIENTS_TITLE)}
+          {t('compose.recipientsTitle')}
         </Text>
       </View>
 
@@ -112,7 +111,7 @@ export default function RecipientsScreen() {
       >
         {waiting.length > 0 ? (
           <View className="gap-3.5">
-            <SectionLabel>{t(COMPOSE.WAITING_SECTION)}</SectionLabel>
+            <SectionLabel>{t('compose.waitingSection')}</SectionLabel>
             <View className="gap-4">
               {waiting.map(({ person }) => (
                 <PersonRow
@@ -132,7 +131,7 @@ export default function RecipientsScreen() {
         ) : null}
 
         <View className="gap-3.5">
-          <SectionLabel>{t(COMPOSE.FRIENDS_SECTION)}</SectionLabel>
+          <SectionLabel>{t('compose.friendsSection')}</SectionLabel>
           <View className="gap-4">
             {friends.map((person) => (
               <PersonRow
@@ -152,9 +151,9 @@ export default function RecipientsScreen() {
 
         <View className="gap-3.5">
           <EmptyState
-            title={t(COMPOSE.INVITE_TITLE)}
-            body={t(COMPOSE.INVITE_BODY)}
-            cta={t(COMPOSE.INVITE_CTA)}
+            title={t('compose.inviteTitle')}
+            body={t('compose.inviteBody')}
+            cta={t('compose.inviteCta')}
             artSize={112}
             onPress={() => router.push('/(app)/friends/search')}
           />

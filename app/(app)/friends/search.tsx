@@ -11,7 +11,6 @@ import { cn } from '@/shared/lib/cn';
 import { colors } from '@/shared/theme/colors';
 import { spacing } from '@/shared/theme/page-structure';
 import { t } from '@/shared/i18n/i18n';
-import { COMMON, ERRORS, FRIENDS } from '@/shared/i18n/keys';
 import { queries } from '@/shared/lib/queries';
 import { useDebouncedValue } from '@/shared/lib/use-debounced-value';
 import { PersonRow } from '@/features/friends/components/person-row';
@@ -41,11 +40,11 @@ export default function FriendSearchScreen() {
   return (
     <Screen scroll bottomInset={spacing.contentBottom}>
       <View className="h-10 flex-row items-center gap-3">
-        <GlassButton size={34} onPress={() => router.back()} accessibilityLabel={t(COMMON.CLOSE)}>
+        <GlassButton size={34} onPress={() => router.back()} accessibilityLabel={t('common.close')}>
           <X size={13} color={colors.inkFaint} strokeWidth={2.2} />
         </GlassButton>
         <Text variant="sheetTitle" className="text-ink">
-          {t(FRIENDS.SEARCH.TITLE)}
+          {t('friends.search.title')}
         </Text>
       </View>
 
@@ -59,7 +58,7 @@ export default function FriendSearchScreen() {
         <TextInput
           value={query}
           onChangeText={setQuery}
-          placeholder={t(FRIENDS.SEARCH.PLACEHOLDER)}
+          placeholder={t('friends.search.placeholder')}
           placeholderTextColor={colors.mutedCool}
           autoCapitalize="none"
           autoCorrect={false}
@@ -71,7 +70,7 @@ export default function FriendSearchScreen() {
             className="h-[22px] w-[22px] items-center justify-center rounded-[11px] bg-dot-idle-soft"
             hitSlop={8}
             accessibilityRole="button"
-            accessibilityLabel={t(COMMON.CLEAR)}
+            accessibilityLabel={t('common.clear')}
           >
             {/* inkSoft, not white: white on this chip is 1.4:1 — the glyph was
                 invisible and the control looked like an empty dot. */}
@@ -82,7 +81,7 @@ export default function FriendSearchScreen() {
 
       {searching ? (
         <View className="mt-[26px] gap-3.5">
-          <SectionLabel>{t(FRIENDS.SEARCH.RESULTS_SECTION, { count: results.length })}</SectionLabel>
+          <SectionLabel>{t('friends.search.resultsSection', { count: results.length })}</SectionLabel>
           <View className="gap-[18px]">
             {results.map((person) => (
               <PersonRow
@@ -101,7 +100,7 @@ export default function FriendSearchScreen() {
             ))}
             {results.length === 0 ? (
               <Text variant="bodySm" className="text-muted-lilac">
-                {t(FRIENDS.SEARCH.EMPTY)}
+                {t('friends.search.empty')}
               </Text>
             ) : null}
           </View>
@@ -111,21 +110,21 @@ export default function FriendSearchScreen() {
       {/* QR is designed but inert; "More" mints a real invite link. */}
       <ShareRow
         className="mt-[30px]"
-        dividerLabel={t(FRIENDS.SEARCH.DIVIDER_SHARE)}
+        dividerLabel={t('friends.search.dividerShare')}
         link={handle}
-        linkLabel={t(FRIENDS.SEARCH.LINK)}
+        linkLabel={t('friends.search.link')}
         actions={[
           {
-            label: t(FRIENDS.SEARCH.QR),
+            label: t('friends.search.qr'),
             icon: <QrCode size={22} color={colors.inkFaint} strokeWidth={2} />,
           },
           {
             label:
               shareState === 'copied'
-                ? t(COMMON.COPIED)
+                ? t('common.copied')
                 : shareState === 'failed'
-                  ? t(ERRORS.GENERIC)
-                  : t(FRIENDS.SEARCH.MORE),
+                  ? t('errors.generic')
+                  : t('friends.search.more'),
             icon: <MoreHorizontal size={22} color={colors.inkFaint} strokeWidth={2.4} />,
             onPress: () => {
               void shareInvite(me?.first_name ?? '').then(
@@ -144,7 +143,7 @@ export default function FriendSearchScreen() {
 function subtitleFor(person: PersonSummary, mutual: number): string | undefined {
   const parts = [
     person.username ? `@${person.username}` : null,
-    mutual > 0 ? t(FRIENDS.SEARCH.MUTUAL, { count: mutual }) : null,
+    mutual > 0 ? t('friends.search.mutual', { count: mutual }) : null,
   ].filter((part): part is string => part !== null);
   return parts.length > 0 ? parts.join(' · ') : undefined;
 }

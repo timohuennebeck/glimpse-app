@@ -6,7 +6,6 @@ import { CameraIcon } from '@/shared/ui/icons';
 import { colors } from '@/shared/theme/colors';
 import { shadow } from '@/shared/theme/page-structure';
 import { t } from '@/shared/i18n/i18n';
-import { PROFILE } from '@/shared/i18n/keys';
 import { useComposer } from '@/features/moments/hooks/use-composer';
 import { TAB_BAR_CLEARANCE } from '@/features/navigation/clearance';
 /** Sits just above the tab bar; the gap differs per platform's bar height. */
@@ -28,7 +27,7 @@ export function CaptureButton() {
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={t(PROFILE.TRADE_CTA)}
+      accessibilityLabel={t('profile.tradeCta')}
       onPress={() => {
         void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
         // A fresh moment: drop whatever an abandoned reply left in the draft.

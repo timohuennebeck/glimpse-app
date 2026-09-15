@@ -6,7 +6,6 @@ import { Plus } from 'lucide-react-native';
 import { Text } from '@/shared/ui/text';
 import { colors } from '@/shared/theme/colors';
 import { t } from '@/shared/i18n/i18n';
-import { ONBOARDING } from '@/shared/i18n/keys';
 import { OnboardingScreen } from '@/features/onboarding/components/onboarding-screen';
 import { useOnboardingDraft } from '@/features/onboarding/hooks/use-onboarding-draft';
 import { DottedDisc } from '@/shared/ui/dotted-disc';
@@ -37,11 +36,11 @@ export default function AvatarScreen() {
   return (
     <OnboardingScreen
       step={3}
-      title={t(ONBOARDING.AVATAR.TITLE)}
-      subtitle={t(ONBOARDING.AVATAR.SUBTITLE)}
-      cta={t(ONBOARDING.AVATAR.CTA)}
+      title={t('onboarding.avatar.title')}
+      subtitle={t('onboarding.avatar.subtitle')}
+      cta={t('onboarding.avatar.cta')}
       onNext={() => router.push('/(onboarding)/signup')}
-      secondary={t(ONBOARDING.AVATAR.SKIP)}
+      secondary={t('onboarding.avatar.skip')}
       onSecondary={() => {
         // "Add later" means without one — not with whatever was picked and
         // then reconsidered.
@@ -54,7 +53,7 @@ export default function AvatarScreen() {
           className="h-[164px] w-[164px]"
           onPress={() => void pick()}
           accessibilityRole="button"
-          accessibilityLabel={t(ONBOARDING.AVATAR.PICK)}
+          accessibilityLabel={t('onboarding.avatar.pick')}
         >
           {draft.avatar ? (
             <Image
@@ -71,7 +70,7 @@ export default function AvatarScreen() {
         </Pressable>
 
         <Text variant="body" className="text-ink-faint">
-          {t(ONBOARDING.AVATAR.PICK)}
+          {t('onboarding.avatar.pick')}
         </Text>
       </View>
     </OnboardingScreen>

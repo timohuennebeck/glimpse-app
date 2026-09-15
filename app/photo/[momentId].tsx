@@ -11,7 +11,6 @@ import { GlassButton } from '@/shared/ui/glass-button';
 import { Text } from '@/shared/ui/text';
 import { colors } from '@/shared/theme/colors';
 import { t } from '@/shared/i18n/i18n';
-import { COMMON, MOMENT, PHOTO } from '@/shared/i18n/keys';
 import { pairDate } from '@/shared/lib/format';
 import { queries } from '@/shared/lib/queries';
 
@@ -45,7 +44,7 @@ export default function PhotoScreen() {
         className="absolute inset-0 flex-row items-start justify-between px-4"
         style={{ paddingTop: insets.top + 12 }}
       >
-        <GlassButton size={40} onDark onPress={() => router.back()} accessibilityLabel={t(COMMON.CLOSE)}>
+        <GlassButton size={40} onDark onPress={() => router.back()} accessibilityLabel={t('common.close')}>
           <X size={12} color={colors.white} strokeWidth={2.2} />
         </GlassButton>
 
@@ -55,14 +54,14 @@ export default function PhotoScreen() {
           ) : null}
           <Text variant="subtitle" weight="medium" className="shrink text-on-dark-text" numberOfLines={1}>
             {moment
-              ? t(PHOTO.META, { name: moment.fromName, date: pairDate(moment.capturedAt) })
+              ? t('photo.meta', { name: moment.fromName, date: pairDate(moment.capturedAt) })
               : isPending
                 ? ''
-                : t(MOMENT.NOT_FOUND)}
+                : t('moment.notFound')}
           </Text>
         </View>
 
-        <GlassButton size={40} onDark accessibilityLabel={t(COMMON.MORE)}>
+        <GlassButton size={40} onDark accessibilityLabel={t('common.more')}>
           <MoreHorizontal size={19} color={colors.white} strokeWidth={2.4} />
         </GlassButton>
       </View>

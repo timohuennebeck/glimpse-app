@@ -9,7 +9,6 @@ import { Screen } from '@/shared/ui/screen';
 import { StarRow } from '@/shared/ui/star-row';
 import { Text } from '@/shared/ui/text';
 import { t, tList } from '@/shared/i18n/i18n';
-import { ONBOARDING } from '@/shared/i18n/keys';
 import { SAMPLE_FACES } from '@/shared/lib/assets';
 interface Review {
   name: string;
@@ -20,23 +19,23 @@ interface Review {
 
 /** Screen `08 Reviews` — social proof between onboarding and the paywall. */
 export default function ReviewsScreen() {
-  const reviews = tList<Review>(ONBOARDING.REVIEWS.ITEMS);
+  const reviews = tList<Review>('onboarding.reviews.items');
   const faces = [SAMPLE_FACES.mia, SAMPLE_FACES.ben, SAMPLE_FACES.lina];
 
   return (
     <Screen
       footer={
-        <CtaFooter label={t(ONBOARDING.REVIEWS.CTA)} onPress={() => router.push('/(onboarding)/paywall')} />
+        <CtaFooter label={t('onboarding.reviews.cta')} onPress={() => router.push('/(onboarding)/paywall')} />
       }
       scroll
     >
       <CloseRow onPress={() => router.back()} />
 
       <Text variant="display" className="mt-5 text-ink">
-        {t(ONBOARDING.REVIEWS.TITLE)}
+        {t('onboarding.reviews.title')}
       </Text>
       <Text variant="body" className="mt-3 text-muted-violet">
-        {t(ONBOARDING.REVIEWS.SUBTITLE)}
+        {t('onboarding.reviews.subtitle')}
       </Text>
 
       <View className="mb-3 mt-[22px] flex-row items-center justify-center gap-2.5">
@@ -44,10 +43,10 @@ export default function ReviewsScreen() {
         <View className="items-center gap-1">
           <StarRow size={21} />
           <Text variant="bodyXs" weight="semibold" className="text-ink">
-            {t(ONBOARDING.REVIEWS.RATING)}
+            {t('onboarding.reviews.rating')}
           </Text>
           <Text variant="metaXs" className="text-muted-lilac">
-            {t(ONBOARDING.REVIEWS.RATING_META)}
+            {t('onboarding.reviews.ratingMeta')}
           </Text>
         </View>
         <LaurelIcon size={42} flip />
@@ -66,7 +65,7 @@ export default function ReviewsScreen() {
                   <View className="flex-row items-center gap-[5px] rounded-pill bg-surface-violet-chip px-[9px] py-[3px]">
                     <VerifiedIcon size={15} />
                     <Text variant="captionXs" className="text-purple-muted">
-                      {t(ONBOARDING.REVIEWS.VERIFIED)}
+                      {t('onboarding.reviews.verified')}
                     </Text>
                   </View>
                 </View>

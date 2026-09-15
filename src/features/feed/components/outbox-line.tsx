@@ -3,7 +3,6 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Text } from '@/shared/ui/text';
 import { colors } from '@/shared/theme/colors';
 import { t } from '@/shared/i18n/i18n';
-import { FEED } from '@/shared/i18n/keys';
 import { retrySend, useOutbox } from '@/features/moments/hooks/use-outbox';
 /**
  * A slim line above the feed cards while a send is still going.
@@ -29,7 +28,7 @@ export function OutboxLine() {
               {/* The real reason where there is one: "Nothing is swallowed",
                   and the recipients screen it happened on is long gone. */}
               <Text variant="meta" className="flex-1 text-purple-deep" numberOfLines={1}>
-                {entry.error ?? t(FEED.OUTBOX.FAILED, { names })}
+                {entry.error ?? t('feed.outbox.failed', { names })}
               </Text>
               <Pressable
                 onPress={() => retrySend(entry.id, queryClient)}
@@ -37,7 +36,7 @@ export function OutboxLine() {
                 accessibilityRole="button"
               >
                 <Text variant="meta" weight="semibold" className="text-purple-deep">
-                  {t(FEED.OUTBOX.RETRY)}
+                  {t('feed.outbox.retry')}
                 </Text>
               </Pressable>
             </View>
@@ -50,7 +49,7 @@ export function OutboxLine() {
           >
             <ActivityIndicator size="small" color={colors.purple} />
             <Text variant="meta" className="flex-1 text-muted-violet" numberOfLines={1}>
-              {t(FEED.OUTBOX.SENDING, { names })}
+              {t('feed.outbox.sending', { names })}
             </Text>
           </View>
         );
