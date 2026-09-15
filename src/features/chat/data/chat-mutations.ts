@@ -48,6 +48,11 @@ export function useSendMessage(partnerId: string) {
       }),
     ...optimistic(queryClient, [
       patch<ChatMessage[], ChatMessage>(messagesKey, (old, message) => appendMessage(old, message)),
+      // Updates an existing row rather than inserting one: a brand-new
+      // conversation has no Thread to patch, and synthesising one would mean
+      // inventing the partner summary this mutation never sees. The first
+      // message to someone therefore reaches the chats list on the onSettled
+      // refetch, a round trip behind its own bubble.
       patch<Thread[], ChatMessage>(queries.chat.threads.queryKey, (old, message) =>
         old.map((thread) =>
           thread.partner.id === partnerId
