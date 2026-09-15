@@ -63,7 +63,8 @@
             "backgroundColor": "#0B0910"
           }
         }
-      ]
+      ],
+      "./plugins/with-glimpse-widget"
     ],
     "experiments": {
       "typedRoutes": true

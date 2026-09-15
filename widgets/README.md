@@ -72,29 +72,35 @@ permission is a real part of the product, not a nag. That is why onboarding step
 
 ## What is done vs. what remains
 
-**Done here:** both widget UIs, the snapshot format, and the JS bridge contract.
+**Done here:** both widget UIs, the snapshot format, the JS bridge, the native
+module (`modules/glimpse-widget`) and the config plugin
+(`plugins/with-glimpse-widget.js`).
+
+The module exposes `isAvailable`, `writeSnapshot`, `cacheImage`, `pruneImages`
+and `reloadWidget`. `cacheImage` is the one that was missing: the widget cannot
+fetch a signed URL, so the app downloads the photo into the shared container
+before naming it in a snapshot — otherwise the widget draws a missing image.
+`publishSnapshot` caches first, writes second, reloads last, for that reason.
+
+**Verified on Linux, without a device:** autolinking finds the module on both
+platforms with the right class names; `npx expo prebuild -p android` copies the
+provider, layout, drawables and both string files, and registers the receiver
+with its intent filter and `glimpse_widget_info` metadata; the app bundles on
+web, iOS and Android with the module wired in.
 
 **Remaining, and it needs a Mac + Xcode:**
 
 1. **Add the iOS target.** Install `@bacons/apple-targets`, add it to
    `app.json`'s plugins with the App Group, then `npx expo prebuild -p ios`.
-   Copy `ios/GlimpseWidget/` into the generated target.
-2. **Add the Android provider.** Write a small config plugin (`withAndroidWidget`)
-   that copies `android/src/main/…` into the generated project and registers the
-   receiver in `AndroidManifest.xml`.
-3. **Write the native module** `GlimpseWidget` exposing `writeSnapshot(json)` and
-   `reloadWidget()` — on iOS calling `WidgetCenter.shared.reloadAllTimelines()`,
-   on Android `AppWidgetManager.updateAppWidget`. The TS side already expects
-   exactly this shape. It must also **download the moment's signed URL into the
-   shared container as `imageFile`** before writing the snapshot — today nothing
-   writes that file, so the widget would render a missing image.
-4. **Android resources** are in place: `res/values{,-de}/strings.xml` and the
-   four drawables the layout references (`widget_background`, `widget_scrim`,
-   `widget_lock_puck`, `widget_camera_badge`). `glimpse_widget_info.xml` still
-   has to be registered in the manifest by the config plugin.
-5. **Build with EAS.** `eas build --profile development`. Expo Go cannot load a
-   widget extension, so the widget is invisible until you install a dev build.
+   Copy `ios/GlimpseWidget/` into the generated target. The config plugin here
+   deliberately does not write an Xcode target — that means editing the pbxproj,
+   which `@bacons/apple-targets` already does well.
+2. **Build and install.** `eas build --profile development`. Expo Go cannot load
+   a widget extension or a custom native module, so the widget stays invisible
+   until a dev build is on the device.
+3. **Check the Android build compiles.** The provider and module are written but
+   have never been through Gradle — there is no Android SDK in this container.
 
-None of steps 1–5 can be completed or verified from this Linux container — there
-is no Xcode and no device. Everything above the line is code you can read and
-review now; everything below needs a machine that can build it.
+None of steps 1–3 can be verified from this Linux container. Everything above
+them is code you can read, and the Android half is generated and inspected on
+every prebuild.
