@@ -11,5 +11,7 @@
     }
   },
   "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts", "nativewind-env.d.ts"],
-  "exclude": ["node_modules", "project"]
+  // supabase/functions is Deno, not React Native: it resolves `npm:` specifiers
+  // and Deno globals that this program has no types for.
+  "exclude": ["node_modules", "project", "supabase/functions"]
 }
