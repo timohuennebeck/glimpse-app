@@ -16,6 +16,7 @@ import { BLUR } from '@/shared/ui/locked-image';
 import { t } from '@/shared/i18n/i18n';
 import { COMMON, MOMENT } from '@/shared/i18n/keys';
 import { relativeTime, timeUntilUnlock } from '@/shared/lib/format';
+import { errorMessage } from '@/shared/lib/error-message';
 import { useInbox } from '@/features/moments/hooks/use-inbox';
 import { useComposer } from '@/features/moments/hooks/use-composer';
 import { useMarkTradeSeen } from '@/features/moments/data/moments-mutations';
@@ -157,6 +158,12 @@ export default function MomentScreen() {
           </>
         )}
 
+        {sendReply.error ? (
+          <Text variant="meta" className="px-1 text-center text-on-dark-text">
+            {errorMessage(sendReply.error)}
+          </Text>
+        ) : null}
+
         {/* Reply bar. The camera button is the primary action in both states. */}
         <View className="flex-row items-center gap-2.5 px-1">
           <BlurView
@@ -184,6 +191,12 @@ export default function MomentScreen() {
                     content,
                     tradeId: moment.tradeId,
                   }),
+                  {
+                    // The optimistic bubble is rolled back on failure; without
+                    // this the text goes with it and there is nothing to retry
+                    // from — put it back, unless something was typed since.
+                    onError: () => setReply((current) => (current.length === 0 ? content : current)),
+                  },
                 );
                 setReply('');
               }}

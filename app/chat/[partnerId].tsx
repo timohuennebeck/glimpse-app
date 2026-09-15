@@ -14,6 +14,7 @@ import { t } from '@/shared/i18n/i18n';
 import { CHAT, COMMON } from '@/shared/i18n/keys';
 import { threadTime } from '@/shared/lib/format';
 import { queries } from '@/shared/lib/queries';
+import { errorMessage } from '@/shared/lib/error-message';
 import { draftMessage, useMarkThreadRead, useSendMessage } from '@/features/chat/data/chat-mutations';
 import { usePartnerPresence } from '@/features/chat/hooks/use-partner-presence';
 import { avatarUrl } from '@/features/profile/data/profile-api';
@@ -66,7 +67,12 @@ export default function ChatScreen() {
   function submit() {
     const content = draft.trim();
     if (content.length === 0 || myId.length === 0 || id.length === 0) return;
-    send.mutate(draftMessage({ senderId: myId, recipientId: id, content }));
+    send.mutate(draftMessage({ senderId: myId, recipientId: id, content }), {
+      // The optimistic bubble is rolled back on failure. Without this the text
+      // goes with it and there is nothing left to retry from — put it back,
+      // unless something has been typed since.
+      onError: () => setDraft((current) => (current.length === 0 ? content : current)),
+    });
     setDraft('');
   }
 
@@ -129,6 +135,11 @@ export default function ChatScreen() {
       </ScrollView>
 
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        {send.error ? (
+          <Text variant="meta" className="px-4 text-center text-purple-deep">
+            {errorMessage(send.error)}
+          </Text>
+        ) : null}
         <View
           className="m-4 mb-6 gap-[18px] rounded-lg border border-border-lilac-alt bg-white px-4 pb-3 pt-[15px]"
           // Shadows stay as a style: RN's shadow props have no CSS equivalent NativeWind maps.
