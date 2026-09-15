@@ -2630,7 +2630,11 @@ import { fitWithin, resizeJpeg } from '@/shared/lib/resize';
 const mockSaveAsync = jest.fn(async () => ({ uri: 'file:///out.jpg', width: 1600, height: 1200 }));
 const mockRenderAsync = jest.fn(async () => ({ saveAsync: mockSaveAsync }));
 const mockResize = jest.fn();
-const mockManipulate = jest.fn(() => ({ resize: mockResize, renderAsync: mockRenderAsync }));
+// The parameter annotation is load-bearing: `jest.fn(() => …)` infers a
+// zero-argument signature, and the factory below forwards a uri into it, so
+// without it `tsc` fails with TS2554 — which Jest would never tell you, because
+// Babel strips the types without checking them.
+const mockManipulate = jest.fn((_uri: string) => ({ resize: mockResize, renderAsync: mockRenderAsync }));
 
 jest.mock('expo-image-manipulator', () => ({
   ImageManipulator: { manipulate: (uri: string) => mockManipulate(uri) },
