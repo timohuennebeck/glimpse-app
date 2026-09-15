@@ -12,6 +12,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { colors } from '@/shared/theme/colors';
 import { APP_VERSION, PERSIST_MAX_AGE, queryClient, queryPersister } from '@/shared/lib/query-client';
+import { prefetchForUser } from '@/shared/lib/prefetch';
 import { startSessionSync, useSession } from '@/features/auth/hooks/use-session';
 import { clearUserData } from '@/features/auth/sign-out';
 // Side-effect imports: locale, Tailwind stylesheet, className support for third-party views.
@@ -46,6 +47,7 @@ export default function RootLayout() {
   useEffect(() => {
     if (previousUserId.current && previousUserId.current !== userId) void clearUserData(queryClient);
     previousUserId.current = userId;
+    if (userId) prefetchForUser(queryClient, userId);
   }, [userId]);
 
   if (!ready) return null;

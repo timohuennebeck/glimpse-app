@@ -21,6 +21,7 @@ import { useAcceptFriendRequest, useRemoveFriendship } from '@/features/friends/
 import { friendsOf, incomingRequests, otherParty, sentRequests } from '@/features/friends/relationships';
 import { StoryRail } from '@/features/feed/components/story-rail';
 import { ChatsList } from '@/features/chat/components/chats-list';
+import { useUnreadTotal } from '@/features/chat/hooks/use-unread-total';
 import { avatarUrl } from '@/features/profile/data/profile-api';
 import { TabScreen } from '@/features/navigation/tab-screen';
 import { useInbox } from '@/features/moments/hooks/use-inbox';
@@ -74,8 +75,7 @@ export default function FriendsScreen() {
   const waiting = rail.filter((item) => item.waiting).length;
 
   // Counts on the toggle, so it says how much is waiting behind each tab.
-  // Chats stays 0 until Task 16 has the thread totals.
-  const unreadTotal = 0;
+  const unreadTotal = useUnreadTotal();
   const badges: Record<Tab, number> = { friends: requests.length, chats: unreadTotal };
   const error = accept.error ?? remove.error;
 

@@ -5,9 +5,9 @@ import type { FriendshipWithPeople, PersonSummary } from '@/features/friends/int
 /** Everything the friends feature reads and writes. Screens go through the queries and mutations. */
 
 /** The profile columns every person row needs. */
-const PERSON_COLUMNS = 'id, first_name, username, tagline, avatar_storage_path';
+export const PERSON_COLUMNS = 'id, first_name, username, tagline, avatar_storage_path';
 
-interface PersonColumns {
+export interface PersonColumns {
   id: string;
   first_name: string;
   username: string | null;
@@ -15,7 +15,7 @@ interface PersonColumns {
   avatar_storage_path: string | null;
 }
 
-function toPerson(row: PersonColumns): PersonSummary {
+export function toPersonSummary(row: PersonColumns): PersonSummary {
   return {
     id: row.id,
     name: row.first_name,
@@ -48,8 +48,8 @@ export async function fetchFriendships(): Promise<FriendshipWithPeople[]> {
     id: row.id,
     status: row.status,
     createdAt: row.created_at,
-    requester: toPerson(row.requester),
-    recipient: toPerson(row.recipient),
+    requester: toPersonSummary(row.requester),
+    recipient: toPersonSummary(row.recipient),
   }));
 }
 
@@ -72,7 +72,7 @@ export async function searchProfiles(query: string): Promise<PersonSummary[]> {
     .neq('id', currentUserId())
     .limit(20);
   if (error) throw error;
-  return (data ?? []).map(toPerson);
+  return (data ?? []).map(toPersonSummary);
 }
 
 /** "3 mutual" for a whole list of results or requests in one call. */

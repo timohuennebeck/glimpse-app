@@ -3,7 +3,7 @@ import { t } from '@/shared/i18n/i18n';
 import { NAV } from '@/shared/i18n/keys';
 import { useInbox } from '@/features/moments/hooks/use-inbox';
 import { useStampOnboardingDone } from '@/features/profile/hooks/use-stamp-onboarding-done';
-import { demoUnreadCount } from '@/shared/lib/fixtures';
+import { useUnreadTotal } from '@/features/chat/hooks/use-unread-total';
 // These are attached to Trigger rather than exported at the top level.
 const { Icon, Label, Badge } = NativeTabs.Trigger;
 
@@ -22,8 +22,9 @@ const { Icon, Label, Badge } = NativeTabs.Trigger;
 export default function AppLayout() {
   useStampOnboardingDone();
   const { pending } = useInbox();
+  const unread = useUnreadTotal();
   // Friends carries both incoming moments and unread messages.
-  const friendsBadge = demoUnreadCount > 0 ? String(demoUnreadCount) : undefined;
+  const friendsBadge = unread > 0 ? String(unread) : undefined;
   const feedBadge = pending.length > 0 ? String(pending.length) : undefined;
 
   return (
