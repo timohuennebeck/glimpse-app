@@ -7252,11 +7252,21 @@ Add `MOMENT` to the file's keys import.
 Run: `npm run typecheck`
 Expected: exits 0.
 
-Run: `grep -rn "fixtures" app`
-Expected: only `app/(onboarding)/welcome.tsx`, `signup.tsx`, `thank-you.tsx`,
-`first-glimpse.tsx`, `camera.tsx`, `notifications.tsx`, `widget.tsx`,
-`reviews.tsx`, `paywall.tsx` and `invite/[token].tsx` — screens that legitimately
-render bundled artwork, plus the invite screen, which Task 19 finishes.
+Run: `grep -rln "fixtures" app`
+Expected exactly these eleven, and nothing else:
+
+- `app/(onboarding)/welcome.tsx`, `signup.tsx`, `thank-you.tsx`, `camera.tsx`,
+  `notifications.tsx`, `reviews.tsx`, `paywall.tsx` — bundled artwork, and they
+  keep it for good. (`first-glimpse.tsx` and `widget.tsx` render artwork too but
+  never imported from `fixtures`, so they do not appear here.)
+- `app/compose.tsx` — `PHOTOS.viewfinder`, which Task 14 kept deliberately as the
+  stale-deep-link fallback. Permanent.
+- `app/(app)/_layout.tsx` — `demoUnreadCount`, cleared by Task 16.
+- `app/chat/[partnerId].tsx` — cleared by Task 17.
+- `app/invite/[token].tsx` — cleared by Task 19.
+
+`app/(app)/feed.tsx` drops off this list in Step 1 above; if it is still there,
+Step 1 did not land.
 
 Run: `npx prettier --write app src && npm test`
 Expected: all tests pass.
