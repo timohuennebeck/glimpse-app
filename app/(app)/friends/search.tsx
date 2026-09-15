@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Pressable, Share, TextInput, View } from 'react-native';
+import { Pressable, TextInput, View } from 'react-native';
 import { router } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { MoreHorizontal, QrCode, Search, X } from 'lucide-react-native';
@@ -20,9 +20,11 @@ import { ShareRow } from '@/features/friends/components/share-row';
 import { relationshipWith } from '@/features/friends/relationships';
 import type { PersonSummary } from '@/features/friends/interfaces';
 import { useMe } from '@/features/profile/hooks/use-me';
+import { shareInvite } from '@/features/invites/share-invite';
 /** Screen `D Freund suchen` — search by @username, or share your link. */
 export default function FriendSearchScreen() {
   const [query, setQuery] = useState('');
+  const [copied, setCopied] = useState(false);
   const debounced = useDebouncedValue(query);
   const { data: me } = useMe();
   const { data: friendships = [] } = useQuery(queries.friends.all);
@@ -102,7 +104,7 @@ export default function FriendSearchScreen() {
         </View>
       ) : null}
 
-      {/* QR is designed but inert; Task 19 wires the two share actions. */}
+      {/* QR is designed but inert; "More" mints a real invite link. */}
       <ShareRow
         className="mt-[30px]"
         dividerLabel={t(FRIENDS.SEARCH.DIVIDER_SHARE)}
@@ -114,9 +116,11 @@ export default function FriendSearchScreen() {
             icon: <QrCode size={22} color={colors.inkFaint} strokeWidth={2} />,
           },
           {
-            label: t(FRIENDS.SEARCH.MORE),
+            label: copied ? t(COMMON.COPIED) : t(FRIENDS.SEARCH.MORE),
             icon: <MoreHorizontal size={22} color={colors.inkFaint} strokeWidth={2.4} />,
-            onPress: () => void Share.share({ message: handle }),
+            onPress: () => {
+              void shareInvite(me?.first_name ?? '').then((outcome) => setCopied(outcome === 'copied'));
+            },
           },
         ]}
       />

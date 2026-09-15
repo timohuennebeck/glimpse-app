@@ -27,6 +27,7 @@ import { TabScreen } from '@/features/navigation/tab-screen';
 import { useInbox } from '@/features/moments/hooks/use-inbox';
 import { useMe } from '@/features/profile/hooks/use-me';
 import { openProfile } from '@/features/profile/open-profile';
+import { shareInvite } from '@/features/invites/share-invite';
 type Tab = 'friends' | 'chats';
 
 /**
@@ -202,7 +203,7 @@ export default function FriendsScreen() {
             </Text>
           ) : null}
 
-          <CtaFooter label={t(FRIENDS.ADD_CTA)} onPress={() => router.push('/(app)/friends/search')} />
+          <CtaFooter label={t(FRIENDS.ADD_CTA)} onPress={() => void shareInvite(me?.first_name ?? '')} />
         </>
       )}
     </TabScreen>

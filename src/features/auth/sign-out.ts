@@ -6,6 +6,7 @@ import { useComposer } from '@/features/moments/hooks/use-composer';
 import { useOutbox } from '@/features/moments/hooks/use-outbox';
 import { momentUrlCache } from '@/features/moments/data/moment-urls';
 import { useOnboardingDraft } from '@/features/onboarding/hooks/use-onboarding-draft';
+import { usePendingInvite } from '@/features/invites/hooks/use-pending-invite';
 /**
  * Everything on this device that belongs to whoever was signed in.
  *
@@ -21,6 +22,7 @@ export async function clearUserData(queryClient: QueryClient): Promise<void> {
   useComposer.reset();
   useOutbox.reset();
   useOnboardingDraft.reset();
+  usePendingInvite.reset();
   queryClient.clear();
   await momentUrlCache.clear();
   await queryPersister.removeClient();

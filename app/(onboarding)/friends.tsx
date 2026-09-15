@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { Share, TextInput, View } from 'react-native';
+import { TextInput, View } from 'react-native';
 import { router } from 'expo-router';
-import * as Clipboard from 'expo-clipboard';
 import { useQuery } from '@tanstack/react-query';
 import { Copy, MoreHorizontal, Search } from 'lucide-react-native';
 import { CtaFooter } from '@/shared/ui/cta-footer';
@@ -11,7 +10,7 @@ import { SectionLabel } from '@/shared/ui/section-label';
 import { Text } from '@/shared/ui/text';
 import { colors } from '@/shared/theme/colors';
 import { t } from '@/shared/i18n/i18n';
-import { FRIENDS, ONBOARDING } from '@/shared/i18n/keys';
+import { COMMON, FRIENDS, ONBOARDING } from '@/shared/i18n/keys';
 import { queries } from '@/shared/lib/queries';
 import { useDebouncedValue } from '@/shared/lib/use-debounced-value';
 import { PersonRow } from '@/features/friends/components/person-row';
@@ -19,6 +18,7 @@ import { RelationshipPill } from '@/features/friends/components/relationship-pil
 import { ShareRow } from '@/features/friends/components/share-row';
 import { relationshipWith } from '@/features/friends/relationships';
 import { useMe } from '@/features/profile/hooks/use-me';
+import { copyInvite, shareInvite } from '@/features/invites/share-invite';
 /**
  * Screen `05 Friends · 5 of 7`.
  *
@@ -29,6 +29,7 @@ import { useMe } from '@/features/profile/hooks/use-me';
  */
 export default function OnboardingFriendsScreen() {
   const [query, setQuery] = useState('');
+  const [copied, setCopied] = useState(false);
   const debounced = useDebouncedValue(query);
   const { data: me } = useMe();
   const { data: friendships = [] } = useQuery(queries.friends.all);
@@ -98,8 +99,8 @@ export default function OnboardingFriendsScreen() {
         </View>
       ) : null}
 
-      {/* The actions still copy and share the handle; Task 19 makes them mint a
-          real invite link. */}
+      {/* The link on show is the handle; the actions hand out a real invite
+          token, which is what makes the person who opens it claimable. */}
       <ShareRow
         className="mt-[22px]"
         dividerLabel={t(ONBOARDING.FRIENDS.DIVIDER_SHARE)}
@@ -107,14 +108,18 @@ export default function OnboardingFriendsScreen() {
         linkLabel={t(ONBOARDING.FRIENDS.SHARE_LINK)}
         actions={[
           {
-            label: t(ONBOARDING.FRIENDS.SHARE_COPY),
+            label: copied ? t(COMMON.COPIED) : t(ONBOARDING.FRIENDS.SHARE_COPY),
             icon: <Copy size={22} color={colors.inkFaint} strokeWidth={2} />,
-            onPress: () => void Clipboard.setStringAsync(handle),
+            onPress: () => {
+              void copyInvite().then(() => setCopied(true));
+            },
           },
           {
             label: t(ONBOARDING.FRIENDS.SHARE_MORE),
             icon: <MoreHorizontal size={22} color={colors.inkFaint} strokeWidth={2.4} />,
-            onPress: () => void Share.share({ message: handle }),
+            onPress: () => {
+              void shareInvite(me?.first_name ?? '').then((outcome) => setCopied(outcome === 'copied'));
+            },
           },
         ]}
       />
