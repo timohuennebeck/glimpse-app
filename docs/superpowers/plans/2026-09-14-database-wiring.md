@@ -362,24 +362,38 @@ Create `supabase/tests/run.sh`:
 ```bash
 #!/usr/bin/env bash
 # Applies every migration to a throwaway local Postgres database with stand-ins
-# for the Supabase-managed schemas, then runs the SQL test files given as
-# arguments. Needs a local Postgres server and psql on PATH.
+# for the Supabase-managed schemas, then runs each SQL test file given as an
+# argument against its own fresh copy of it. Needs a local Postgres server and
+# psql on PATH.
 set -euo pipefail
 cd "$(dirname "$0")/../.."
 
 DB=glimpse_migration_check
-dropdb --if-exists "$DB" >/dev/null 2>&1
-createdb "$DB"
 trap 'dropdb --if-exists "$DB" >/dev/null 2>&1' EXIT
 
-psql -v ON_ERROR_STOP=1 -q -d "$DB" -f supabase/tests/stubs.sql
-for migration in supabase/migrations/*.sql; do
-  psql -v ON_ERROR_STOP=1 -q -d "$DB" -f "$migration"
-done
-for test in "$@"; do
-  echo "== $test"
-  psql -v ON_ERROR_STOP=1 -q -d "$DB" -f "$test"
-done
+# A fresh database per test file. The test files seed the same fixture uuids and
+# psql autocommits, so one shared database makes the second file collide on
+# `users_pkey` and leaves the whole run order-dependent. Re-applying the
+# migrations per file also proves they apply repeatedly from nothing.
+prepare() {
+  dropdb --if-exists "$DB" >/dev/null 2>&1
+  createdb "$DB"
+  psql -v ON_ERROR_STOP=1 -q -d "$DB" -f supabase/tests/stubs.sql
+  for migration in supabase/migrations/*.sql; do
+    psql -v ON_ERROR_STOP=1 -q -d "$DB" -f "$migration"
+  done
+}
+
+if [ "$#" -eq 0 ]; then
+  # No test files: still prove every migration applies to an empty database.
+  prepare
+else
+  for test in "$@"; do
+    echo "== $test"
+    prepare
+    psql -v ON_ERROR_STOP=1 -q -d "$DB" -f "$test"
+  done
+fi
 echo OK
 ```
 
@@ -808,7 +822,7 @@ Remaining acceptable findings, all reasoned rather than ignored:
 
 - `extension_in_public` for `citext`. (`pgcrypto` is not flagged, though the design expected it to be.)
 - `unused_index`, for every index in the schema — the database has no rows and has served no queries yet, so "unused" is the only thing it could say.
-- `authenticated_security_definer_function_executable` for the 13 RPCs the client genuinely calls, plus `config_int` and `trade_is_open`, which the two `security_invoker` views evaluate as the caller.
+- `authenticated_security_definer_function_executable`, settling at **17**: the 15 of the current 20 that are the client's real API surface or a policy predicate, plus `config_int` (which `v_pairs` evaluates as the caller), plus the `mutual_friends_counts` this migration adds. The revoke removes exactly four — `handle_new_user`, `enforce_friend_cap`, `enforce_invite_moment_owner`, `generate_username`. Note `trade_is_open` and `touch_updated_at` are not `SECURITY DEFINER`, so they never appear in this lint at all; `trade_is_open` still needs its explicit grant for `v_inbox`, and both are fixed for `function_search_path_mutable`.
 - `anon_security_definer_function_executable` for `invite_preview` and `invite_object_readable`, which the deeplink needs before there is an account.
 - storage policies using `auth.uid()`, and auth settings notices such as leaked-password protection.
 
