@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Pressable, TextInput, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Check, Eye, Mail } from 'lucide-react-native';
 import { cn } from '@/shared/lib/cn';
 import { Button } from '@/shared/ui/button';
@@ -46,6 +46,8 @@ export default function DetailsScreen() {
   const strength = passwordStrength(password);
   const valid = email.includes('@') && password.length >= 9 && (!signingUp || consent);
 
+  const queryClient = useQueryClient();
+
   const submit = useMutation({
     mutationFn: async (): Promise<'signed-in' | 'confirmation-required' | 'already-registered'> => {
       if (!signingUp) {
@@ -61,6 +63,10 @@ export default function DetailsScreen() {
         if (pendingToken) {
           await claimInvite(pendingToken);
           usePendingInvite.reset();
+          // prefetchForUser fires the moment the session flips, so the friends
+          // list can already be cached — and empty — by the time the claim
+          // lands. Same sweep the invite screen does after claiming.
+          await queryClient.invalidateQueries();
         }
         useOnboardingDraft.reset();
       }
