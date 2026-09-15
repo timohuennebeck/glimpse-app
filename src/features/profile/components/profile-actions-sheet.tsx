@@ -29,11 +29,16 @@ export function ProfileActionsSheet({ visible, onClose }: ProfileActionsSheetPro
         accessibilityRole="button"
         accessibilityLabel={t(COMMON.CLOSE)}
       >
-        {/* Swallows the press, so tapping the sheet itself does not dismiss it. */}
+        {/* Swallows the press, so tapping the sheet itself does not dismiss it.
+            accessible={false} because Pressable defaults to true, which made
+            this an accessibility leaf that merged its children: under VoiceOver
+            sign-out had no reachable activation point and a double tap ran the
+            no-op handler below instead. */}
         <Pressable
           className="rounded-t-lg bg-white px-5 pt-2"
           style={{ paddingBottom: insets.bottom + 12 }}
           onPress={() => {}}
+          accessible={false}
         >
           <View className="mb-3 h-1 w-10 self-center rounded-pill bg-border-lilac" />
           <Pressable

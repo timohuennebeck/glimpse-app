@@ -40,32 +40,38 @@ export function PersonRow({
   accessibilityState,
 }: PersonRowProps) {
   return (
-    <Pressable
-      className="flex-row items-center gap-[13px]"
-      onPress={onPress}
-      disabled={!onPress}
-      accessibilityRole={accessibilityRole ?? (onPress ? 'button' : undefined)}
-      accessibilityState={accessibilityState}
-      accessibilityLabel={name}
-    >
-      <Avatar source={avatar} name={name} size={size} dimmed={dimmed} ring="halo" />
-      <View className="min-w-0 flex-1 gap-[3px]">
-        <View className="flex-row items-center gap-1.5">
-          <Text variant="rowTitleSm" className="text-ink" numberOfLines={1}>
-            {name}
-          </Text>
-          {verified ? <VerifiedIcon size={15} /> : null}
-        </View>
-        {subtitle ? (
-          <View className="flex-row items-center gap-[5px]">
-            {subtitleIcon}
-            <Text variant="meta" className="flex-1 text-muted-violet" numberOfLines={1}>
-              {subtitle}
+    // `trailing` sits outside the Pressable on purpose. RN's Pressable defaults
+    // to accessible={true}, which makes it an accessibility leaf and merges its
+    // descendants — an interactive trailing control (Accept, Add) became
+    // unreachable under VoiceOver, and double-tapping fired the row instead.
+    <View className="flex-row items-center gap-[13px]">
+      <Pressable
+        className="min-w-0 flex-1 flex-row items-center gap-[13px]"
+        onPress={onPress}
+        disabled={!onPress}
+        accessibilityRole={accessibilityRole ?? (onPress ? 'button' : undefined)}
+        accessibilityState={accessibilityState}
+        accessibilityLabel={name}
+      >
+        <Avatar source={avatar} name={name} size={size} dimmed={dimmed} ring="halo" />
+        <View className="min-w-0 flex-1 gap-[3px]">
+          <View className="flex-row items-center gap-1.5">
+            <Text variant="rowTitleSm" className="text-ink" numberOfLines={1}>
+              {name}
             </Text>
+            {verified ? <VerifiedIcon size={15} /> : null}
           </View>
-        ) : null}
-      </View>
+          {subtitle ? (
+            <View className="flex-row items-center gap-[5px]">
+              {subtitleIcon}
+              <Text variant="meta" className="flex-1 text-muted-violet" numberOfLines={1}>
+                {subtitle}
+              </Text>
+            </View>
+          ) : null}
+        </View>
+      </Pressable>
       {trailing}
-    </Pressable>
+    </View>
   );
 }
