@@ -162,6 +162,45 @@ docs/database.md          schema design and rationale
   is the whole call and a mutation invalidates by the same key. No fetching
   inside `useEffect`.
 
+## Shipping
+
+`eas.json` has three profiles. Builds run on EAS, which needs an Expo account
+and, for iOS, an Apple Developer account.
+
+```bash
+npx eas login
+npx eas build:configure          # links the project, once
+npx eas build --profile preview --platform android   # fastest first build
+npx eas build --profile production --platform all
+npx eas submit --profile production --platform all
+```
+
+**Set the environment variables first, or the build launches to a crash.**
+`src/shared/lib/supabase.ts` throws at import when either is missing, and `.env`
+is gitignored, so a clean CI checkout has neither:
+
+```bash
+npx eas env:create --environment production --name EXPO_PUBLIC_SUPABASE_URL --value https://<ref>.supabase.co
+npx eas env:create --environment production --name EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY --value sb_publishable_...
+```
+
+Repeat for `preview` and `development`. Both values are safe in a client
+bundle — the publishable key maps to the `anon` role and RLS is what protects
+the data — but they are project-specific, which is why they are not committed.
+
+Before a build, the three bundles are worth running locally; they catch a bad
+import or a missing asset in a minute rather than after a queue:
+
+```bash
+npx expo export --platform web
+npx expo export --platform ios
+npx expo export --platform android
+```
+
+Not wired yet, and needed before a public launch: Apple and Google sign-in,
+RevenueCat for the paywall, push notifications, and the widget's native target
+(which needs a Mac and Xcode — see `widgets/README.md`).
+
 ## What is deliberately not built
 
 | Area                   | State                                                                                                                               |
