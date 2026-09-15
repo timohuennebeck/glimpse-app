@@ -19,5 +19,13 @@ export function errorMessage(error: unknown): string {
         : '';
   const code = Object.keys(KNOWN_CODES).find((known) => message.includes(known));
   if (code) return t(KNOWN_CODES[code]);
-  return message || t('errors.generic');
+
+  // A bare snake_case token is one of the database's own codes, not prose:
+  // respond_to_trade alone can raise not_trade_responder, not_moment_author,
+  // trade_not_found and not_authenticated, none of which mean anything to a
+  // person. Anything with a space in it is a real sentence — Supabase's own
+  // "Invalid login credentials" is the one users actually need to read.
+  const isBareCode = /^[a-z][a-z0-9_]*$/.test(message);
+  if (!message || isBareCode) return t('errors.generic');
+  return message;
 }
