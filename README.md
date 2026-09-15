@@ -197,6 +197,42 @@ npx expo export --platform ios
 npx expo export --platform android
 ```
 
+### Getting it onto an iPhone
+
+**Expo Go cannot run this app.** `modules/glimpse-widget` is a custom native
+module, and Expo Go only ships Expo's own. You need a development build, which
+is why `expo-dev-client` is a dependency.
+
+With a Mac and Xcode, and the phone plugged in:
+
+```bash
+npx expo run:ios --device
+```
+
+A free Apple ID works for this; the build expires after seven days and you
+re-run the command. A paid Apple Developer account gets a year.
+
+Without a Mac, build in the cloud and install over the air:
+
+```bash
+npx eas build --profile development --platform ios
+```
+
+EAS asks for an Apple Developer account, registers the device, and gives you a
+QR code to install from. This route needs the paid account — Apple requires a
+provisioning profile for any build that runs on a physical device.
+
+Two things to know before the first iOS build:
+
+- **Register the App Group.** `group.app.glimpse.mobile` has to exist under
+  Identifiers in the Apple Developer portal, or provisioning fails on the
+  entitlement. EAS can create it when it asks.
+- **The widget will not appear yet.** Its WidgetKit target is still to be added
+  (`widgets/README.md`); the app itself runs fine without it.
+
+Android has neither constraint — `npx expo run:android`, or an EAS development
+build, installs straight onto a device.
+
 Not wired yet, and needed before a public launch: Apple and Google sign-in,
 RevenueCat for the paywall, push notifications, and the widget's native target
 (which needs a Mac and Xcode — see `widgets/README.md`).
