@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useSession } from '@/features/auth/hooks/use-session';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, TextInput, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
@@ -17,7 +18,6 @@ import { errorMessage } from '@/shared/lib/error-message';
 import { draftMessage, useMarkThreadRead, useSendMessage } from '@/features/chat/data/chat-mutations';
 import { usePartnerPresence } from '@/features/chat/hooks/use-partner-presence';
 import { avatarUrl } from '@/features/profile/data/profile-api';
-import { useMe } from '@/features/profile/hooks/use-me';
 import { useOncePerKey } from '@/shared/lib/use-once-per-key';
 /**
  * Screen `09 Chat`.
@@ -32,8 +32,10 @@ import { useOncePerKey } from '@/shared/lib/use-once-per-key';
 export default function ChatScreen() {
   const { partnerId } = useLocalSearchParams<{ partnerId: string }>();
   const id = partnerId ?? '';
-  const { data: me } = useMe();
-  const myId = me?.id ?? '';
+  // Identity comes from the session store, which is synchronous; useMe is
+  // for the profile row. Stack.Protected guarantees a signed-in user here.
+  const { userId } = useSession();
+  const myId = userId ?? '';
   const [draft, setDraft] = useState('');
   const scrollRef = useRef<ScrollView>(null);
 

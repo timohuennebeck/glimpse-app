@@ -2,18 +2,21 @@ import { supabase } from '@/shared/lib/supabase';
 import { currentUserId } from '@/features/auth/current-user';
 import { avatarUrl } from '@/features/profile/data/profile-api';
 import type { FriendshipWithPeople, PersonSummary } from '@/features/friends/interfaces';
+import type { Profile } from '@/shared/lib/database.types';
 /** Everything the friends feature reads and writes. Screens go through the queries and mutations. */
 
 /** The profile columns every person row needs. */
 export const PERSON_COLUMNS = 'id, first_name, username, tagline, avatar_storage_path';
 
-export interface PersonColumns {
-  id: string;
-  first_name: string;
-  username: string | null;
-  tagline: string | null;
-  avatar_storage_path: string | null;
-}
+/**
+ * Derived from the schema rather than restated, so a column that changes type
+ * or nullability upstream breaks here instead of diverging silently. Keep the
+ * key list in step with PERSON_COLUMNS above.
+ */
+export type PersonColumns = Pick<
+  Profile,
+  'id' | 'first_name' | 'username' | 'tagline' | 'avatar_storage_path'
+>;
 
 export function toPersonSummary(row: PersonColumns): PersonSummary {
   return {

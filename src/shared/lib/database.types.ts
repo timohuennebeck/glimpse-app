@@ -10,14 +10,22 @@ import type { Database } from '@/shared/lib/database.generated';
  */
 type PublicSchema = Database['public'];
 
-export type { Database };
-export type Tables<T extends keyof PublicSchema['Tables']> = PublicSchema['Tables'][T]['Row'];
-export type TablesInsert<T extends keyof PublicSchema['Tables']> = PublicSchema['Tables'][T]['Insert'];
-export type TablesUpdate<T extends keyof PublicSchema['Tables']> = PublicSchema['Tables'][T]['Update'];
-export type Enums<T extends keyof PublicSchema['Enums']> = PublicSchema['Enums'][T];
+// Re-exported, not redefined: database.generated.ts already ships working
+// TablesUpdate and Enums, and having both meant one name with two definitions
+// in two files.
+import type { Enums, TablesUpdate } from '@/shared/lib/database.generated';
+
+export type { Enums, TablesUpdate };
+
+/**
+ * Rows, tables only. Deliberately narrower than the generated `Tables<T>`,
+ * which also accepts the three views — whose generated columns are every one
+ * nullable, because that is all Postgres reports for a view. The hand-written
+ * InboxRow / PairRow / ThreadRow below are what those actually return.
+ */
+type Tables<T extends keyof PublicSchema['Tables']> = PublicSchema['Tables'][T]['Row'];
 
 export type Profile = Tables<'profiles'>;
-export type Friendship = Tables<'friendships'>;
 export type Moment = Tables<'moments'>;
 export type Trade = Tables<'trades'>;
 export type Message = Tables<'messages'>;

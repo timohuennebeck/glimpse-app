@@ -27,9 +27,11 @@ export const radius = {
   tile: 12,
 } as const;
 
-/** Matches the SCALE applied to the type scale, so controls shrink with text. */
-const SCALE = 0.88;
-const px = (n: number) => Math.round(n * SCALE * 2) / 2;
+// The same knob the type scale uses, imported rather than restated: two copies
+// of 0.88 that had to agree by hand is one edit away from controls that no
+// longer shrink with the text. Relative, not `@/`: tailwind.config.js loads
+// this file through jiti, which does not know the TypeScript path alias.
+import { px } from './fonts';
 
 export const controlHeight = {
   /** Primary CTA heights seen across the mock. */

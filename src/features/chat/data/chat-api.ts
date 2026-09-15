@@ -2,7 +2,7 @@ import { supabase } from '@/shared/lib/supabase';
 import { currentUserId } from '@/features/auth/current-user';
 import { PERSON_COLUMNS, toPersonSummary } from '@/features/friends/data/friends-api';
 import { signedMomentUrls } from '@/features/moments/data/moment-urls';
-import type { ThreadRow } from '@/shared/lib/database.types';
+import type { Message, ThreadRow } from '@/shared/lib/database.types';
 import type { ChatMessage, Thread } from '@/features/chat/interfaces';
 /** Reads and writes for 1:1 chat. */
 
@@ -11,16 +11,11 @@ export const MESSAGE_PAGE = 200;
 
 const MESSAGE_COLUMNS = 'id, sender_id, recipient_id, content, moment_id, trade_id, created_at, read_at';
 
-interface MessageColumns {
-  id: string;
-  sender_id: string;
-  recipient_id: string;
-  content: string | null;
-  moment_id: string | null;
-  trade_id: string | null;
-  created_at: string;
-  read_at: string | null;
-}
+/** Derived from the schema rather than restated. Keep in step with MESSAGE_COLUMNS. */
+type MessageColumns = Pick<
+  Message,
+  'id' | 'sender_id' | 'recipient_id' | 'content' | 'moment_id' | 'trade_id' | 'created_at' | 'read_at'
+>;
 
 function toMessage(row: MessageColumns): ChatMessage {
   return {

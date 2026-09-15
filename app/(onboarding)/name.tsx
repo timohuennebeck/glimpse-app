@@ -21,9 +21,9 @@ import { useOnboardingDraft } from '@/features/onboarding/hooks/use-onboarding-d
  * interpolated with sentinel markers, then the sentence is tokenised into
  * words and pills so it wraps naturally in either language.
  */
-const FRIENDS_SLOT = '⁣friends⁣';
-const NAME_SLOT = '⁣name⁣';
-const TOKEN_SPLIT = /(⁣friends⁣|⁣name⁣|\s+)/;
+const FRIENDS_SLOT = '«friends»';
+const NAME_SLOT = '«name»';
+const TOKEN_SPLIT = /(«friends»|«name»|\s+)/;
 
 interface HeadlineToken {
   kind: 'word' | 'friends' | 'name' | 'break';

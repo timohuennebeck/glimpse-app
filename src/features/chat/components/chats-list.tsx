@@ -1,4 +1,6 @@
 import { Pressable, View } from 'react-native';
+import { useSession } from '@/features/auth/hooks/use-session';
+import { useUnreadTotal } from '@/features/chat/hooks/use-unread-total';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
@@ -12,7 +14,6 @@ import { colors } from '@/shared/theme/colors';
 import { t } from '@/shared/i18n/i18n';
 import { threadTime } from '@/shared/lib/format';
 import { queries } from '@/shared/lib/queries';
-import { useMe } from '@/features/profile/hooks/use-me';
 /**
  * The conversation list, backed by `public.v_threads`.
  *
@@ -22,9 +23,11 @@ import { useMe } from '@/features/profile/hooks/use-me';
  */
 export function ChatsList() {
   const { data: threads = [] } = useQuery(queries.chat.threads);
-  const { data: me } = useMe();
-  const myId = me?.id ?? '';
-  const unread = threads.reduce((total, thread) => total + thread.unreadCount, 0);
+  // Identity comes from the session store, which is synchronous; useMe is
+  // for the profile row. Stack.Protected guarantees a signed-in user here.
+  const { userId } = useSession();
+  const myId = userId ?? '';
+  const unread = useUnreadTotal();
 
   return (
     <View>

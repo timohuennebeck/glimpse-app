@@ -1,11 +1,11 @@
 import { randomUUID } from 'expo-crypto';
+import { useSession } from '@/features/auth/hooks/use-session';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { optimistic, patch } from '@/shared/lib/optimistic';
 import { queries } from '@/shared/lib/queries';
 import { markThreadRead, sendMessage } from '@/features/chat/data/chat-api';
 import { appendMessage } from '@/features/chat/messages';
 import type { ChatMessage, Thread } from '@/features/chat/interfaces';
-import { useMe } from '@/features/profile/hooks/use-me';
 
 export interface DraftMessageInput {
   senderId: string;
@@ -80,8 +80,10 @@ export function useSendMessage(partnerId: string) {
 /** Opening a conversation reads it. Both the badge and the ticks move at once. */
 export function useMarkThreadRead(partnerId: string) {
   const queryClient = useQueryClient();
-  const { data: me } = useMe();
-  const myId = me?.id ?? '';
+  // Identity comes from the session store, which is synchronous; useMe is
+  // for the profile row. Stack.Protected guarantees a signed-in user here.
+  const { userId } = useSession();
+  const myId = userId ?? '';
 
   return useMutation({
     mutationFn: () => markThreadRead(partnerId),

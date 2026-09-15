@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useSession } from '@/features/auth/hooks/use-session';
 import { View, TextInput, Pressable } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -20,7 +21,6 @@ import { useInbox } from '@/features/moments/hooks/use-inbox';
 import { useComposer } from '@/features/moments/hooks/use-composer';
 import { useMarkTradeSeen } from '@/features/moments/data/moments-mutations';
 import { draftMessage, useSendMessage } from '@/features/chat/data/chat-mutations';
-import { useMe } from '@/features/profile/hooks/use-me';
 import { useOncePerKey } from '@/shared/lib/use-once-per-key';
 import { useOutbox } from '@/features/moments/hooks/use-outbox';
 /**
@@ -49,8 +49,10 @@ export default function MomentScreen() {
   useOncePerKey(tradeId && found && !seenAt ? tradeId : null, () => mutate(tradeId));
 
   const [reply, setReply] = useState('');
-  const { data: me } = useMe();
-  const myId = me?.id ?? '';
+  // Identity comes from the session store, which is synchronous; useMe is
+  // for the profile row. Stack.Protected guarantees a signed-in user here.
+  const { userId } = useSession();
+  const myId = userId ?? '';
   // Whoever sent the moment is the partner this reply goes to — useSendMessage
   // takes a partnerId. Not to be confused with draftMessage's `senderId`, which
   // is me.

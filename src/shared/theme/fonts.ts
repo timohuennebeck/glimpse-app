@@ -28,10 +28,10 @@ export type FontWeight = keyof typeof fontFamily;
  * SCALE brings the whole system down one notch. One knob, rather than 40
  * hand-tuned numbers, so the proportions of the original survive.
  */
-const SCALE = 0.88;
+export const SCALE = 0.88;
 
 /** Round to the nearest half point — RN renders halves cleanly, thirds do not. */
-const px = (n: number) => Math.round(n * SCALE * 2) / 2;
+export const px = (n: number) => Math.round(n * SCALE * 2) / 2;
 
 interface TypeSpec {
   fontSize: number;
