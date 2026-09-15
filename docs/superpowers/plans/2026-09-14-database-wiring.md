@@ -6331,6 +6331,17 @@ import { useOutbox } from '@/features/moments/hooks/use-outbox';
 useOutbox.reset();
 ```
 
+That line was the last thing the Task 10 doc comment was waiting on, so the
+comment is now false. Delete this sentence from the block above
+`clearUserData`:
+
+```
+ * Tasks 13 and 14 add the signed-URL cache and the outbox to this list.
+```
+
+Task 19 adds one more reset here, but it does not need announcing in advance —
+the list itself is the documentation.
+
 - [ ] **Step 6: Say so on the feed**
 
 Create `src/features/feed/components/outbox-line.tsx`:
@@ -6427,7 +6438,6 @@ import { BlurView } from 'expo-blur';
 import { Pencil, RotateCcw, X } from 'lucide-react-native';
 import { Button } from '@/shared/ui/button';
 import { GlassButton } from '@/shared/ui/glass-button';
-import { Text } from '@/shared/ui/text';
 import { alpha, colors } from '@/shared/theme/colors';
 import { t } from '@/shared/i18n/i18n';
 import { COMMON, COMPOSE, MOMENT } from '@/shared/i18n/keys';

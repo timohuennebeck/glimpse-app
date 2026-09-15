@@ -12,8 +12,6 @@ import { useOnboardingDraft } from '@/features/onboarding/hooks/use-onboarding-d
  * Called on sign-out, and by the root layout whenever the user id changes away
  * from a previous one — an expired session that comes back as somebody else
  * must not inherit the last person's cached feed, and the cache is on disk.
- *
- * Tasks 13 and 14 add the signed-URL cache and the outbox to this list.
  */
 export async function clearUserData(queryClient: QueryClient): Promise<void> {
   supabase.removeAllChannels();
