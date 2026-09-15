@@ -616,7 +616,14 @@ Create `supabase/migrations/20260915070000_app_wiring.sql`. The prefix is a
 placeholder until Step 6 renames it, but it still has to sort **after** the four
 versions the project assigned in Task 2 — `run.sh` applies
 `supabase/migrations/*.sql` in glob order, so a lower prefix would run this
-before the tables it alters exist:
+before the tables it alters exist.
+
+Watch the rename in Step 6 too. The project stamps the version at apply time, so
+the name you end up with can be **earlier** than your placeholder — this one was
+written as `…070000` and came back `…065409`. Before committing the rename, check
+the assigned version still sorts after the previous migration, and re-run the
+harness. If a version ever lands at or before it, stop and report rather than
+renaming into a broken order:
 
 ```sql
 -- What the app needs on top of the core schema: live change events, batch
@@ -824,7 +831,6 @@ Remaining acceptable findings, all reasoned rather than ignored:
 - `unused_index`, for every index in the schema — the database has no rows and has served no queries yet, so "unused" is the only thing it could say.
 - `authenticated_security_definer_function_executable`, settling at **17**: the 15 of the current 20 that are the client's real API surface or a policy predicate, plus `config_int` (which `v_pairs` evaluates as the caller), plus the `mutual_friends_counts` this migration adds. The revoke removes exactly four — `handle_new_user`, `enforce_friend_cap`, `enforce_invite_moment_owner`, `generate_username`. Note `trade_is_open` and `touch_updated_at` are not `SECURITY DEFINER`, so they never appear in this lint at all; `trade_is_open` still needs its explicit grant for `v_inbox`, and both are fixed for `function_search_path_mutable`.
 - `anon_security_definer_function_executable` for `invite_preview` and `invite_object_readable`, which the deeplink needs before there is an account.
-- storage policies using `auth.uid()`, and auth settings notices such as leaked-password protection.
 
 Anything else: add a fix as a new migration following Steps 1–5 before continuing.
 
