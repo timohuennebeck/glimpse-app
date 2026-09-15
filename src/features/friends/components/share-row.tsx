@@ -41,9 +41,12 @@ export function ShareRow({ dividerLabel, link, linkLabel, actions, className }: 
           </Text>
         </View>
 
-        {actions.map((action) => (
+        {/* Positional: the label doubles as a status ("Copied", an error), so two
+            actions can briefly carry the same text, and keying on it would
+            collide and remount them. The list is fixed and never reorders. */}
+        {actions.map((action, index) => (
           <Pressable
-            key={action.label}
+            key={index}
             className="items-center gap-1.5"
             onPress={action.onPress}
             disabled={!action.onPress}

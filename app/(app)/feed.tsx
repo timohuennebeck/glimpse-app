@@ -12,6 +12,7 @@ import { memberSince } from '@/shared/lib/format';
 import { queries } from '@/shared/lib/queries';
 import { friendsOf } from '@/features/friends/relationships';
 import { useInbox } from '@/features/moments/hooks/use-inbox';
+import { waitingBySender } from '@/features/moments/selectors';
 import { useComposer } from '@/features/moments/hooks/use-composer';
 import { FeedHeader } from '@/features/feed/components/feed-header';
 import { StoryRail, StoryItem } from '@/features/feed/components/story-rail';
@@ -32,9 +33,15 @@ import { openProfile } from '@/features/profile/open-profile';
 export default function FeedScreen() {
   const { pending, open, loading } = useInbox();
   const { data: me } = useMe();
-  const { data: friendships = [] } = useQuery(queries.friends.all);
+  const {
+    data: friendships = [],
+    isPending: friendsPending,
+    isError: friendsFailed,
+  } = useQuery(queries.friends.all);
   const composer = useComposer();
   const myId = me?.id ?? '';
+
+  const waitingSenders = useMemo(() => waitingBySender(pending), [pending]);
 
   const stories = useMemo<StoryItem[]>(
     () => [
@@ -44,17 +51,23 @@ export default function FeedScreen() {
         avatar: avatarUrl(me?.avatar_storage_path ?? null),
         waiting: true,
       },
-      ...pending.map((moment) => ({
-        id: moment.from.id,
-        name: moment.from.name,
-        avatar: moment.from.avatarUrl,
+      // One tile per person, not per trade: two unanswered moments from the
+      // same sender would otherwise render two tiles under one React key.
+      ...waitingSenders.map((entry) => ({
+        id: entry.person.id,
+        name: entry.person.name,
+        avatar: entry.person.avatarUrl,
         waiting: true,
       })),
     ],
-    [me, myId, pending],
+    [me, myId, waitingSenders],
   );
 
-  const hasPeople = friendsOf(friendships, myId).length > 0;
+  // A failed or still-loading friends query means "we do not know yet", not
+  // "you have nobody". Treating it as nobody replaced the whole feed with the
+  // invite card for someone with twenty friends, and said nothing about why.
+  const friendsUnknown = friendsPending || friendsFailed;
+  const hasPeople = friendsUnknown || friendsOf(friendships, myId).length > 0;
   const hasMoments = pending.length > 0 || open.length > 0;
   // Nobody to trade with AND nothing waiting. Either one on its own is a feed.
   const empty = !loading && !hasPeople && !hasMoments;
@@ -78,13 +91,18 @@ export default function FeedScreen() {
 
         <View className="gap-3">
           <SectionLabel
-            trailing={pending.length > 0 ? t(FEED.STORIES_TRAILING, { count: pending.length }) : undefined}
+            // People, not trades — the same thing the rail draws a tile for.
+            trailing={
+              waitingSenders.length > 0
+                ? t(FEED.STORIES_TRAILING, { count: waitingSenders.length })
+                : undefined
+            }
           >
             {t(FEED.STORIES_LABEL)}
           </SectionLabel>
           <StoryRail
             items={stories}
-            placeholders={Math.max(0, 3 - pending.length)}
+            placeholders={Math.max(0, 3 - waitingSenders.length)}
             placeholderLabel={t(FEED.ADD_FRIEND)}
             onPressItem={(id) => openProfile(id, myId)}
             onPressPlaceholder={() => router.push('/(app)/friends/search')}

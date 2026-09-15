@@ -76,7 +76,9 @@ export default function FriendsScreen() {
     ],
     [friendships, myId, me, pending],
   );
-  const waiting = rail.filter((item) => item.waiting).length;
+  // rail[0] is the "You" tile, whose `waiting` is decoration, not a person
+  // waiting on you — counting it made a brand-new account read "1 waiting".
+  const waiting = rail.slice(1).filter((item) => item.waiting).length;
 
   // Counts on the toggle, so it says how much is waiting behind each tab.
   const unreadTotal = useUnreadTotal();

@@ -50,7 +50,7 @@ export function ChatsList() {
 
             return (
               <Pressable
-                key={thread.lastMessageId}
+                key={thread.partner.id}
                 className="flex-row items-center gap-[13px]"
                 onPress={() => router.push(`/chat/${thread.partner.id}`)}
               >
