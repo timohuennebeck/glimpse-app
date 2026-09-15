@@ -32,6 +32,33 @@ npx expo start
 fixture mode and no "not configured" fallback. Without the two
 `EXPO_PUBLIC_SUPABASE_*` values the client throws at import.
 
+### Running Supabase locally
+
+The whole stack runs on your machine, so you can develop without touching the
+hosted project. It needs a Docker-compatible runtime (Docker Desktop, Rancher,
+Podman, OrbStack, colima) — the CLI itself is a devDependency, so no global
+install.
+
+```bash
+npm run db:start    # first run pulls images; prints local URLs and keys
+npm run db:reset    # drop, replay every migration, then seed.sql
+npm run db:types    # regenerate database.generated.ts from the local schema
+npm run db:stop
+```
+
+`db:start` prints a publishable key and a project URL for `127.0.0.1:54321`.
+Put those in `.env` to point the app at your local stack instead of the hosted
+project; Studio is at `127.0.0.1:54323`.
+
+`supabase/seed.sql` is deliberately thin: two accounts and a friendship. The
+states worth looking at — a frosted trade, a completed pair, an unread thread —
+are produced by the triggers and RPCs the migrations install, so seeding them
+directly would bypass the logic you actually want to exercise. Make them
+through the app.
+
+Regenerate the types after **every** migration. Nothing in CI notices if you
+forget, and the generated file is what types every database call in the app.
+
 ### Supabase keys
 
 The client uses the project's **publishable key** (`sb_publishable_…`) as
@@ -47,7 +74,7 @@ Related, and already accounted for:
   `auth.getClaims()`, which verifies against the project's current signing
   key, and the SQL relies on `auth.uid()`. Rotating to asymmetric keys in the
   dashboard needs no code change.
-- **Generated types.** `src/shared/lib/database.interfaces.ts` is generated from
+- **Generated types.** `src/shared/lib/database.generated.ts` is generated from
   the project — regenerate it after every migration (`supabase gen types
 typescript`, or the MCP's `generate_typescript_types`) and never edit it by
   hand. App code imports row names from `src/shared/lib/database.types.ts`.

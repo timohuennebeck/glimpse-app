@@ -1,4 +1,4 @@
-import type { Database } from '@/shared/lib/database.interfaces';
+import type { Database } from '@/shared/lib/database.generated';
 /**
  * The names the app uses for database rows. Tables come straight from the
  * generated schema; the three views are typed by hand because Postgres reports
