@@ -9,6 +9,7 @@ import { Text } from '@/shared/ui/text';
 import { colors } from '@/shared/theme/colors';
 import { type as typeScale } from '@/shared/theme/fonts';
 import { t, tList } from '@/shared/i18n/i18n';
+import { ONBOARDING } from '@/shared/i18n/keys';
 /**
  * Screen `01 Name · 1 of 7`.
  *
@@ -83,17 +84,15 @@ const CHIP = 'rounded-pill px-3.5 py-1';
 
 export default function NameScreen() {
   const [name, setName] = useState('');
-  const suggestions = tList<string>('onboarding.name.suggestions');
-  const groups = group(
-    tokenize(t('onboarding.name.title', { friends: FRIENDS_SLOT, placeholder: NAME_SLOT })),
-  );
+  const suggestions = tList<string>(ONBOARDING.NAME.SUGGESTIONS);
+  const groups = group(tokenize(t(ONBOARDING.NAME.TITLE, { friends: FRIENDS_SLOT, placeholder: NAME_SLOT })));
 
   return (
     <Screen
       scroll
       footer={
         <CtaFooter
-          label={t('onboarding.name.cta')}
+          label={t(ONBOARDING.NAME.CTA)}
           onPress={() => router.push('/(onboarding)/camera')}
           disabled={name.trim().length === 0}
         />
@@ -116,7 +115,7 @@ export default function NameScreen() {
                     return (
                       <View key={i} className={cn(CHIP, 'bg-surface-violet-chip')}>
                         <Text variant="headlineChips" className={cn(LINE, 'text-purple-ink-alt')}>
-                          {t('onboarding.name.friendsChip')}
+                          {t(ONBOARDING.NAME.FRIENDS_CHIP)}
                         </Text>
                       </View>
                     );
@@ -136,7 +135,7 @@ export default function NameScreen() {
       </View>
 
       <Text variant="bodySm" className="mt-[18px] text-muted">
-        {t('onboarding.name.subtitle')}
+        {t(ONBOARDING.NAME.SUBTITLE)}
       </Text>
 
       <View className="mt-[26px] flex-row flex-wrap gap-2.5">
@@ -173,7 +172,7 @@ const { fontSize, letterSpacing } = typeScale.headlineChips;
  */
 function NameChip({ value, onChange }: NameChipProps) {
   const [width, setWidth] = useState(0);
-  const placeholder = t('onboarding.name.placeholderChip');
+  const placeholder = t(ONBOARDING.NAME.PLACEHOLDER_CHIP);
 
   return (
     <View className={cn(CHIP, 'bg-surface-violet')}>

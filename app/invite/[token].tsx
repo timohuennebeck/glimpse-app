@@ -10,6 +10,7 @@ import { Text } from '@/shared/ui/text';
 import { colors } from '@/shared/theme/colors';
 import { radius } from '@/shared/theme/page-structure';
 import { t } from '@/shared/i18n/i18n';
+import { INVITE } from '@/shared/i18n/keys';
 import { relativeTime } from '@/shared/lib/format';
 import { AVATARS, PHOTOS } from '@/shared/lib/fixtures';
 /**
@@ -31,7 +32,7 @@ export default function InviteScreen() {
       footer={
         <View className="items-center gap-5">
           <Button
-            label={t('invite.cta')}
+            label={t(INVITE.CTA)}
             size="lg"
             icon={<CameraIcon size={21} lensColor={colors.ink} />}
             onPress={() => router.push('/camera')}
@@ -42,7 +43,7 @@ export default function InviteScreen() {
             accessibilityRole="link"
             onPress={() => router.replace('/(onboarding)/welcome')}
           >
-            {t('invite.secondary')}
+            {t(INVITE.SECONDARY)}
           </Text>
         </View>
       }
@@ -53,10 +54,10 @@ export default function InviteScreen() {
       <View className="mt-[26px] items-center gap-3.5">
         <Avatar source={AVATARS.mia} size={76} ring="halo" />
         <Text variant="headlineSm" className="text-center text-ink">
-          {t('invite.title', { name: 'Mia' })}
+          {t(INVITE.TITLE, { name: 'Mia' })}
         </Text>
         <Text variant="bodySm" className="max-w-[280px] text-center text-muted">
-          {t('invite.body')}
+          {t(INVITE.BODY)}
         </Text>
       </View>
 

@@ -10,6 +10,7 @@ import { Text } from '@/shared/ui/text';
 import { colors } from '@/shared/theme/colors';
 import { spacing } from '@/shared/theme/page-structure';
 import { t } from '@/shared/i18n/i18n';
+import { ONBOARDING } from '@/shared/i18n/keys';
 /** Screen `04a Your details · 4 of 7` — email + password, with a strength meter. */
 export default function DetailsScreen() {
   const [email, setEmail] = useState('');
@@ -25,13 +26,13 @@ export default function DetailsScreen() {
       footer={
         <View className="gap-[18px]">
           <Button
-            label={t('onboarding.details.cta')}
+            label={t(ONBOARDING.DETAILS.CTA)}
             size="xl"
             disabled={!valid}
             onPress={() => router.push('/(onboarding)/friends')}
           />
           <Text variant="subtitle" className="text-center text-muted-lilac">
-            {t('onboarding.details.hasAccount')}{' '}
+            {t(ONBOARDING.DETAILS.HAS_ACCOUNT)}{' '}
             {/* Until auth is wired this form doubles as sign-in, so the link
                 simply clears the flow above it. */}
             <Text
@@ -41,7 +42,7 @@ export default function DetailsScreen() {
               accessibilityRole="link"
               onPress={() => router.dismissTo('/(onboarding)/welcome')}
             >
-              {t('onboarding.details.signIn')}
+              {t(ONBOARDING.DETAILS.SIGN_IN)}
             </Text>
           </Text>
         </View>
@@ -53,23 +54,23 @@ export default function DetailsScreen() {
       <ProgressHeader step={4} onClose={() => router.back()} />
 
       <Text variant="display" className="mt-[22px] text-ink">
-        {t('onboarding.details.title')}
+        {t(ONBOARDING.DETAILS.TITLE)}
       </Text>
       <Text variant="bodySm" className="mt-3 text-muted">
-        {t('onboarding.details.subtitle')}
+        {t(ONBOARDING.DETAILS.SUBTITLE)}
       </Text>
 
       <View className="mt-7 gap-[18px]">
         <View className="gap-2">
           <Text variant="meta" className="text-muted">
-            {t('onboarding.details.emailLabel')}
+            {t(ONBOARDING.DETAILS.EMAIL_LABEL)}
           </Text>
           <View className={cn(INPUT, email.length > 0 && 'border-purple')}>
             <Mail size={21} color={colors.purple} strokeWidth={1.6} />
             <TextInput
               value={email}
               onChangeText={setEmail}
-              placeholder={t('onboarding.details.emailPlaceholder')}
+              placeholder={t(ONBOARDING.DETAILS.EMAIL_PLACEHOLDER)}
               placeholderTextColor={colors.placeholder}
               keyboardType="email-address"
               autoCapitalize="none"
@@ -81,7 +82,7 @@ export default function DetailsScreen() {
 
         <View className="gap-2">
           <Text variant="meta" className="text-muted">
-            {t('onboarding.details.passwordLabel')}
+            {t(ONBOARDING.DETAILS.PASSWORD_LABEL)}
           </Text>
           <View className={cn(INPUT, 'bg-surface-violet-warm')}>
             <TextInput
@@ -97,7 +98,7 @@ export default function DetailsScreen() {
               hitSlop={8}
               accessibilityRole="button"
               accessibilityLabel={
-                reveal ? t('onboarding.details.hidePassword') : t('onboarding.details.showPassword')
+                reveal ? t(ONBOARDING.DETAILS.HIDE_PASSWORD) : t(ONBOARDING.DETAILS.SHOW_PASSWORD)
               }
             >
               <Eye size={21} color={colors.muted} strokeWidth={1.6} />
@@ -117,7 +118,7 @@ export default function DetailsScreen() {
               ))}
             </View>
             <Text variant="metaSm" className="text-muted">
-              {t('onboarding.details.passwordHint')}
+              {t(ONBOARDING.DETAILS.PASSWORD_HINT)}
             </Text>
           </View>
         </View>
@@ -138,9 +139,9 @@ export default function DetailsScreen() {
           {consent ? <Check size={14} color={colors.white} strokeWidth={2.2} /> : null}
         </View>
         <Text variant="subtitle" className="flex-1 text-muted-lilac">
-          {t('onboarding.details.consent', {
-            terms: t('onboarding.signUp.terms'),
-            privacy: t('onboarding.signUp.privacy'),
+          {t(ONBOARDING.DETAILS.CONSENT, {
+            terms: t(ONBOARDING.SIGN_UP.TERMS),
+            privacy: t(ONBOARDING.SIGN_UP.PRIVACY),
           })}
         </Text>
       </Pressable>

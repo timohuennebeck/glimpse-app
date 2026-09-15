@@ -8,6 +8,7 @@ import { colors } from '@/shared/theme/colors';
 import { radius } from '@/shared/theme/page-structure';
 import { relativeTime, timeUntilUnlock } from '@/shared/lib/format';
 import { t } from '@/shared/i18n/i18n';
+import { FEED } from '@/shared/i18n/keys';
 import type { InboxMoment } from '@/features/moments/interfaces';
 interface LockedMomentCardProps {
   moment: InboxMoment;
@@ -38,7 +39,7 @@ export function LockedMomentCard({ moment, onPressTrade, onPressCard }: LockedMo
         </View>
         <View className="rounded-pill bg-surface-violet-deep px-3 py-1.5">
           <Text variant="metaSm" weight="semibold" className="text-purple-ink">
-            {t('feed.lockedBadge')}
+            {t(FEED.LOCKED_BADGE)}
           </Text>
         </View>
       </Pressable>
@@ -58,7 +59,7 @@ export function LockedMomentCard({ moment, onPressTrade, onPressCard }: LockedMo
       ) : null}
 
       <Button
-        label={t('feed.lockedCta')}
+        label={t(FEED.LOCKED_CTA)}
         onPress={onPressTrade}
         size="xs"
         icon={<CameraIcon size={21} lensColor={colors.ink} />}
@@ -66,7 +67,7 @@ export function LockedMomentCard({ moment, onPressTrade, onPressCard }: LockedMo
 
       {countdown ? (
         <Text variant="caption" className="text-center text-muted-lilac">
-          {t('feed.unlockHint', { time: countdown })}
+          {t(FEED.UNLOCK_HINT, { time: countdown })}
         </Text>
       ) : null}
     </View>

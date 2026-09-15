@@ -21,6 +21,7 @@ export const de = {
     filter: 'Filter',
     clear: 'Löschen',
     profileLink: 'glimpse.app/@du',
+    copied: 'Link kopiert',
   },
 
   time: {
@@ -85,7 +86,7 @@ export const de = {
 
     details: {
       title: 'Deine Daten',
-      subtitle: 'Wir schicken dir einen Code zur Bestätigung. Keine Werbung, versprochen.',
+      subtitle: 'Keine Werbung, versprochen.',
       emailLabel: 'E-Mail',
       emailPlaceholder: 'du@beispiel.de',
       passwordLabel: 'Passwort',
@@ -96,6 +97,16 @@ export const de = {
       cta: 'Konto erstellen',
       hasAccount: 'Schon ein Konto?',
       signIn: 'Anmelden',
+      signInTitle: 'Willkommen zurück',
+      signInSubtitle: 'Melde dich mit E-Mail und Passwort an.',
+      signInCta: 'Anmelden',
+      noAccount: 'Neu hier?',
+      createAccount: 'Konto erstellen',
+      errors: {
+        alreadyRegistered: 'Mit dieser E-Mail gibt es schon ein Konto. Melde dich stattdessen an.',
+        confirmationRequired:
+          'Bestätige zuerst deine E-Mail über den Link in deinem Postfach, dann melde dich an.',
+      },
     },
 
     friends: {
@@ -245,6 +256,11 @@ export const de = {
       cta: 'Freunde einladen',
       headline: 'Fast startklar.',
     },
+    outbox: {
+      sending: 'Wird an %{names} gesendet …',
+      failed: 'Senden an %{names} fehlgeschlagen',
+      retry: 'Erneut senden',
+    },
   },
 
   camera: {
@@ -294,6 +310,7 @@ export const de = {
     pending: 'Ausstehend',
     sentAgo: '%{time} gesendet',
     addCta: 'Weitere einladen',
+    withdraw: 'Zurückziehen',
     search: {
       title: 'Freund hinzufügen',
       placeholder: '@nutzername',
@@ -328,6 +345,7 @@ export const de = {
     tradeCta: 'Moment senden',
     pairsEmpty: 'Ihr habt noch nichts getauscht.',
     memberSince: 'Tauscht seit %{when}',
+    signOut: 'Abmelden',
   },
 
   photo: {
@@ -339,10 +357,15 @@ export const de = {
     body: 'Du siehst ihn, sobald du einen zurückschickst. So funktioniert Glimpse.',
     cta: 'Moment zurückschicken',
     secondary: 'Erst mal ansehen, was Glimpse ist',
+    shareMessage: '%{name} möchte mit dir auf Glimpse Momente tauschen: %{link}',
   },
 
   errors: {
     generic: 'Da ist etwas schiefgelaufen.',
+    friendCapReached: 'Du hast die maximale Zahl an Freunden erreicht.',
+    notFriends: 'Ihr seid noch nicht befreundet.',
+    tradeAlreadyAnswered: 'Auf diesen Moment hast du schon geantwortet.',
+    tradeExpired: 'Dieser Moment ist abgelaufen.',
   },
 };
 

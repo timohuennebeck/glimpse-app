@@ -7,6 +7,7 @@ import Svg, { Circle, Defs, Pattern } from 'react-native-svg';
 import { Text } from '@/shared/ui/text';
 import { colors } from '@/shared/theme/colors';
 import { t } from '@/shared/i18n/i18n';
+import { ONBOARDING } from '@/shared/i18n/keys';
 import { OnboardingScreen } from '@/features/onboarding/components/onboarding-screen';
 /**
  * Screen `03 Avatar · 3 of 7`.
@@ -21,11 +22,11 @@ export default function AvatarScreen() {
   return (
     <OnboardingScreen
       step={3}
-      title={t('onboarding.avatar.title')}
-      subtitle={t('onboarding.avatar.subtitle')}
-      cta={t('onboarding.avatar.cta')}
+      title={t(ONBOARDING.AVATAR.TITLE)}
+      subtitle={t(ONBOARDING.AVATAR.SUBTITLE)}
+      cta={t(ONBOARDING.AVATAR.CTA)}
       onNext={() => router.push('/(onboarding)/signup')}
-      secondary={t('onboarding.avatar.skip')}
+      secondary={t(ONBOARDING.AVATAR.SKIP)}
       onSecondary={() => router.push('/(onboarding)/signup')}
     >
       <View className="mt-[22px] h-[276px] items-center justify-center gap-5 rounded-lg bg-surface-violet-deep">
@@ -45,7 +46,7 @@ export default function AvatarScreen() {
         </Pressable>
 
         <Text variant="body" className="text-ink-faint">
-          {t('onboarding.avatar.pick')}
+          {t(ONBOARDING.AVATAR.PICK)}
         </Text>
       </View>
     </OnboardingScreen>

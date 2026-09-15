@@ -8,6 +8,7 @@ import { StarRow } from '@/shared/ui/star-row';
 import { Text } from '@/shared/ui/text';
 import { spacing } from '@/shared/theme/page-structure';
 import { t } from '@/shared/i18n/i18n';
+import { ONBOARDING } from '@/shared/i18n/keys';
 import { ART } from '@/shared/lib/fixtures';
 /**
  * Screen `00 Welcome`.
@@ -23,21 +24,21 @@ export default function WelcomeScreen() {
           <View className="flex-row items-center gap-2.5">
             <StarRow size={16} gap={2} />
             <Text variant="bodyXs" weight="semibold" className="text-ink">
-              {t('onboarding.welcome.rating')}
+              {t(ONBOARDING.WELCOME.RATING)}
             </Text>
             <Text variant="meta" className="text-muted-lilac">
-              {t('onboarding.welcome.ratingMeta')}
+              {t(ONBOARDING.WELCOME.RATING_META)}
             </Text>
           </View>
 
           <Button
-            label={t('onboarding.welcome.cta')}
+            label={t(ONBOARDING.WELCOME.CTA)}
             size="xl"
             onPress={() => router.push('/(onboarding)/name')}
           />
 
           <Text variant="body" className="text-center text-ink">
-            {t('onboarding.welcome.hasAccount')}{' '}
+            {t(ONBOARDING.WELCOME.HAS_ACCOUNT)}{' '}
             <Text
               variant="body"
               weight="semibold"
@@ -45,19 +46,19 @@ export default function WelcomeScreen() {
               accessibilityRole="link"
               onPress={() => router.push('/(onboarding)/details')}
             >
-              {t('onboarding.welcome.signIn')}
+              {t(ONBOARDING.WELCOME.SIGN_IN)}
             </Text>
           </Text>
 
           <View className="flex-row items-center gap-2.5">
             <Text variant="subtitle" className="text-muted-lilac">
-              {t('onboarding.welcome.legalPrivacy')}
+              {t(ONBOARDING.WELCOME.LEGAL_PRIVACY)}
             </Text>
             <Text variant="subtitle" className="text-muted-lilac">
               ·
             </Text>
             <Text variant="subtitle" className="text-muted-lilac">
-              {t('onboarding.welcome.legalTerms')}
+              {t(ONBOARDING.WELCOME.LEGAL_TERMS)}
             </Text>
           </View>
         </View>
@@ -84,10 +85,10 @@ export default function WelcomeScreen() {
         />
 
         <Text variant="displayLg" className="mt-[18px] text-center text-ink">
-          {t('onboarding.welcome.title')}
+          {t(ONBOARDING.WELCOME.TITLE)}
         </Text>
         <Text variant="bodyMd" className="mt-3.5 text-center text-muted-violet">
-          {t('onboarding.welcome.subtitle')}
+          {t(ONBOARDING.WELCOME.SUBTITLE)}
         </Text>
       </View>
     </Screen>

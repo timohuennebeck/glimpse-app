@@ -5,6 +5,7 @@ import { CameraIcon } from '@/shared/ui/icons';
 import { Text } from '@/shared/ui/text';
 import { colors } from '@/shared/theme/colors';
 import { t } from '@/shared/i18n/i18n';
+import { ONBOARDING } from '@/shared/i18n/keys';
 import { HeroPanel } from '@/features/onboarding/components/hero-panel';
 import { OnboardingScreen } from '@/features/onboarding/components/onboarding-screen';
 import { ART } from '@/shared/lib/fixtures';
@@ -20,12 +21,12 @@ export default function CameraIntroScreen() {
   return (
     <OnboardingScreen
       step={2}
-      title={t('onboarding.camera.title')}
-      subtitle={t('onboarding.camera.subtitle')}
-      cta={t('onboarding.camera.cta')}
+      title={t(ONBOARDING.CAMERA.TITLE)}
+      subtitle={t(ONBOARDING.CAMERA.SUBTITLE)}
+      cta={t(ONBOARDING.CAMERA.CTA)}
       ctaIcon={<CameraIcon size={24} lensColor={colors.ink} />}
       onNext={next}
-      secondary={t('onboarding.camera.later')}
+      secondary={t(ONBOARDING.CAMERA.LATER)}
       onSecondary={() => router.push('/(onboarding)/first-glimpse')}
     >
       <HeroPanel source={ART.cameraHero} className="mt-[22px]" imageClassName="h-[240px] w-[318px]" />
@@ -34,13 +35,13 @@ export default function CameraIntroScreen() {
         <View className="flex-row items-center gap-2 rounded-pill bg-surface-violet-deep px-[18px] py-[9px]">
           <View className="h-2 w-2 rounded-full bg-purple" />
           <Text variant="bodyXs" className="text-ink-faint">
-            {t('onboarding.camera.badge')}
+            {t(ONBOARDING.CAMERA.BADGE)}
           </Text>
         </View>
       </View>
 
       <Text variant="body" className="mt-3.5 text-center text-ink-faint">
-        {t('onboarding.camera.note')}
+        {t(ONBOARDING.CAMERA.NOTE)}
       </Text>
     </OnboardingScreen>
   );

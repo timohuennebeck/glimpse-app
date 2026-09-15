@@ -1,4 +1,5 @@
 import { I18n } from 'i18n-js';
+import type { TranslationKey, TranslationListKey } from '@/shared/i18n/keys';
 import { de } from '@/shared/i18n/locales/de';
 import { en } from '@/shared/i18n/locales/en';
 export const i18n = new I18n({ de, en });
@@ -23,8 +24,8 @@ i18n.enableFallback = true;
  */
 i18n.locale = 'en';
 
-/** Look up a translation. Path is dot-notated, e.g. `feed.storiesLabel`. */
-export function t(key: string, options?: Record<string, unknown>): string {
+/** Look up a translation by constant, e.g. `t(FEED.STORIES_LABEL)`. */
+export function t(key: TranslationKey, options?: Record<string, unknown>): string {
   return i18n.t(key, options);
 }
 
@@ -32,7 +33,7 @@ export function t(key: string, options?: Record<string, unknown>): string {
  * Arrays in the locale files (review quotes, suggestion chips) come back as
  * arrays, which `t()` stringifies. This preserves the shape.
  */
-export function tList<T = unknown>(key: string): T[] {
+export function tList<T = unknown>(key: TranslationListKey): T[] {
   const value = i18n.t(key, { defaultValue: [] });
   return Array.isArray(value) ? (value as T[]) : [];
 }

@@ -5,6 +5,7 @@ import * as Notifications from 'expo-notifications';
 import { Text } from '@/shared/ui/text';
 import { shadow } from '@/shared/theme/page-structure';
 import { t } from '@/shared/i18n/i18n';
+import { ONBOARDING } from '@/shared/i18n/keys';
 import { OnboardingScreen } from '@/features/onboarding/components/onboarding-screen';
 import { ART } from '@/shared/lib/fixtures';
 /**
@@ -22,13 +23,13 @@ export default function NotificationsScreen() {
   return (
     <OnboardingScreen
       step={6}
-      title={t('onboarding.notifications.title')}
-      subtitle={t('onboarding.notifications.subtitle')}
-      cta={t('onboarding.notifications.cta')}
+      title={t(ONBOARDING.NOTIFICATIONS.TITLE)}
+      subtitle={t(ONBOARDING.NOTIFICATIONS.SUBTITLE)}
+      cta={t(ONBOARDING.NOTIFICATIONS.CTA)}
       onNext={next}
-      secondary={t('onboarding.notifications.skip')}
+      secondary={t(ONBOARDING.NOTIFICATIONS.SKIP)}
       onSecondary={() => router.push('/(onboarding)/widget')}
-      footnote={t('onboarding.notifications.note')}
+      footnote={t(ONBOARDING.NOTIFICATIONS.NOTE)}
     >
       <View className="mt-5 gap-1.5 rounded-lg bg-surface-violet-deep px-[18px] pb-5 pt-2">
         <View className="h-[210px]">
@@ -40,7 +41,7 @@ export default function NotificationsScreen() {
           />
           <View className="absolute bottom-0 right-0 rounded-pill bg-notification-chip px-3.5 py-1.5">
             <Text variant="meta" className="text-ink-faint">
-              {t('onboarding.notifications.badge')}
+              {t(ONBOARDING.NOTIFICATIONS.BADGE)}
             </Text>
           </View>
         </View>
@@ -57,14 +58,14 @@ export default function NotificationsScreen() {
           <View className="flex-1 gap-[3px]">
             <View className="flex-row items-baseline justify-between">
               <Text variant="bodyXs" weight="semibold" className="text-ink">
-                {t('onboarding.notifications.previewApp')}
+                {t(ONBOARDING.NOTIFICATIONS.PREVIEW_APP)}
               </Text>
               <Text variant="metaSm" className="text-muted-grey">
-                {t('onboarding.notifications.previewTime')}
+                {t(ONBOARDING.NOTIFICATIONS.PREVIEW_TIME)}
               </Text>
             </View>
             <Text variant="bodyXs" className="text-ink-soft">
-              {t('onboarding.notifications.previewBody')}
+              {t(ONBOARDING.NOTIFICATIONS.PREVIEW_BODY)}
             </Text>
           </View>
         </View>

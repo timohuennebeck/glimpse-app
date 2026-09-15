@@ -9,6 +9,7 @@ import { Screen } from '@/shared/ui/screen';
 import { StarRow } from '@/shared/ui/star-row';
 import { Text } from '@/shared/ui/text';
 import { t, tList } from '@/shared/i18n/i18n';
+import { ONBOARDING } from '@/shared/i18n/keys';
 import { AVATARS } from '@/shared/lib/fixtures';
 interface Review {
   name: string;
@@ -19,23 +20,23 @@ interface Review {
 
 /** Screen `08 Reviews` — social proof between onboarding and the paywall. */
 export default function ReviewsScreen() {
-  const reviews = tList<Review>('onboarding.reviews.items');
+  const reviews = tList<Review>(ONBOARDING.REVIEWS.ITEMS);
   const faces = [AVATARS.mia, AVATARS.ben, AVATARS.lina];
 
   return (
     <Screen
       footer={
-        <CtaFooter label={t('onboarding.reviews.cta')} onPress={() => router.push('/(onboarding)/paywall')} />
+        <CtaFooter label={t(ONBOARDING.REVIEWS.CTA)} onPress={() => router.push('/(onboarding)/paywall')} />
       }
       scroll
     >
       <CloseRow onPress={() => router.back()} />
 
       <Text variant="display" className="mt-5 text-ink">
-        {t('onboarding.reviews.title')}
+        {t(ONBOARDING.REVIEWS.TITLE)}
       </Text>
       <Text variant="body" className="mt-3 text-muted-violet">
-        {t('onboarding.reviews.subtitle')}
+        {t(ONBOARDING.REVIEWS.SUBTITLE)}
       </Text>
 
       <View className="mb-3 mt-[22px] flex-row items-center justify-center gap-2.5">
@@ -43,10 +44,10 @@ export default function ReviewsScreen() {
         <View className="items-center gap-1">
           <StarRow size={21} />
           <Text variant="bodyXs" weight="semibold" className="text-ink">
-            {t('onboarding.reviews.rating')}
+            {t(ONBOARDING.REVIEWS.RATING)}
           </Text>
           <Text variant="metaXs" className="text-muted-lilac">
-            {t('onboarding.reviews.ratingMeta')}
+            {t(ONBOARDING.REVIEWS.RATING_META)}
           </Text>
         </View>
         <LaurelIcon size={42} flip />
@@ -65,7 +66,7 @@ export default function ReviewsScreen() {
                   <View className="flex-row items-center gap-[5px] rounded-pill bg-surface-violet-chip px-[9px] py-[3px]">
                     <VerifiedIcon size={15} />
                     <Text variant="captionXs" className="text-purple-muted">
-                      {t('onboarding.reviews.verified')}
+                      {t(ONBOARDING.REVIEWS.VERIFIED)}
                     </Text>
                   </View>
                 </View>

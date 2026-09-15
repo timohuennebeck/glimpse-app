@@ -11,6 +11,7 @@ import { cn } from '@/shared/lib/cn';
 import { colors } from '@/shared/theme/colors';
 import { shadow } from '@/shared/theme/page-structure';
 import { t } from '@/shared/i18n/i18n';
+import { CHAT, COMMON } from '@/shared/i18n/keys';
 import { threadTime } from '@/shared/lib/format';
 import { demoMessages, demoProfiles, DEMO_USER_ID } from '@/shared/lib/fixtures';
 /**
@@ -31,7 +32,7 @@ export default function ChatScreen() {
   return (
     <Screen gutter={0} bottomInset={0}>
       <View className="h-[60px] flex-row items-center gap-3 px-gutter">
-        <GlassButton size={34} onPress={() => router.back()} accessibilityLabel={t('common.close')}>
+        <GlassButton size={34} onPress={() => router.back()} accessibilityLabel={t(COMMON.CLOSE)}>
           <X size={12} color={colors.inkFaint} strokeWidth={2.2} />
         </GlassButton>
         <Avatar source={partner.photo} size={40} />
@@ -40,10 +41,10 @@ export default function ChatScreen() {
             {partner.first_name}
           </Text>
           <Text variant="metaXs" className="text-muted-lilac">
-            {t('chat.online')}
+            {t(CHAT.ONLINE)}
           </Text>
         </View>
-        <GlassButton size={34} accessibilityLabel={t('common.more')}>
+        <GlassButton size={34} accessibilityLabel={t(COMMON.MORE)}>
           <MoreHorizontal size={17} color={colors.inkFaint} strokeWidth={2.4} />
         </GlassButton>
       </View>
@@ -55,7 +56,7 @@ export default function ChatScreen() {
       >
         <View className="self-center rounded-pill bg-surface-lilac px-3.5 py-1.5">
           <Text variant="caption" className="text-muted-lilac">
-            {t('chat.dayToday')}
+            {t(CHAT.DAY_TODAY)}
           </Text>
         </View>
 
@@ -103,7 +104,7 @@ export default function ChatScreen() {
           style={shadow.card}
         >
           <TextInput
-            placeholder={t('chat.inputPlaceholder')}
+            placeholder={t(CHAT.INPUT_PLACEHOLDER)}
             placeholderTextColor={colors.placeholder}
             className="max-h-[100px] p-0 font-sans text-[15.5px] text-ink-body"
             multiline
@@ -118,7 +119,7 @@ export default function ChatScreen() {
               className="h-9 w-9 items-center justify-center rounded-[18px] bg-purple"
               disabled
               accessibilityRole="button"
-              accessibilityLabel={t('chat.send')}
+              accessibilityLabel={t(CHAT.SEND)}
               accessibilityState={{ disabled: true }}
             >
               <ArrowUp size={17} color={colors.white} strokeWidth={2.4} />

@@ -1,5 +1,6 @@
 import { NativeTabs } from 'expo-router/unstable-native-tabs';
 import { t } from '@/shared/i18n/i18n';
+import { NAV } from '@/shared/i18n/keys';
 import { useInbox } from '@/features/moments/hooks/use-inbox';
 import { demoUnreadCount } from '@/shared/lib/fixtures';
 // These are attached to Trigger rather than exported at the top level.
@@ -29,19 +30,19 @@ export default function AppLayout() {
           would need resources shipped in the app package. */}
       <NativeTabs.Trigger name="feed">
         <Icon sf="square.stack" md="photo_library" />
-        <Label>{t('nav.feed')}</Label>
+        <Label>{t(NAV.FEED)}</Label>
         {feedBadge ? <Badge>{feedBadge}</Badge> : null}
       </NativeTabs.Trigger>
 
       <NativeTabs.Trigger name="friends">
         <Icon sf="person.2" md="group" />
-        <Label>{t('nav.friends')}</Label>
+        <Label>{t(NAV.FRIENDS)}</Label>
         {friendsBadge ? <Badge>{friendsBadge}</Badge> : null}
       </NativeTabs.Trigger>
 
       <NativeTabs.Trigger name="profile">
         <Icon sf="person.crop.circle" md="account_circle" />
-        <Label>{t('nav.profile')}</Label>
+        <Label>{t(NAV.PROFILE)}</Label>
       </NativeTabs.Trigger>
     </NativeTabs>
   );

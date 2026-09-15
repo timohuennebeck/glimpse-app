@@ -12,6 +12,7 @@ import { GlassButton } from '@/shared/ui/glass-button';
 import { Text } from '@/shared/ui/text';
 import { colors } from '@/shared/theme/colors';
 import { t } from '@/shared/i18n/i18n';
+import { CAMERA, COMMON, COMPOSE, ONBOARDING } from '@/shared/i18n/keys';
 import { useComposer } from '@/features/moments/hooks/use-composer';
 import { useCapture } from '@/features/camera/hooks/use-capture';
 import { ShutterButton } from '@/features/camera/components/shutter-button';
@@ -71,7 +72,7 @@ export default function FirstGlimpseScreen() {
         style={{ paddingTop: insets.top + 12, paddingBottom: insets.bottom + 28 }}
       >
         <View className="h-8 flex-row items-center">
-          <GlassButton size={32} onDark onPress={() => router.back()} accessibilityLabel={t('common.back')}>
+          <GlassButton size={32} onDark onPress={() => router.back()} accessibilityLabel={t(COMMON.BACK)}>
             <X size={11} color={colors.white} strokeWidth={2.2} />
           </GlassButton>
         </View>
@@ -80,23 +81,17 @@ export default function FirstGlimpseScreen() {
           {shot ? (
             <>
               <Text variant="buttonSm" weight="medium" className="text-center text-on-dark-text">
-                {t('onboarding.firstGlimpse.hint')}
+                {t(ONBOARDING.FIRST_GLIMPSE.HINT)}
               </Text>
               <View className="flex-row gap-3">
                 <Button
-                  label={t('compose.retake')}
+                  label={t(COMPOSE.RETAKE)}
                   variant="outline"
                   size="sm"
                   onPress={() => setShot(null)}
                   className="flex-1"
                 />
-                <Button
-                  label={t('common.next')}
-                  variant="purple"
-                  size="sm"
-                  onPress={next}
-                  className="flex-1"
-                />
+                <Button label={t(COMMON.NEXT)} variant="purple" size="sm" onPress={next} className="flex-1" />
               </View>
             </>
           ) : granted ? (
@@ -106,7 +101,7 @@ export default function FirstGlimpseScreen() {
                   size={50}
                   onDark
                   onPress={() => setFacing((f) => (f === 'back' ? 'front' : 'back'))}
-                  accessibilityLabel={t('camera.flipLabel')}
+                  accessibilityLabel={t(CAMERA.FLIP_LABEL)}
                 >
                   <SwitchCamera size={22} color={colors.white} strokeWidth={2} />
                 </GlassButton>
@@ -117,15 +112,15 @@ export default function FirstGlimpseScreen() {
                 <View className="w-[50px]" />
               </View>
               <Text variant="buttonSm" weight="medium" className="text-center text-on-dark-text">
-                {t('camera.hint')}
+                {t(CAMERA.HINT)}
               </Text>
             </>
           ) : (
             <>
               <Text variant="bodySm" className="max-w-[280px] self-center text-center text-on-dark-text">
-                {t('camera.permissionBody')}
+                {t(CAMERA.PERMISSION_BODY)}
               </Text>
-              <Button label={t('common.next')} variant="purple" size="sm" onPress={next} />
+              <Button label={t(COMMON.NEXT)} variant="purple" size="sm" onPress={next} />
             </>
           )}
         </View>

@@ -9,6 +9,7 @@ import { CloseRow } from '@/shared/ui/close-row';
 import { Screen } from '@/shared/ui/screen';
 import { Text } from '@/shared/ui/text';
 import { t, tList } from '@/shared/i18n/i18n';
+import { PAYWALL } from '@/shared/i18n/keys';
 import { BloomBackdrop } from '@/features/onboarding/components/bloom-backdrop';
 import { ART } from '@/shared/lib/fixtures';
 type Plan = 'monthly' | 'yearly';
@@ -27,19 +28,15 @@ type Plan = 'monthly' | 'yearly';
 export default function PaywallScreen() {
   const [plan, setPlan] = useState<Plan>('yearly');
   const [trial, setTrial] = useState(true);
-  const benefits = tList<string>('paywall.benefits');
+  const benefits = tList<string>(PAYWALL.BENEFITS);
 
   return (
     <Screen
       footer={
         <View className="items-center gap-3.5">
-          <Button
-            label={t('paywall.cta')}
-            size="md"
-            onPress={() => router.push('/(onboarding)/heard-about')}
-          />
+          <Button label={t(PAYWALL.CTA)} size="md" onPress={() => router.push('/(onboarding)/heard-about')} />
           <Text variant="bodyXs" className="text-purple-muted">
-            {t('paywall.restore')}
+            {t(PAYWALL.RESTORE)}
           </Text>
         </View>
       }
@@ -51,10 +48,10 @@ export default function PaywallScreen() {
       <Image source={ART.mascot} className="-mt-1.5 h-[150px] w-[150px] self-center" contentFit="contain" />
 
       <Text variant="eyebrowAccent" className="mt-3.5 text-purple-deep">
-        {t('paywall.eyebrow')}
+        {t(PAYWALL.EYEBROW)}
       </Text>
       <Text variant="displayLg" className="mt-1.5 text-ink">
-        {t('paywall.title')}
+        {t(PAYWALL.TITLE)}
       </Text>
 
       <View className="mt-[22px] gap-4">
@@ -72,27 +69,27 @@ export default function PaywallScreen() {
         <PlanCard
           selected={plan === 'monthly'}
           onPress={() => setPlan('monthly')}
-          label={t('paywall.monthly.label')}
-          price={t('paywall.monthly.price')}
-          note={t('paywall.monthly.note')}
+          label={t(PAYWALL.MONTHLY.LABEL)}
+          price={t(PAYWALL.MONTHLY.PRICE)}
+          note={t(PAYWALL.MONTHLY.NOTE)}
         />
         <PlanCard
           selected={plan === 'yearly'}
           onPress={() => setPlan('yearly')}
-          label={t('paywall.yearly.label')}
-          price={t('paywall.yearly.price')}
-          note={t('paywall.yearly.note')}
-          badge={t('paywall.yearly.badge')}
+          label={t(PAYWALL.YEARLY.LABEL)}
+          price={t(PAYWALL.YEARLY.PRICE)}
+          note={t(PAYWALL.YEARLY.NOTE)}
+          badge={t(PAYWALL.YEARLY.BADGE)}
         />
       </View>
 
       <View className="mt-3 flex-row items-center gap-3 rounded-card-sm px-[18px] py-4">
         <View className="flex-1">
           <Text variant="rowTitle" className="text-ink-body">
-            {t('paywall.trial.title')}
+            {t(PAYWALL.TRIAL.TITLE)}
           </Text>
           <Text variant="meta" className="text-purple-muted">
-            {t('paywall.trial.body')}
+            {t(PAYWALL.TRIAL.BODY)}
           </Text>
         </View>
         <Pressable

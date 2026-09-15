@@ -23,6 +23,7 @@ export const en: Translations = {
     filter: 'Filter',
     clear: 'Clear',
     profileLink: 'glimpse.app/@you',
+    copied: 'Link copied',
   },
 
   time: {
@@ -87,7 +88,7 @@ export const en: Translations = {
 
     details: {
       title: 'Your details',
-      subtitle: 'We will send a code to confirm. No marketing, promised.',
+      subtitle: 'No marketing, promised.',
       emailLabel: 'Email',
       emailPlaceholder: 'you@example.com',
       passwordLabel: 'Password',
@@ -98,6 +99,15 @@ export const en: Translations = {
       cta: 'Create account',
       hasAccount: 'Already have an account?',
       signIn: 'Sign in',
+      signInTitle: 'Welcome back',
+      signInSubtitle: 'Sign in with your email and password.',
+      signInCta: 'Sign in',
+      noAccount: 'New here?',
+      createAccount: 'Create an account',
+      errors: {
+        alreadyRegistered: 'An account with this email already exists. Sign in instead.',
+        confirmationRequired: 'Confirm your email with the link in your inbox first, then sign in.',
+      },
     },
 
     friends: {
@@ -248,6 +258,11 @@ export const en: Translations = {
       cta: 'Invite friends',
       headline: 'Almost ready.',
     },
+    outbox: {
+      sending: 'Sending to %{names}…',
+      failed: 'Couldn’t send to %{names}',
+      retry: 'Retry',
+    },
   },
 
   camera: {
@@ -296,6 +311,7 @@ export const en: Translations = {
     pending: 'Pending',
     sentAgo: 'sent %{time}',
     addCta: 'Invite more',
+    withdraw: 'Withdraw',
     search: {
       title: 'Add friend',
       placeholder: '@username',
@@ -330,6 +346,7 @@ export const en: Translations = {
     tradeCta: 'Send a moment',
     pairsEmpty: 'You haven’t traded anything yet.',
     memberSince: 'Trading since %{when}',
+    signOut: 'Sign out',
   },
 
   photo: {
@@ -341,9 +358,14 @@ export const en: Translations = {
     body: 'You see it as soon as you send one back. That is how Glimpse works.',
     cta: 'Send one back',
     secondary: 'First, see what Glimpse is',
+    shareMessage: '%{name} wants to trade moments with you on Glimpse: %{link}',
   },
 
   errors: {
     generic: 'Something went wrong.',
+    friendCapReached: 'You’ve reached the friend limit.',
+    notFriends: 'You’re not friends yet.',
+    tradeAlreadyAnswered: 'You already answered this moment.',
+    tradeExpired: 'This moment has expired.',
   },
 };

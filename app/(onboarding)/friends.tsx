@@ -9,6 +9,7 @@ import { Screen } from '@/shared/ui/screen';
 import { Text } from '@/shared/ui/text';
 import { colors } from '@/shared/theme/colors';
 import { t } from '@/shared/i18n/i18n';
+import { COMMON, ONBOARDING } from '@/shared/i18n/keys';
 import { PersonRow } from '@/features/friends/components/person-row';
 import { Pill } from '@/features/friends/components/pill';
 import { ShareRow } from '@/features/friends/components/share-row';
@@ -31,9 +32,9 @@ export default function OnboardingFriendsScreen() {
     <Screen
       footer={
         <CtaFooter
-          label={t('onboarding.friends.cta')}
+          label={t(ONBOARDING.FRIENDS.CTA)}
           onPress={() => router.push('/(onboarding)/notifications')}
-          secondary={t('onboarding.friends.skip')}
+          secondary={t(ONBOARDING.FRIENDS.SKIP)}
           onSecondary={() => router.push('/(onboarding)/notifications')}
         />
       }
@@ -42,16 +43,16 @@ export default function OnboardingFriendsScreen() {
       <ProgressHeader step={5} onClose={() => router.back()} />
 
       <Text variant="displaySm" className="mt-[26px] text-ink">
-        {t('onboarding.friends.title')}
+        {t(ONBOARDING.FRIENDS.TITLE)}
       </Text>
       <Text variant="bodySm" className="mt-3 text-muted">
-        {t('onboarding.friends.subtitle')}
+        {t(ONBOARDING.FRIENDS.SUBTITLE)}
       </Text>
 
       <View className="mt-5 h-field flex-row items-center gap-3 rounded-pill bg-surface-lilac px-[18px]">
         <Search size={20} color={colors.mutedLilac} strokeWidth={2.2} />
         <Text variant="rowTitleSm" weight="regular" className="text-muted-cool">
-          {t('onboarding.friends.searchPlaceholder')}
+          {t(ONBOARDING.FRIENDS.SEARCH_PLACEHOLDER)}
         </Text>
       </View>
 
@@ -59,7 +60,7 @@ export default function OnboardingFriendsScreen() {
         <View className="mt-6 gap-3.5">
           <View className="flex-row items-center justify-between">
             <Text variant="eyebrow" className="text-muted-grey">
-              {t('onboarding.friends.contactsSection')}
+              {t(ONBOARDING.FRIENDS.CONTACTS_SECTION)}
             </Text>
             <View className="rounded-pill bg-surface-violet-chip px-2.5 py-1">
               <Text variant="caption" weight="semibold" className="text-purple-muted">
@@ -79,10 +80,10 @@ export default function OnboardingFriendsScreen() {
                   subtitle={p.tagline ?? undefined}
                   trailing={
                     done ? (
-                      <Pill label={t('onboarding.friends.added')} tone="quiet" compact />
+                      <Pill label={t(ONBOARDING.FRIENDS.ADDED)} tone="quiet" compact />
                     ) : (
                       <Pill
-                        label={t('onboarding.friends.add')}
+                        label={t(ONBOARDING.FRIENDS.ADD)}
                         tone="filled"
                         compact
                         onPress={() => setInvited((s) => [...s, p.id])}
@@ -100,19 +101,19 @@ export default function OnboardingFriendsScreen() {
 
       <ShareRow
         className="mt-[22px]"
-        dividerLabel={t('onboarding.friends.dividerShare')}
-        link={t('common.profileLink')}
-        linkLabel={t('onboarding.friends.shareLink')}
+        dividerLabel={t(ONBOARDING.FRIENDS.DIVIDER_SHARE)}
+        link={t(COMMON.PROFILE_LINK)}
+        linkLabel={t(ONBOARDING.FRIENDS.SHARE_LINK)}
         actions={[
           {
-            label: t('onboarding.friends.shareCopy'),
+            label: t(ONBOARDING.FRIENDS.SHARE_COPY),
             icon: <Copy size={22} color={colors.inkFaint} strokeWidth={2} />,
-            onPress: () => void Clipboard.setStringAsync(t('common.profileLink')),
+            onPress: () => void Clipboard.setStringAsync(t(COMMON.PROFILE_LINK)),
           },
           {
-            label: t('onboarding.friends.shareMore'),
+            label: t(ONBOARDING.FRIENDS.SHARE_MORE),
             icon: <MoreHorizontal size={22} color={colors.inkFaint} strokeWidth={2.4} />,
-            onPress: () => void Share.share({ message: t('common.profileLink') }),
+            onPress: () => void Share.share({ message: t(COMMON.PROFILE_LINK) }),
           },
         ]}
       />

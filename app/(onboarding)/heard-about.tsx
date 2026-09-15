@@ -8,6 +8,8 @@ import { CtaFooter } from '@/shared/ui/cta-footer';
 import { Screen } from '@/shared/ui/screen';
 import { Text } from '@/shared/ui/text';
 import { t } from '@/shared/i18n/i18n';
+import { ONBOARDING } from '@/shared/i18n/keys';
+import type { TranslationKey } from '@/shared/i18n/keys';
 import type { Translations } from '@/shared/i18n/locales/de';
 import {
   AppStoreChannelIcon,
@@ -22,19 +24,20 @@ type ChannelKey = keyof Translations['onboarding']['heardAbout']['options'];
 
 interface ChannelOption {
   key: ChannelKey;
+  label: TranslationKey;
   icon: ReactNode;
 }
 
 // Typed against the locale, so a renamed key fails to compile instead of
 // rendering "missing translation" in a list.
 const OPTIONS: ChannelOption[] = [
-  { key: 'friend', icon: <FriendChannelIcon /> },
-  { key: 'instagram', icon: <InstagramChannelIcon /> },
-  { key: 'tiktok', icon: <TiktokChannelIcon /> },
-  { key: 'appStore', icon: <AppStoreChannelIcon /> },
-  { key: 'youtube', icon: <YoutubeChannelIcon /> },
-  { key: 'search', icon: <SearchChannelIcon /> },
-  { key: 'other', icon: <OtherChannelIcon /> },
+  { key: 'friend', label: ONBOARDING.HEARD_ABOUT.OPTIONS.FRIEND, icon: <FriendChannelIcon /> },
+  { key: 'instagram', label: ONBOARDING.HEARD_ABOUT.OPTIONS.INSTAGRAM, icon: <InstagramChannelIcon /> },
+  { key: 'tiktok', label: ONBOARDING.HEARD_ABOUT.OPTIONS.TIKTOK, icon: <TiktokChannelIcon /> },
+  { key: 'appStore', label: ONBOARDING.HEARD_ABOUT.OPTIONS.APP_STORE, icon: <AppStoreChannelIcon /> },
+  { key: 'youtube', label: ONBOARDING.HEARD_ABOUT.OPTIONS.YOUTUBE, icon: <YoutubeChannelIcon /> },
+  { key: 'search', label: ONBOARDING.HEARD_ABOUT.OPTIONS.SEARCH, icon: <SearchChannelIcon /> },
+  { key: 'other', label: ONBOARDING.HEARD_ABOUT.OPTIONS.OTHER, icon: <OtherChannelIcon /> },
 ];
 
 /**
@@ -51,10 +54,10 @@ export default function HeardAboutScreen() {
     <Screen
       footer={
         <CtaFooter
-          label={t('onboarding.heardAbout.cta')}
+          label={t(ONBOARDING.HEARD_ABOUT.CTA)}
           disabled={!choice}
           onPress={() => router.replace('/(onboarding)/thank-you')}
-          secondary={t('onboarding.heardAbout.skip')}
+          secondary={t(ONBOARDING.HEARD_ABOUT.SKIP)}
           onSecondary={() => router.replace('/(onboarding)/thank-you')}
         />
       }
@@ -63,10 +66,10 @@ export default function HeardAboutScreen() {
       <CloseRow onPress={() => router.back()} />
 
       <Text variant="display" className="mt-[26px] text-ink">
-        {t('onboarding.heardAbout.title')}
+        {t(ONBOARDING.HEARD_ABOUT.TITLE)}
       </Text>
       <Text variant="bodySm" className="mt-2.5 text-purple-muted">
-        {t('onboarding.heardAbout.subtitle')}
+        {t(ONBOARDING.HEARD_ABOUT.SUBTITLE)}
       </Text>
 
       <View className="mt-[22px] gap-2">
@@ -89,7 +92,7 @@ export default function HeardAboutScreen() {
                 {option.icon}
               </View>
               <Text variant="body" weight={selected ? 'semibold' : 'medium'} className="flex-1 text-ink-body">
-                {t(`onboarding.heardAbout.options.${option.key}`)}
+                {t(option.label)}
               </Text>
               <CheckCircle checked={selected} />
             </Pressable>

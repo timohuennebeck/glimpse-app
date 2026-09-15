@@ -9,6 +9,7 @@ import { Text } from '@/shared/ui/text';
 import { cn } from '@/shared/lib/cn';
 import { colors } from '@/shared/theme/colors';
 import { t } from '@/shared/i18n/i18n';
+import { CHAT } from '@/shared/i18n/keys';
 import { threadTime } from '@/shared/lib/format';
 import { demoThreads, demoProfiles, demoUnreadCount, DEMO_USER_ID } from '@/shared/lib/fixtures';
 /**
@@ -24,13 +25,13 @@ export function ChatsList() {
       <View className="mt-[18px] h-field-xs flex-row items-center gap-2.5 rounded-pill bg-surface-lilac px-4">
         <Search size={16} color={colors.mutedCool} strokeWidth={1.8} />
         <Text variant="bodyXs" className="text-placeholder">
-          {t('chat.searchPlaceholder')}
+          {t(CHAT.SEARCH_PLACEHOLDER)}
         </Text>
       </View>
 
       <View className="mt-6 gap-3.5">
-        <SectionLabel trailing={t('chat.unreadTrailing', { count: demoUnreadCount })}>
-          {t('chat.unreadSection')}
+        <SectionLabel trailing={t(CHAT.UNREAD_TRAILING, { count: demoUnreadCount })}>
+          {t(CHAT.UNREAD_SECTION)}
         </SectionLabel>
 
         <View className="gap-[18px]">
@@ -59,7 +60,7 @@ export function ChatsList() {
                       className={cn('flex-1', isUnread ? 'text-ink-body' : 'text-muted-violet')}
                       numberOfLines={1}
                     >
-                      {(fromMe ? t('chat.youPrefix') : '') + (thread.last_content ?? t('chat.sentPhoto'))}
+                      {(fromMe ? t(CHAT.YOU_PREFIX) : '') + (thread.last_content ?? t(CHAT.SENT_PHOTO))}
                     </Text>
                   </View>
                 </View>

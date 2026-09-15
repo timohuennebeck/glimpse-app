@@ -3,6 +3,7 @@ import { Button } from '@/shared/ui/button';
 import { Avatar } from '@/shared/ui/avatar';
 import { Text } from '@/shared/ui/text';
 import { t } from '@/shared/i18n/i18n';
+import { ONBOARDING } from '@/shared/i18n/keys';
 import { AVATARS } from '@/shared/lib/fixtures';
 interface ContactsInviteProps {
   onPress?: () => void;
@@ -28,21 +29,21 @@ export function ContactsInvite({ onPress }: ContactsInviteProps) {
         ))}
         <View className="-ml-4 h-16 w-16 items-center justify-center rounded-[32px] border-[3px] border-white bg-purple">
           <Text variant="rowTitle" className="text-white">
-            {t('onboarding.friends.moreCount', { count: HIDDEN_FACES })}
+            {t(ONBOARDING.FRIENDS.MORE_COUNT, { count: HIDDEN_FACES })}
           </Text>
         </View>
       </View>
 
       <Text variant="cardTitleLg" className="text-center text-ink">
-        {t('onboarding.friends.inviteTitle')}
+        {t(ONBOARDING.FRIENDS.INVITE_TITLE)}
       </Text>
       {/* 14.5 * 1.4 */}
       <Text variant="subtitle" className="text-center leading-[20.3px] text-purple-muted">
-        {t('onboarding.friends.inviteBody')}
+        {t(ONBOARDING.FRIENDS.INVITE_BODY)}
       </Text>
 
       <Button
-        label={t('onboarding.friends.inviteCta')}
+        label={t(ONBOARDING.FRIENDS.INVITE_CTA)}
         variant="purple"
         size="sm"
         onPress={onPress}

@@ -5,6 +5,7 @@ import { Screen } from '@/shared/ui/screen';
 import { colors } from '@/shared/theme/colors';
 import { spacing } from '@/shared/theme/page-structure';
 import { t } from '@/shared/i18n/i18n';
+import { COMMON } from '@/shared/i18n/keys';
 import { memberSince } from '@/shared/lib/format';
 import { ProfileView } from '@/features/profile/components/profile-view';
 import { useComposer } from '@/features/moments/hooks/use-composer';
@@ -24,7 +25,7 @@ export default function ProfileScreen() {
         profile={profile}
         subtitle={profile.tagline || memberSince(profile.created_at)}
         leading={
-          <GlassButton size={44} onPress={() => router.back()} accessibilityLabel={t('common.close')}>
+          <GlassButton size={44} onPress={() => router.back()} accessibilityLabel={t(COMMON.CLOSE)}>
             <X size={15} color={colors.inkSoft} strokeWidth={2.2} />
           </GlassButton>
         }

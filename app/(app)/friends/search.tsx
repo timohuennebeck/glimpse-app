@@ -10,6 +10,7 @@ import { cn } from '@/shared/lib/cn';
 import { colors } from '@/shared/theme/colors';
 import { spacing } from '@/shared/theme/page-structure';
 import { t } from '@/shared/i18n/i18n';
+import { COMMON, FRIENDS } from '@/shared/i18n/keys';
 import { PersonRow } from '@/features/friends/components/person-row';
 import { Pill } from '@/features/friends/components/pill';
 import { ShareRow } from '@/features/friends/components/share-row';
@@ -36,11 +37,11 @@ export default function FriendSearchScreen() {
   return (
     <Screen scroll bottomInset={spacing.contentBottom}>
       <View className="h-10 flex-row items-center gap-3">
-        <GlassButton size={34} onPress={() => router.back()} accessibilityLabel={t('common.close')}>
+        <GlassButton size={34} onPress={() => router.back()} accessibilityLabel={t(COMMON.CLOSE)}>
           <X size={13} color={colors.inkFaint} strokeWidth={2.2} />
         </GlassButton>
         <Text variant="sheetTitle" className="text-ink">
-          {t('friends.search.title')}
+          {t(FRIENDS.SEARCH.TITLE)}
         </Text>
       </View>
 
@@ -54,7 +55,7 @@ export default function FriendSearchScreen() {
         <TextInput
           value={query}
           onChangeText={setQuery}
-          placeholder={t('friends.search.placeholder')}
+          placeholder={t(FRIENDS.SEARCH.PLACEHOLDER)}
           placeholderTextColor={colors.mutedCool}
           autoCapitalize="none"
           autoCorrect={false}
@@ -66,7 +67,7 @@ export default function FriendSearchScreen() {
             className="h-[22px] w-[22px] items-center justify-center rounded-[11px] bg-dot-idle-soft"
             hitSlop={8}
             accessibilityRole="button"
-            accessibilityLabel={t('common.clear')}
+            accessibilityLabel={t(COMMON.CLEAR)}
           >
             <X size={9} color={colors.white} strokeWidth={2.2} />
           </Pressable>
@@ -74,7 +75,7 @@ export default function FriendSearchScreen() {
       </View>
 
       <View className="mt-[26px] gap-3.5">
-        <SectionLabel>{t('friends.search.resultsSection', { count: results.length })}</SectionLabel>
+        <SectionLabel>{t(FRIENDS.SEARCH.RESULTS_SECTION, { count: results.length })}</SectionLabel>
         <View className="gap-[18px]">
           {results.map((p) => {
             const state = states[p.id] ?? 'add';
@@ -82,9 +83,9 @@ export default function FriendSearchScreen() {
             const mutual = demoFriendRequests.find((r) => r.profile.id === p.id)?.mutual;
             const detail =
               state === 'friends'
-                ? t('friends.search.alreadyFriends')
+                ? t(FRIENDS.SEARCH.ALREADY_FRIENDS)
                 : mutual
-                  ? t('friends.search.mutual', { count: mutual })
+                  ? t(FRIENDS.SEARCH.MUTUAL, { count: mutual })
                   : null;
             return (
               <PersonRow
@@ -97,14 +98,14 @@ export default function FriendSearchScreen() {
                 trailing={
                   state === 'add' ? (
                     <Pill
-                      label={t('friends.search.add')}
+                      label={t(FRIENDS.SEARCH.ADD)}
                       tone="filled"
                       onPress={() => setStates((s) => ({ ...s, [p.id]: 'sent' }))}
                     />
                   ) : state === 'sent' ? (
-                    <Pill label={t('friends.search.sent')} tone="quiet" />
+                    <Pill label={t(FRIENDS.SEARCH.SENT)} tone="quiet" />
                   ) : (
-                    <Pill label={t('friends.search.request')} tone="outline" />
+                    <Pill label={t(FRIENDS.SEARCH.REQUEST)} tone="outline" />
                   )
                 }
               />
@@ -112,7 +113,7 @@ export default function FriendSearchScreen() {
           })}
           {results.length === 0 ? (
             <Text variant="bodySm" className="text-muted-lilac">
-              {t('friends.search.empty')}
+              {t(FRIENDS.SEARCH.EMPTY)}
             </Text>
           ) : null}
         </View>
@@ -120,18 +121,18 @@ export default function FriendSearchScreen() {
 
       <ShareRow
         className="mt-[30px]"
-        dividerLabel={t('friends.search.dividerShare')}
-        link={t('common.profileLink')}
-        linkLabel={t('friends.search.link')}
+        dividerLabel={t(FRIENDS.SEARCH.DIVIDER_SHARE)}
+        link={t(COMMON.PROFILE_LINK)}
+        linkLabel={t(FRIENDS.SEARCH.LINK)}
         actions={[
           {
-            label: t('friends.search.qr'),
+            label: t(FRIENDS.SEARCH.QR),
             icon: <QrCode size={22} color={colors.inkFaint} strokeWidth={2} />,
           },
           {
-            label: t('friends.search.more'),
+            label: t(FRIENDS.SEARCH.MORE),
             icon: <MoreHorizontal size={22} color={colors.inkFaint} strokeWidth={2.4} />,
-            onPress: () => void Share.share({ message: t('common.profileLink') }),
+            onPress: () => void Share.share({ message: t(COMMON.PROFILE_LINK) }),
           },
         ]}
       />
