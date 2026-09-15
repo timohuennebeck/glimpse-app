@@ -28,6 +28,7 @@
 - Chat loads the last 200 messages. Presence uses private channel `chat:<lower uuid>:<higher uuid>`.
 - The outbox lives in memory only.
 - The paywall screen is not touched.
+- Shell snippets are written for **GNU** userland (Linux): `sed -i "s/…/…/"` with no argument after `-i`. On macOS every one of them needs `sed -i ''` instead, and `sips` in place of the JPEG encoder in Task 5.
 - Out of scope: push notifications, contacts import, chat attachments, universal links, Google sign-in, RevenueCat, blocking and reporting UI, the native widget module, password reset, account deletion, editing name and tagline, message pagination.
 - Commit subjects use a conventional prefix (`feat:`, `fix:`, `refactor:`, `chore:`, `docs:`, `test:`) and every commit message ends with:
 
@@ -884,6 +885,12 @@ Call `generate_typescript_types` for the project. Replace the whole of `src/shar
  */
 ```
 
+The generated text is **not** Prettier-clean — it comes back without semicolons
+and with collapsed `Args` / `Returns` forms. Run
+`npx prettier --write src/shared/lib/database.interfaces.ts` immediately after
+writing it, or the repo-wide `format:check` in Step 9 fails on output you did not
+type. The same applies every later time this file is regenerated.
+
 - [ ] **Step 3: Write the row aliases**
 
 Create `src/shared/lib/database.types.ts`:
@@ -1264,8 +1271,27 @@ console.log(JSON.stringify({ email, userId, momentId: moment.id }));
 Run:
 
 ```bash
-sips -s format jpeg assets/images/p-beach.png --out "$TMPDIR/glimpse-smoke.jpg" >/dev/null
-node scripts/smoke-blur.mjs "$TMPDIR/glimpse-smoke.jpg"
+# The smoke test needs a real JPEG, and there is none in the repo. This box has
+# no `sips` (macOS only), no ImageMagick and no `sharp`, so encode one with a
+# pure-JS encoder installed outside package.json. On macOS the one-liner is:
+#   sips -s format jpeg assets/images/p-beach.png --out "$SMOKE_JPG"
+SMOKE_JPG="${TMPDIR:-/tmp}/glimpse-smoke.jpg"
+npm install --no-save --silent jpeg-js
+node -e '
+const jpeg = require("jpeg-js");
+const w = 1200, h = 900;
+const data = Buffer.alloc(w * h * 4);
+for (let y = 0; y < h; y++)
+  for (let x = 0; x < w; x++) {
+    const i = (y * w + x) * 4;
+    data[i] = ((x * 255) / w) | 0;
+    data[i + 1] = ((y * 255) / h) | 0;
+    data[i + 2] = (x ^ y) & 255;
+    data[i + 3] = 255;
+  }
+require("fs").writeFileSync(process.argv[1], jpeg.encode({ data, width: w, height: h }, 85).data);
+' "$SMOKE_JPG"
+node scripts/smoke-blur.mjs "$SMOKE_JPG"
 ```
 
 Expected: `blur-moment returned { blurred_storage_path: 'blurred/<userId>/<n>.jpg' } in <ms>ms`, the second call returns the same path, and a final JSON line with `email`, `userId`, `momentId`. If the function returns 500, read its logs with the MCP tool `query_logs`, fix the function, redeploy, and rerun.
