@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { View, TextInput, Pressable } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -19,6 +19,8 @@ import { relativeTime, timeUntilUnlock } from '@/shared/lib/format';
 import { useInbox } from '@/features/moments/hooks/use-inbox';
 import { useComposer } from '@/features/moments/hooks/use-composer';
 import { useMarkTradeSeen } from '@/features/moments/data/moments-mutations';
+import { draftMessage, useSendMessage } from '@/features/chat/data/chat-mutations';
+import { useMe } from '@/features/profile/hooks/use-me';
 /**
  * Screens `04 Moment geöffnet` and `04b Moment verschwommen`.
  *
@@ -45,6 +47,12 @@ export default function MomentScreen() {
   useEffect(() => {
     if (tradeId && found && !seenAt) mutate(tradeId);
   }, [tradeId, found, seenAt, mutate]);
+
+  const [reply, setReply] = useState('');
+  const { data: me } = useMe();
+  const myId = me?.id ?? '';
+  const senderId = moment?.from.id ?? '';
+  const sendReply = useSendMessage(senderId);
 
   // Before the inbox has loaded (deep link, cold start) there is no moment yet.
   // The chrome still renders so the screen is never a black box with no way out.
@@ -148,8 +156,7 @@ export default function MomentScreen() {
           </>
         )}
 
-        {/* Reply bar. The camera button is the primary action in both states.
-            Task 17 makes the field send a message carrying this trade id. */}
+        {/* Reply bar. The camera button is the primary action in both states. */}
         <View className="flex-row items-center gap-2.5 px-1">
           <BlurView
             intensity={30}
@@ -157,10 +164,28 @@ export default function MomentScreen() {
             className="h-[52px] flex-1 justify-center overflow-hidden rounded-pill border border-on-dark-border px-5"
           >
             <TextInput
+              value={reply}
+              onChangeText={setReply}
               placeholder={t(MOMENT.REPLY_PLACEHOLDER)}
               placeholderTextColor={alpha.onDarkTextSoft}
               className="p-0 font-sans text-[15.5px] text-white"
               editable={!locked}
+              returnKeyType="send"
+              onSubmitEditing={() => {
+                const content = reply.trim();
+                if (content.length === 0 || myId.length === 0) return;
+                // `trade_id` ties the message to the moment it is about, which
+                // is what makes the chat readable later.
+                sendReply.mutate(
+                  draftMessage({
+                    senderId: myId,
+                    recipientId: moment.from.id,
+                    content,
+                    tradeId: moment.tradeId,
+                  }),
+                );
+                setReply('');
+              }}
             />
           </BlurView>
           <Pressable

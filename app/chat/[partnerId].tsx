@@ -1,7 +1,7 @@
-import { useMemo } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, TextInput, View } from 'react-native';
-import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
+import { useQuery } from '@tanstack/react-query';
 import { ArrowUp, MoreHorizontal, Paperclip, Plus, X } from 'lucide-react-native';
 import { Avatar } from '@/shared/ui/avatar';
 import { GlassButton } from '@/shared/ui/glass-button';
@@ -13,21 +13,57 @@ import { shadow } from '@/shared/theme/page-structure';
 import { t } from '@/shared/i18n/i18n';
 import { CHAT, COMMON } from '@/shared/i18n/keys';
 import { threadTime } from '@/shared/lib/format';
-import { demoMessages, demoProfiles, DEMO_USER_ID } from '@/shared/lib/fixtures';
+import { queries } from '@/shared/lib/queries';
+import { draftMessage, useMarkThreadRead, useSendMessage } from '@/features/chat/data/chat-mutations';
+import { usePartnerPresence } from '@/features/chat/hooks/use-partner-presence';
+import { avatarUrl } from '@/features/profile/data/profile-api';
+import { useMe } from '@/features/profile/hooks/use-me';
 /**
  * Screen `09 Chat`.
  *
  * Note the positioning note explicitly says to cut open chat — this stays 1:1
  * only, reachable from a friend, with no group threads and no discovery.
+ *
+ * The mock's standing "Today" chip is gone: with real messages it would sit
+ * above ones sent last week. Each bubble carries its own time, and `threadTime`
+ * already says "Yesterday" or the weekday when that is what it is.
  */
 export default function ChatScreen() {
   const { partnerId } = useLocalSearchParams<{ partnerId: string }>();
-  const partner = demoProfiles[partnerId ?? 'mia'] ?? demoProfiles.mia;
+  const id = partnerId ?? '';
+  const { data: me } = useMe();
+  const myId = me?.id ?? '';
+  const [draft, setDraft] = useState('');
+  const scrollRef = useRef<ScrollView>(null);
 
-  const messages = useMemo(
-    () => demoMessages.filter((m) => m.sender_id === partner.id || m.recipient_id === partner.id),
-    [partner.id],
-  );
+  const { data: partner } = useQuery({ ...queries.profile.byId(id), enabled: id.length > 0 });
+  const { data: messages = [] } = useQuery({ ...queries.chat.messages(id), enabled: id.length > 0 });
+
+  const send = useSendMessage(id);
+  const { mutate: markRead } = useMarkThreadRead(id);
+  const present = usePartnerPresence(myId, id);
+
+  const partnerAvatar = avatarUrl(partner?.avatar_storage_path ?? null);
+  const partnerName = partner?.first_name ?? '';
+
+  // Opening a conversation reads it. Primitive dep: every refetch is a new
+  // array, and re-reading an already-read thread is a pointless write.
+  const hasUnread = messages.some((message) => message.recipientId === myId && message.readAt === null);
+  useEffect(() => {
+    if (hasUnread) markRead();
+  }, [hasUnread, markRead]);
+
+  // A new message belongs in view, whether I sent it or it just arrived.
+  useEffect(() => {
+    scrollRef.current?.scrollToEnd({ animated: true });
+  }, [messages.length]);
+
+  function submit() {
+    const content = draft.trim();
+    if (content.length === 0 || myId.length === 0 || id.length === 0) return;
+    send.mutate(draftMessage({ senderId: myId, recipientId: id, content }));
+    setDraft('');
+  }
 
   return (
     <Screen gutter={0} bottomInset={0}>
@@ -35,14 +71,16 @@ export default function ChatScreen() {
         <GlassButton size={34} onPress={() => router.back()} accessibilityLabel={t(COMMON.CLOSE)}>
           <X size={12} color={colors.inkFaint} strokeWidth={2.2} />
         </GlassButton>
-        <Avatar source={partner.photo} size={40} />
+        <Avatar source={partnerAvatar} name={partnerName} size={40} />
         <View className="flex-1 gap-px">
           <Text variant="rowTitle" className="text-ink">
-            {partner.first_name}
+            {partnerName}
           </Text>
-          <Text variant="metaXs" className="text-muted-lilac">
-            {t(CHAT.ONLINE)}
-          </Text>
+          {present ? (
+            <Text variant="metaXs" className="text-muted-lilac">
+              {t(CHAT.ONLINE)}
+            </Text>
+          ) : null}
         </View>
         <GlassButton size={34} accessibilityLabel={t(COMMON.MORE)}>
           <MoreHorizontal size={17} color={colors.inkFaint} strokeWidth={2.4} />
@@ -50,47 +88,35 @@ export default function ChatScreen() {
       </View>
 
       <ScrollView
+        ref={scrollRef}
         className="flex-1"
         contentContainerClassName="gap-4 px-gutter pb-2 pt-[18px]"
         showsVerticalScrollIndicator={false}
       >
-        <View className="self-center rounded-pill bg-surface-lilac px-3.5 py-1.5">
-          <Text variant="caption" className="text-muted-lilac">
-            {t(CHAT.DAY_TODAY)}
-          </Text>
-        </View>
-
         {messages.map((message) => {
-          const mine = message.sender_id === DEMO_USER_ID;
+          const mine = message.senderId === myId;
           return (
             <View key={message.id} className={mine ? 'flex-row justify-end' : 'flex-row items-end gap-2.5'}>
-              {!mine ? <Avatar source={partner.photo} size={30} /> : null}
+              {!mine ? <Avatar source={partnerAvatar} name={partnerName} size={30} /> : null}
 
               <View className={cn('shrink gap-1.5', mine && 'items-end')}>
                 <Text variant="caption" className="text-muted-lilac">
-                  {threadTime(message.created_at)}
+                  {threadTime(message.createdAt)}
                 </Text>
-                <View className="flex-row items-end gap-2.5">
-                  {message.photo ? (
-                    <Image
-                      source={message.photo}
-                      className="h-[104px] w-[78px] rounded-chip border-[1.5px] border-border-chip"
-                      contentFit="cover"
-                    />
-                  ) : null}
-                  {message.content ? (
-                    <View
-                      className={cn(
-                        'max-w-[264px] rounded-[22px] px-4 py-3',
-                        mine ? 'rounded-br-[8px] bg-purple' : 'rounded-bl-[8px] bg-surface-violet',
-                      )}
-                    >
-                      <Text variant="bodyXs" className={mine ? 'text-white' : 'text-ink-body'}>
-                        {message.content}
-                      </Text>
-                    </View>
-                  ) : null}
-                </View>
+                {message.content ? (
+                  <View
+                    className={cn(
+                      'max-w-[264px] rounded-[22px] px-4 py-3',
+                      mine ? 'rounded-br-[8px] bg-purple' : 'rounded-bl-[8px] bg-surface-violet',
+                      // Still in flight: present, but not yet a fact.
+                      message.pending && 'opacity-60',
+                    )}
+                  >
+                    <Text variant="bodyXs" className={mine ? 'text-white' : 'text-ink-body'}>
+                      {message.content}
+                    </Text>
+                  </View>
+                ) : null}
               </View>
             </View>
           );
@@ -104,23 +130,28 @@ export default function ChatScreen() {
           style={shadow.card}
         >
           <TextInput
+            value={draft}
+            onChangeText={setDraft}
             placeholder={t(CHAT.INPUT_PLACEHOLDER)}
             placeholderTextColor={colors.placeholder}
             className="max-h-[100px] p-0 font-sans text-[15.5px] text-ink-body"
             multiline
           />
-          {/* Sending is not wired (no messages API on the client yet), so the
-              controls are rendered but disabled rather than pretending. */}
+          {/* Attachments are out of scope; the two icons stay as the mock draws them. */}
           <View className="flex-row items-center gap-3.5">
             <Plus size={19} color={colors.inkBody} strokeWidth={2} />
             <Paperclip size={19} color={colors.inkBody} strokeWidth={1.8} />
             <View className="flex-1" />
             <Pressable
-              className="h-9 w-9 items-center justify-center rounded-[18px] bg-purple"
-              disabled
+              className={cn(
+                'h-9 w-9 items-center justify-center rounded-[18px] bg-purple',
+                draft.trim().length === 0 && 'opacity-40',
+              )}
+              onPress={submit}
+              disabled={draft.trim().length === 0}
               accessibilityRole="button"
               accessibilityLabel={t(CHAT.SEND)}
-              accessibilityState={{ disabled: true }}
+              accessibilityState={{ disabled: draft.trim().length === 0 }}
             >
               <ArrowUp size={17} color={colors.white} strokeWidth={2.4} />
             </Pressable>

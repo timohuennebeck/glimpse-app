@@ -1,6 +1,7 @@
 import { Pressable, View } from 'react-native';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
+import { useQuery } from '@tanstack/react-query';
 import { Search } from 'lucide-react-native';
 import { Avatar } from '@/shared/ui/avatar';
 import { CameraBadgeIcon } from '@/shared/ui/icons';
@@ -11,7 +12,8 @@ import { colors } from '@/shared/theme/colors';
 import { t } from '@/shared/i18n/i18n';
 import { CHAT } from '@/shared/i18n/keys';
 import { threadTime } from '@/shared/lib/format';
-import { demoThreads, demoProfiles, demoUnreadCount, DEMO_USER_ID } from '@/shared/lib/fixtures';
+import { queries } from '@/shared/lib/queries';
+import { useMe } from '@/features/profile/hooks/use-me';
 /**
  * The conversation list, backed by `public.v_threads`.
  *
@@ -20,8 +22,15 @@ import { demoThreads, demoProfiles, demoUnreadCount, DEMO_USER_ID } from '@/shar
  * app, not a destination of its own.
  */
 export function ChatsList() {
+  const { data: threads = [] } = useQuery(queries.chat.threads);
+  const { data: me } = useMe();
+  const myId = me?.id ?? '';
+  const unread = threads.reduce((total, thread) => total + thread.unreadCount, 0);
+
   return (
     <View>
+      {/* Decorative in the mock and still decorative: searching a list this
+          short is not a feature, and chat search is out of scope. */}
       <View className="mt-[18px] h-field-xs flex-row items-center gap-2.5 rounded-pill bg-surface-lilac px-4">
         <Search size={16} color={colors.mutedCool} strokeWidth={1.8} />
         <Text variant="bodyXs" className="text-placeholder">
@@ -30,37 +39,41 @@ export function ChatsList() {
       </View>
 
       <View className="mt-6 gap-3.5">
-        <SectionLabel trailing={t(CHAT.UNREAD_TRAILING, { count: demoUnreadCount })}>
+        <SectionLabel trailing={unread > 0 ? t(CHAT.UNREAD_TRAILING, { count: unread }) : undefined}>
           {t(CHAT.UNREAD_SECTION)}
         </SectionLabel>
 
         <View className="gap-[18px]">
-          {demoThreads.map((thread) => {
-            const partner = demoProfiles[thread.partner_id];
-            const isUnread = thread.unread_count > 0;
-            const fromMe = thread.last_sender_id === DEMO_USER_ID;
+          {threads.map((thread) => {
+            const isUnread = thread.unreadCount > 0;
+            const fromMe = thread.lastSenderId === myId;
 
             return (
               <Pressable
-                key={thread.last_message_id}
+                key={thread.lastMessageId}
                 className="flex-row items-center gap-[13px]"
-                onPress={() => router.push(`/chat/${thread.partner_id}`)}
+                onPress={() => router.push(`/chat/${thread.partner.id}`)}
               >
-                <Avatar source={partner.photo} size={52} ring={isUnread ? 'active' : 'none'} />
+                <Avatar
+                  source={thread.partner.avatarUrl}
+                  name={thread.partner.name}
+                  size={52}
+                  ring={isUnread ? 'active' : 'none'}
+                />
 
                 <View className="min-w-0 flex-1 gap-[3px]">
                   <Text variant="rowTitleSm" className="text-ink" numberOfLines={1}>
-                    {partner.first_name}
+                    {thread.partner.name}
                   </Text>
                   <View className="min-w-0 flex-row items-center gap-1.5">
-                    {thread.last_moment_id && !thread.last_content ? <CameraBadgeIcon size={14} /> : null}
+                    {thread.lastMomentId && !thread.lastContent ? <CameraBadgeIcon size={14} /> : null}
                     <Text
                       variant="meta"
                       weight={isUnread ? 'semibold' : undefined}
                       className={cn('flex-1', isUnread ? 'text-ink-body' : 'text-muted-violet')}
                       numberOfLines={1}
                     >
-                      {(fromMe ? t(CHAT.YOU_PREFIX) : '') + (thread.last_content ?? t(CHAT.SENT_PHOTO))}
+                      {(fromMe ? t(CHAT.YOU_PREFIX) : '') + (thread.lastContent ?? t(CHAT.SENT_PHOTO))}
                     </Text>
                   </View>
                 </View>
@@ -76,12 +89,12 @@ export function ChatsList() {
                   {isUnread ? (
                     <View className="h-[22px] min-w-[22px] items-center justify-center rounded-pill bg-purple px-[7px]">
                       <Text variant="caption" weight="semibold" className="text-white">
-                        {String(thread.unread_count)}
+                        {String(thread.unreadCount)}
                       </Text>
                     </View>
                   ) : (
                     <Text variant="caption" className="text-muted-lilac">
-                      {threadTime(thread.last_at)}
+                      {threadTime(thread.lastAt)}
                     </Text>
                   )}
                 </View>
