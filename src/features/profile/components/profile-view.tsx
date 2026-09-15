@@ -11,7 +11,7 @@ import { SectionHeading } from '@/shared/ui/section-heading';
 import { Text } from '@/shared/ui/text';
 import { colors } from '@/shared/theme/colors';
 import { t } from '@/shared/i18n/i18n';
-import type { Profile } from '@/shared/lib/database.interfaces';
+import type { Profile } from '@/shared/lib/database.types';
 import { PairGrid } from '@/features/profile/components/pair-grid';
 import { queries } from '@/shared/lib/queries';
 interface ProfileViewProps {

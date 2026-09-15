@@ -1,6 +1,6 @@
 import { isSupabaseConfigured, requireSupabase } from '@/shared/lib/supabase';
 import { demoOthers } from '@/shared/lib/fixtures';
-import type { Profile } from '@/shared/lib/database.interfaces';
+import type { Profile } from '@/shared/lib/database.types';
 import { publicAvatarUrl } from '@/features/moments/data/moments-api';
 
 /** A friend as a picker or list needs them. */
@@ -25,7 +25,7 @@ export async function fetchFriends(): Promise<FriendSummary[]> {
   const sb = requireSupabase();
   const { data: links, error } = await sb.from('v_my_friends').select('friend_id');
   if (error) throw error;
-  const ids = (links ?? []).map((l) => l.friend_id);
+  const ids = (links ?? []).map((l) => l.friend_id).filter((id): id is string => id !== null);
   if (ids.length === 0) return [];
 
   const { data: profiles, error: profileError } = await sb

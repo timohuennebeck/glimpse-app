@@ -1,4 +1,4 @@
-import type { TradeStatus } from '@/shared/lib/database.interfaces';
+import type { TradeStatus } from '@/shared/lib/database.types';
 /**
  * A received moment as the UI thinks of it: a photo plus a lock.
  * `photo` is the resolved image source — a remote signed URL, or a bundled

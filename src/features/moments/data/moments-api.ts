@@ -1,6 +1,6 @@
 import { isSupabaseConfigured, requireSupabase } from '@/shared/lib/supabase';
 import { demoInbox, demoPairs, demoProfiles } from '@/shared/lib/fixtures';
-import type { InboxRow, PairRow } from '@/shared/lib/database.interfaces';
+import type { InboxRow, PairRow } from '@/shared/lib/database.types';
 import type { InboxMoment, MomentPair, MomentPhoto } from '@/features/moments/interfaces';
 /**
  * Data access for the trade loop.
@@ -16,7 +16,7 @@ export async function fetchInbox(): Promise<InboxMoment[]> {
   }
 
   const sb = requireSupabase();
-  const { data, error } = await sb.from('v_inbox').select('*');
+  const { data, error } = await sb.from('v_inbox').select('*').overrideTypes<InboxRow[], { merge: false }>();
   if (error) throw error;
 
   const rows = data ?? [];
@@ -178,7 +178,8 @@ export async function fetchPairs(withUserId: string): Promise<MomentPair[]> {
   const { data, error } = await sb
     .from('v_pairs')
     .select('*')
-    .or(`user_a.eq.${withUserId},user_b.eq.${withUserId}`);
+    .or(`user_a.eq.${withUserId},user_b.eq.${withUserId}`)
+    .overrideTypes<PairRow[], { merge: false }>();
   if (error) throw error;
 
   const pairs = data ?? [];
