@@ -5838,9 +5838,18 @@ export const momentsQueries = createQueryKeys('moments', {
       return data;
     },
   },
-  /** Completed trades as photo pairs. `null` means "with anyone". */
+  /**
+   * Completed trades as photo pairs. `null` means "with anyone".
+   *
+   * The key spells that `'all'` rather than `null`: the factory's `ValidValue`
+   * is `string | number | boolean | object | bigint`, so a literal `null` in a
+   * queryKey is rejected — and the rejection is nasty, because it degrades the
+   * whole `momentsQueries` object to `never` and the errors then surface in
+   * `use-inbox.ts` and `moments-mutations.ts` instead of here. A uuid is never
+   * the word `all`, so the two cannot collide.
+   */
   pairs: (withUserId: string | null) => ({
-    queryKey: [withUserId],
+    queryKey: [withUserId ?? 'all'],
     queryFn: () => fetchPairs(withUserId),
   }),
   /** My own moments nobody has answered, for the locked tiles on my grid. */
