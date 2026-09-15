@@ -7871,6 +7871,10 @@ export function usePartnerPresence(myId: string, partnerId: string): boolean {
 
     const read = () => setPresent(Object.keys(channel.presenceState()).includes(partnerId));
 
+    // The three .on('presence') calls must stay BEFORE .subscribe(): realtime-js
+    // decides presence_enabled from the bindings that already exist when
+    // subscribe() runs. Attach them after and presenceState() stays empty for
+    // ever — no error, just an "Active now" that never appears.
     channel
       .on('presence', { event: 'sync' }, read)
       .on('presence', { event: 'join' }, read)
@@ -8196,8 +8200,11 @@ changes between the two branches:
 const [reply, setReply] = useState('');
 const { data: me } = useMe();
 const myId = me?.id ?? '';
-const senderId = moment?.from.id ?? '';
-const sendReply = useSendMessage(senderId);
+// Whoever sent the moment is the partner this reply goes to — useSendMessage
+// takes a partnerId. Not to be confused with draftMessage's `senderId`, which
+// is me.
+const partnerId = moment?.from.id ?? '';
+const sendReply = useSendMessage(partnerId);
 ```
 
 Then replace the reply `TextInput` with:
@@ -9247,6 +9254,10 @@ handle also orphaned a handful of strings. Delete these from **both**
 `.inviteTitle`, `.inviteBody`, `.inviteCta`, and `common.profileLink`. Nothing
 fails if they stay — `keys.test.ts` does not check for unused keys — which is
 exactly why they need deleting by hand.
+
+Task 17 orphaned one more the same way: the chat screen dropped its standing
+"Today" chip, leaving `chat.dayToday` with no call site. Check it with
+`grep -rn "DAY_TODAY\|dayToday" app src` and delete it from both locales too.
 
 Delete the now-unused images if nothing references them, checking each first:
 

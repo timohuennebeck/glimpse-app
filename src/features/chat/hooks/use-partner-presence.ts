@@ -22,6 +22,10 @@ export function usePartnerPresence(myId: string, partnerId: string): boolean {
 
     const read = () => setPresent(Object.keys(channel.presenceState()).includes(partnerId));
 
+    // The three .on('presence') calls must stay BEFORE .subscribe(): realtime-js
+    // decides presence_enabled from the bindings that already exist when
+    // subscribe() runs. Attach them after and presenceState() stays empty for
+    // ever — no error, just an "Active now" that never appears.
     channel
       .on('presence', { event: 'sync' }, read)
       .on('presence', { event: 'join' }, read)

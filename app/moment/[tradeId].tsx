@@ -51,8 +51,11 @@ export default function MomentScreen() {
   const [reply, setReply] = useState('');
   const { data: me } = useMe();
   const myId = me?.id ?? '';
-  const senderId = moment?.from.id ?? '';
-  const sendReply = useSendMessage(senderId);
+  // Whoever sent the moment is the partner this reply goes to — useSendMessage
+  // takes a partnerId. Not to be confused with draftMessage's `senderId`, which
+  // is me.
+  const partnerId = moment?.from.id ?? '';
+  const sendReply = useSendMessage(partnerId);
 
   // Before the inbox has loaded (deep link, cold start) there is no moment yet.
   // The chrome still renders so the screen is never a black box with no way out.
