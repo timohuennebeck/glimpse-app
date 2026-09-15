@@ -2160,7 +2160,7 @@ Claude-Session: https://claude.ai/code/session_012A2gz59aWK6CCueq4SYbS6"
 - Consumes: `supabase` and `Profile` (Task 4); the persistence packages (Task 1).
 - Produces:
   - `create<T extends object>(initial: T)` from `@/shared/lib/store` — unchanged, new home.
-  - From `@/features/auth/hooks/use-session`: `type SessionStatus = 'loading' | 'signed-out' | 'signed-in'`, `interface SessionState { status: SessionStatus; userId: string | null }`, `useSession` (with the store's `set` / `reset` / `getState` statics) and `startSessionSync(): () => void`.
+  - From `@/features/auth/hooks/use-session`: `type SessionStatus = 'loading' | 'signed-out' | 'signed-in'`, `interface SessionState { status: SessionStatus; userId: string | null }`, `useSession` (with the store's `set` / `reset` / `getState` statics) and `startSessionSync(): () => void`. **Never call `useSession.reset()`.** `create()`'s `reset` restores the initial state, which for this store is `{ status: 'loading' }` — the root layout's `ready` gate holds the splash while the status is `loading`, so resetting hangs the app on the splash for ever. Sign-out is `set({ status: 'signed-out', userId: null })`, which `onAuthStateChange` does on its own.
   - `currentUserId(): string` from `@/features/auth/current-user`, throwing `Error('not_authenticated')`.
   - `entryRoute(input: EntryInput): EntryRoute | null` from `@/features/auth/entry-route`.
   - `fetchProfile(userId: string): Promise<Profile | null>` from `@/features/profile/data/profile-api`.
@@ -3662,6 +3662,9 @@ import { useOnboardingDraft } from '@/features/onboarding/hooks/use-onboarding-d
  */
 export async function clearUserData(queryClient: QueryClient): Promise<void> {
   supabase.removeAllChannels();
+  // Deliberately NOT useSession.reset(): that restores `status: 'loading'` and
+  // the root layout would hold the splash for ever. `onAuthStateChange` sets
+  // the signed-out state for us.
   useComposer.reset();
   useOnboardingDraft.reset();
   queryClient.clear();
@@ -9624,6 +9627,8 @@ report rather than making an empty commit.
 - "Confirm email" must be switched off in the dashboard before Task 5.
 - Task 21 needs the Chrome DevTools MCP.
 - `npm run format:check` runs Prettier over the **whole repository**, `docs/` included, not just the code a task touched. Tasks 6, 14 and 20 assert it passes, so the tree has to be clean before Task 2; `npx prettier --write .` is the one-liner.
+- **`npm run lint` does not work here, and never did.** The repo ships no ESLint config, so `expo lint` tries to fetch one and dies on `HTTP Proxy Network Error: Forbidden`. No task in this plan gates on it; the real gates are `npm run typecheck`, `npm test` and `npx prettier --check .`. Do not chase it.
+- **`Constants.expoConfig?.version` is `undefined` under Jest**, so `APP_VERSION` is `'0.0.0'` in tests and `'0.1.0'` only at real runtime. Nothing asserts on it today — just do not write a test that expects the real version.
 - **This sandbox has no HTTPS egress to the Supabase project.** `https://<project-ref>.supabase.co` answers `CONNECT tunnel failed, response 403`, as does the general internet; only package registries and the MCP endpoints are reachable. The Supabase **MCP** works throughout, so migrations, SQL, deploys, types and advisors are all fine. What cannot run here is anything speaking to the project's Auth / REST / Storage / Functions endpoints from this box: **Task 5 Steps 4–6** (the smoke run) and **all of Task 21** (the web build in a browser). Both need either the project host added to the environment's network allowlist, or a machine with egress. Do not attempt to tunnel around the denial.
 - **This sandbox's proxy denies `api.expo.dev` and `reactnative.directory`**; only `registry.npmjs.org` is reachable. That is why Task 1 Steps 3 and 4 install by explicit version instead of through `npx expo install`. Anything else that reaches for the Expo API degrades the same way — `npx expo start --web` in Task 21 prints "Unable to fetch compatibility data … Skipping check" and carries on, which is fine. Check `curl -sS "$HTTPS_PROXY/__agentproxy/status"` when a command fails with `HTTP Proxy Network Error: Forbidden`.
 - Local baseline before Task 1: `npm run typecheck` reported 6 errors, all from `nativewind` and `tailwind-merge` missing in `node_modules`. `npm install` clears those five; the sixth, TS2882 on `import '../global.css'`, needs the gitignored `expo-env.d.ts` that Task 1 Step 1 now generates.
