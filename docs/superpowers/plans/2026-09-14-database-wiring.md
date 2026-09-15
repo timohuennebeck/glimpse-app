@@ -4491,7 +4491,10 @@ export function useRemoveFriendship() {
 - [ ] **Step 8: Let a person row have no avatar**
 
 In `src/features/friends/components/person-row.tsx`, widen the prop and hand the
-name to the placeholder:
+name to the placeholder. Keep the `number` arm — it is not vestigial: the
+`notOnGlimpse` block still in `app/recipients.tsx` passes a bundled `require()`
+id, so narrowing this to `string | null` before the fixtures go in Task 20 breaks
+that screen.
 
 ```ts
 avatar: string | number | null;
@@ -7571,7 +7574,9 @@ export const chatQueries = createQueryKeys('chat', {
 });
 ```
 
-In `src/shared/lib/queries.ts`, add the import and the fourth factory:
+In `src/shared/lib/queries.ts`, add the import and the fourth factory. While the
+file is open, fix its module comment: it still offers `queries.friends.list` as
+an example, and Task 11 replaced that key with `queries.friends.all`.
 
 ```ts
 import { chatQueries } from '@/features/chat/data/chat-queries';
