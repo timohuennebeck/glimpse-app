@@ -10,7 +10,31 @@
 
 **Spec:** `docs/superpowers/specs/2026-09-14-database-wiring-design.md`
 
-> **Status (2026-09-15):** Tasks 1–4 are complete and pushed. Task 5 is complete except its smoke run: the function is written and **deployed ACTIVE**, but Steps 4–6 need HTTPS egress to the project, which this sandbox denies — see "Handoff notes". Tasks 6–21 are not started. Task 21 needs that same egress plus the Chrome DevTools MCP. Every task through 5 left `npm run typecheck`, `npm test` and `npx prettier --check .` green.
+> **Status (2026-09-15):** **Tasks 1–20 are complete and pushed.** Every one left
+> `npm run typecheck` exit 0, `npm test` green and `npx prettier --check .` clean;
+> the suite finished at **13 suites / 72 tests**.
+>
+> Two things remain, both blocked on the same thing — HTTPS egress to the project,
+> which this sandbox denies at the proxy (`gateway answered 403 to CONNECT` for
+> `rzpydvnppvbziusxngfm.supabase.co:443`):
+>
+> - **Task 5 Steps 4–6**, the blur smoke run. The function is written and
+>   **deployed ACTIVE with `verify_jwt: true`**; only the round trip is unrun.
+> - **Task 21 Steps 2 onwards**, the two-account click-through, which also needs
+>   the Chrome DevTools MCP.
+>
+> **Task 21 Step 1 passed** (typecheck, test, format:check all exit 0). What the
+> Supabase MCP could verify without egress also passed: all five migrations are
+> applied under their assigned versions, `blur-moment` is ACTIVE, and the security
+> advisors sit at exactly the predicted steady state — `citext` in public, the two
+> deliberate `anon`-callable invite functions, and 17 `authenticated` SECURITY
+> DEFINER functions. **No `rls_disabled_in_public` finding**, which is the one that
+> matters most: an interrupted migration earlier in this work left RLS off on ten
+> tables, and that is confirmed repaired.
+>
+> What no amount of static checking substitutes for is the click-through: nothing
+> here has exercised a real sign-up, upload, trade, message or invite claim against
+> the live project. Task 21 is the gate that would, and it has not run.
 
 ## Global Constraints
 
