@@ -18,6 +18,7 @@ import { draftMessage, useMarkThreadRead, useSendMessage } from '@/features/chat
 import { usePartnerPresence } from '@/features/chat/hooks/use-partner-presence';
 import { avatarUrl } from '@/features/profile/data/profile-api';
 import { useMe } from '@/features/profile/hooks/use-me';
+import { useOncePerKey } from '@/shared/lib/use-once-per-key';
 /**
  * Screen `09 Chat`.
  *
@@ -46,12 +47,16 @@ export default function ChatScreen() {
   const partnerAvatar = avatarUrl(partner?.avatar_storage_path ?? null);
   const partnerName = partner?.first_name ?? '';
 
-  // Opening a conversation reads it. Primitive dep: every refetch is a new
-  // array, and re-reading an already-read thread is a pointless write.
-  const hasUnread = messages.some((message) => message.recipientId === myId && message.readAt === null);
-  useEffect(() => {
-    if (hasUnread) markRead();
-  }, [hasUnread, markRead]);
+  // Opening a conversation reads it. Keyed by the newest unread message rather
+  // than by "is anything unread": marking read patches `readAt` on every
+  // incoming message and a failure rolls all of them back, which used to
+  // re-arm this write forever. A genuinely new arrival changes the key, so it
+  // still gets marked read while the screen is open.
+  const newestUnread = messages.reduce<string | null>(
+    (latest, message) => (message.recipientId === myId && message.readAt === null ? message.id : latest),
+    null,
+  );
+  useOncePerKey(newestUnread, markRead);
 
   // A new message belongs in view, whether I sent it or it just arrived.
   useEffect(() => {

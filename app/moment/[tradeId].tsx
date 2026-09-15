@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { View, TextInput, Pressable } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -21,6 +21,7 @@ import { useComposer } from '@/features/moments/hooks/use-composer';
 import { useMarkTradeSeen } from '@/features/moments/data/moments-mutations';
 import { draftMessage, useSendMessage } from '@/features/chat/data/chat-mutations';
 import { useMe } from '@/features/profile/hooks/use-me';
+import { useOncePerKey } from '@/shared/lib/use-once-per-key';
 /**
  * Screens `04 Moment geöffnet` and `04b Moment verschwommen`.
  *
@@ -37,16 +38,13 @@ export default function MomentScreen() {
   const moment = useMemo(() => data.find((m) => m.tradeId === tradeId), [data, tradeId]);
 
   // Opening the frosted card stamps it as seen, so the sender can tell it
-  // landed. This is a genuine side effect of viewing, not a fetch — hence the
-  // one `useEffect` on this screen.
+  // landed. A genuine side effect of viewing, not a fetch.
   const { mutate } = useMarkTradeSeen();
-  // Primitive deps only: the refetch after the patch yields a new object for
-  // the same moment, which must not stamp it a second time.
+  // Keyed by the trade, not by `seenAt`: marking seen patches `seenAt` and a
+  // failure rolls it straight back, which used to re-arm this write forever.
   const found = moment !== undefined;
   const seenAt = moment?.seenAt;
-  useEffect(() => {
-    if (tradeId && found && !seenAt) mutate(tradeId);
-  }, [tradeId, found, seenAt, mutate]);
+  useOncePerKey(tradeId && found && !seenAt ? tradeId : null, () => mutate(tradeId));
 
   const [reply, setReply] = useState('');
   const { data: me } = useMe();
