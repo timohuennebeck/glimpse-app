@@ -6938,6 +6938,7 @@ Replace `src/features/profile/components/pair-grid.tsx` with:
 import { Pressable, View } from 'react-native';
 import { Image } from 'expo-image';
 import { LockedIcon } from '@/shared/ui/icons';
+import { colors } from '@/shared/theme/colors';
 import { Text } from '@/shared/ui/text';
 import { pairDate } from '@/shared/lib/format';
 import type { MomentPair } from '@/features/moments/interfaces';
@@ -6996,7 +6997,9 @@ function Pair({ pair, onPressPhoto }: PairProps) {
         ) : (
           // Nothing to blur: there is no photo here yet, which is the point.
           <View className="h-[111px] flex-1 items-center justify-center rounded-tile bg-surface-violet-deep">
-            <LockedIcon size={18} />
+            {/* LockedIcon defaults to white, which vanishes on this near-white lilac.
+                Matches the locked badge, the other locked thing on this surface. */}
+            <LockedIcon size={18} color={colors.purpleInk} />
           </View>
         )}
       </View>
@@ -7233,7 +7236,9 @@ const { data: moment, isPending } = useQuery({
 });
 ```
 
-and, inside the top row's centre column, under the meta text:
+and, inside the top row's centre column, replacing the meta text (the snippet
+below _is_ that element — adding it under the existing one renders the line
+twice):
 
 ```tsx
 <Text variant="subtitle" weight="medium" className="shrink text-on-dark-text" numberOfLines={1}>
