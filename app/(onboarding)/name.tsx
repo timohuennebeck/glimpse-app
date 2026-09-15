@@ -10,6 +10,7 @@ import { colors } from '@/shared/theme/colors';
 import { type as typeScale } from '@/shared/theme/fonts';
 import { t, tList } from '@/shared/i18n/i18n';
 import { ONBOARDING } from '@/shared/i18n/keys';
+import { useOnboardingDraft } from '@/features/onboarding/hooks/use-onboarding-draft';
 /**
  * Screen `01 Name · 1 of 7`.
  *
@@ -83,7 +84,8 @@ const LINE = 'leading-[35px]';
 const CHIP = 'rounded-pill px-3.5 py-1';
 
 export default function NameScreen() {
-  const [name, setName] = useState('');
+  const draft = useOnboardingDraft();
+  const [name, setName] = useState(draft.firstName);
   const suggestions = tList<string>(ONBOARDING.NAME.SUGGESTIONS);
   const groups = group(tokenize(t(ONBOARDING.NAME.TITLE, { friends: FRIENDS_SLOT, placeholder: NAME_SLOT })));
 
@@ -93,7 +95,10 @@ export default function NameScreen() {
       footer={
         <CtaFooter
           label={t(ONBOARDING.NAME.CTA)}
-          onPress={() => router.push('/(onboarding)/camera')}
+          onPress={() => {
+            draft.set({ firstName: name.trim() });
+            router.push('/(onboarding)/camera');
+          }}
           disabled={name.trim().length === 0}
         />
       }

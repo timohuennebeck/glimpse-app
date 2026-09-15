@@ -44,7 +44,7 @@ export default function WelcomeScreen() {
               weight="semibold"
               className="text-ink"
               accessibilityRole="link"
-              onPress={() => router.push('/(onboarding)/details')}
+              onPress={() => router.push({ pathname: '/(onboarding)/details', params: { mode: 'signin' } })}
             >
               {t(ONBOARDING.WELCOME.SIGN_IN)}
             </Text>

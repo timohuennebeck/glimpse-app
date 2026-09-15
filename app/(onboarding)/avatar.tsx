@@ -1,7 +1,7 @@
-import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
+import * as ImagePicker from 'expo-image-picker';
 import { Plus } from 'lucide-react-native';
 import Svg, { Circle, Defs, Pattern } from 'react-native-svg';
 import { Text } from '@/shared/ui/text';
@@ -9,15 +9,30 @@ import { colors } from '@/shared/theme/colors';
 import { t } from '@/shared/i18n/i18n';
 import { ONBOARDING } from '@/shared/i18n/keys';
 import { OnboardingScreen } from '@/features/onboarding/components/onboarding-screen';
+import { useOnboardingDraft } from '@/features/onboarding/hooks/use-onboarding-draft';
 /**
  * Screen `03 Avatar · 3 of 7`.
  *
- * The empty avatar in the mock is a purple disc with a fine dot pattern; here it
- * is a flat purple disc plus the same "+" badge, and shows the picked photo once
- * one is chosen.
+ * The picked photo is held on the onboarding draft, not uploaded: there is no
+ * account to hang it on until step 4. The details screen uploads it after
+ * sign-up returns a session.
  */
 export default function AvatarScreen() {
-  const [photo, setPhoto] = useState<string | null>(null);
+  const draft = useOnboardingDraft();
+
+  async function pick() {
+    // Cropped square here rather than centre-cropped later, so the person
+    // chooses which part of the photo is their face.
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+    if (result.canceled) return;
+    const asset = result.assets[0];
+    draft.set({ avatar: { uri: asset.uri, width: asset.width, height: asset.height } });
+  }
 
   return (
     <OnboardingScreen
@@ -27,13 +42,23 @@ export default function AvatarScreen() {
       cta={t(ONBOARDING.AVATAR.CTA)}
       onNext={() => router.push('/(onboarding)/signup')}
       secondary={t(ONBOARDING.AVATAR.SKIP)}
-      onSecondary={() => router.push('/(onboarding)/signup')}
+      onSecondary={() => {
+        // "Add later" means without one — not with whatever was picked and
+        // then reconsidered.
+        draft.set({ avatar: null });
+        router.push('/(onboarding)/signup');
+      }}
     >
       <View className="mt-[22px] h-[276px] items-center justify-center gap-5 rounded-lg bg-surface-violet-deep">
-        <Pressable className="h-[164px] w-[164px]" onPress={() => setPhoto(null)}>
-          {photo ? (
+        <Pressable
+          className="h-[164px] w-[164px]"
+          onPress={() => void pick()}
+          accessibilityRole="button"
+          accessibilityLabel={t(ONBOARDING.AVATAR.PICK)}
+        >
+          {draft.avatar ? (
             <Image
-              source={{ uri: photo }}
+              source={{ uri: draft.avatar.uri }}
               className="h-[164px] w-[164px] rounded-[82px]"
               contentFit="cover"
             />
