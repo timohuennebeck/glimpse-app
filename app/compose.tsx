@@ -5,68 +5,69 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useQueryClient } from '@tanstack/react-query';
 import { BlurView } from 'expo-blur';
 import { Pencil, RotateCcw, X } from 'lucide-react-native';
 import { Button } from '@/shared/ui/button';
 import { GlassButton } from '@/shared/ui/glass-button';
-import { Text } from '@/shared/ui/text';
 import { alpha, colors } from '@/shared/theme/colors';
 import { t } from '@/shared/i18n/i18n';
 import { COMMON, COMPOSE, MOMENT } from '@/shared/i18n/keys';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useComposer } from '@/features/moments/hooks/use-composer';
-import { createMoment, respondToTrade } from '@/features/moments/data/moments-api';
-import { queries } from '@/shared/lib/queries';
-import { errorMessage } from '@/shared/lib/error-message';
+import { useInbox } from '@/features/moments/hooks/use-inbox';
+import { enqueueSend } from '@/features/moments/hooks/use-outbox';
 import { PHOTOS } from '@/shared/lib/fixtures';
 /**
  * Screen `03b Senden · Bestätigen` — review the shot and add a caption before
  * choosing who sees it.
+ *
+ * Two exits. Answering a frosted moment is the unlock itself: the recipient is
+ * already known, so it skips recipient selection and opens the now-unlocked
+ * pair straight away. Only a fresh moment goes on to choose who sees it.
  */
 export default function ComposeScreen() {
   const composer = useComposer();
   const insets = useSafeAreaInsets();
   const [caption, setCaption] = useState(composer.caption);
   const queryClient = useQueryClient();
+  const { data: inbox } = useInbox();
 
-  /** Answering a frosted moment: upload, then `respond_to_trade` unlocks the pair. */
-  const reply = useMutation({
-    mutationFn: async (tradeId: string) => {
-      if (!composer.uri || composer.width === null || composer.height === null) return;
-      const momentId = await createMoment({
-        localUri: composer.uri,
-        caption: caption || null,
-        width: composer.width,
-        height: composer.height,
-      });
-      await respondToTrade(tradeId, momentId);
-    },
-    onSuccess: (_, tradeId) => {
-      void queryClient.invalidateQueries({ queryKey: queries.moments.inbox.queryKey });
-      composer.reset();
-      // Land on the now-open pair rather than back on the feed. `push`, not
-      // `replace`, so the tab root stays underneath and the moment's close
-      // button has somewhere to go back to.
-      router.dismissAll();
-      router.push(`/moment/${tradeId}`);
-    },
-  });
+  const replyToTradeId = composer.replyToTradeId;
+  const answering = inbox.find((moment) => moment.tradeId === replyToTradeId);
 
-  /**
-   * Two exits. Answering a frosted moment is the unlock itself — the recipient
-   * is already known, so it skips recipient selection. Only a fresh moment goes
-   * on to choose who sees it.
-   */
   function next() {
     composer.set({ caption });
-    const tradeId = composer.replyToTradeId;
-    if (tradeId) reply.mutate(tradeId);
-    else router.push('/recipients');
+    if (!replyToTradeId) {
+      router.push('/recipients');
+      return;
+    }
+    // The capture is what makes this a trade, so there is nothing to wait for.
+    if (!composer.uri || composer.width === null || composer.height === null) return;
+    enqueueSend(
+      {
+        localUri: composer.uri,
+        width: composer.width,
+        height: composer.height,
+        caption: caption || null,
+        replyToTradeIds: [replyToTradeId],
+        recipientIds: [],
+        names: answering ? [answering.from.name] : [],
+      },
+      queryClient,
+    );
+    composer.reset();
+    // Land on the now-open pair rather than back on the feed. `push`, not
+    // `replace`, so the tab root stays underneath and the moment's close
+    // button has somewhere to go back to.
+    router.dismissAll();
+    router.push(`/moment/${replyToTradeId}`);
   }
 
   return (
     <View className="flex-1 bg-black">
       <StatusBar style="light" />
+      {/* The viewfinder art is the fallback for a compose screen reached without
+          a capture — a stale deep link — rather than a black rectangle. */}
       <Image
         source={composer.uri ? { uri: composer.uri } : PHOTOS.viewfinder}
         className="absolute inset-0"
@@ -103,11 +104,6 @@ export default function ComposeScreen() {
           className="overflow-hidden border-t border-t-[rgba(255,255,255,.14)]"
         >
           <View className="gap-[18px] px-[22px] pt-[22px]" style={{ paddingBottom: insets.bottom + 22 }}>
-            {reply.error ? (
-              <Text variant="meta" className="px-1.5 text-on-dark-text">
-                {errorMessage(reply.error)}
-              </Text>
-            ) : null}
             <View className="flex-row items-center gap-[9px] px-1.5">
               <Pencil size={15} color="rgba(255,255,255,.82)" strokeWidth={1.8} />
               <TextInput
@@ -121,11 +117,11 @@ export default function ComposeScreen() {
               />
             </View>
             <Button
-              label={composer.replyToTradeId ? t(MOMENT.LOCKED_CTA) : t(COMPOSE.CONTINUE)}
+              label={replyToTradeId ? t(MOMENT.LOCKED_CTA) : t(COMPOSE.CONTINUE)}
               variant="purple"
               size="xl"
               onPress={next}
-              loading={reply.isPending}
+              disabled={!composer.uri}
             />
           </View>
         </BlurView>

@@ -15,6 +15,7 @@ import { avatarUrl } from '@/features/profile/data/profile-api';
 import { useMe } from '@/features/profile/hooks/use-me';
 import { StoryRail, StoryItem } from '@/features/feed/components/story-rail';
 import { LockedMomentCard } from '@/features/feed/components/locked-moment-card';
+import { OutboxLine } from '@/features/feed/components/outbox-line';
 import { EmptyState } from '@/features/feed/components/empty-state';
 import { TabScreen } from '@/features/navigation/tab-screen';
 import { AVATARS, DEMO_USER_ID } from '@/shared/lib/fixtures';
@@ -84,6 +85,8 @@ export default function FeedScreen() {
 
         {hasFriends ? (
           <>
+            <OutboxLine />
+
             {pending.map((moment) => (
               <LockedMomentCard
                 key={moment.tradeId}

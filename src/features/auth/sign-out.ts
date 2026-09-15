@@ -3,6 +3,7 @@ import type { QueryClient } from '@tanstack/react-query';
 import { supabase } from '@/shared/lib/supabase';
 import { queryPersister } from '@/shared/lib/query-client';
 import { useComposer } from '@/features/moments/hooks/use-composer';
+import { useOutbox } from '@/features/moments/hooks/use-outbox';
 import { momentUrlCache } from '@/features/moments/data/moment-urls';
 import { useOnboardingDraft } from '@/features/onboarding/hooks/use-onboarding-draft';
 /**
@@ -20,6 +21,7 @@ export async function clearUserData(queryClient: QueryClient): Promise<void> {
   // the root layout would hold the splash for ever. `onAuthStateChange` sets
   // the signed-out state for us.
   useComposer.reset();
+  useOutbox.reset();
   useOnboardingDraft.reset();
   queryClient.clear();
   await momentUrlCache.clear();
