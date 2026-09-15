@@ -118,5 +118,38 @@ begin
       or moment_id is null or status is null or is_open is null or created_at is null;
   if v_count > 0 then raise exception 'v_inbox returned a null the InboxRow type says cannot happen'; end if;
 
+  -- Storage: a client may write only under its own original/ prefix. The
+  -- blurred/ prefix is the server's alone — a client that could write there
+  -- could upload the original as its own "blurred" copy and defeat the lock.
+  -- psql connects as a superuser, which bypasses RLS outright, so these have to
+  -- run as `authenticated` or they prove nothing.
+  perform set_config('app.uid', ada::text, false);
+  set local role authenticated;
+  begin
+    insert into storage.objects (bucket_id, name)
+    values ('moments', 'original/' || ada || '/1.jpg');
+  exception when others then
+    raise exception 'a user could not upload under their own prefix: %', SQLERRM;
+  end;
+
+  begin
+    insert into storage.objects (bucket_id, name)
+    values ('moments', 'original/' || ben || '/evil.jpg');
+    raise exception 'a user uploaded under someone else''s prefix';
+  exception when insufficient_privilege then null;
+    when others then
+      if SQLERRM !~ 'row-level security' then raise; end if;
+  end;
+
+  begin
+    insert into storage.objects (bucket_id, name)
+    values ('moments', 'blurred/' || ada || '/fake.jpg');
+    raise exception 'a client wrote to the blurred prefix';
+  exception when insufficient_privilege then null;
+    when others then
+      if SQLERRM !~ 'row-level security' then raise; end if;
+  end;
+
+  reset role;
   raise notice 'live-flows: all assertions passed';
 end $$;

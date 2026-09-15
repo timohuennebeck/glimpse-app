@@ -27,6 +27,11 @@ create table storage.buckets (
 create table storage.objects (
   id uuid primary key default gen_random_uuid(), bucket_id text, name text
 );
+-- Supabase ships storage.objects with RLS already on, so the migrations never
+-- enable it themselves. Without this the storage policies are inert here and
+-- the suite silently cannot catch a regression in them.
+alter table storage.objects enable row level security;
+
 create function storage.foldername(name text) returns text[] language sql immutable
   as $$ select (string_to_array(name, '/'))[1:array_length(string_to_array(name, '/'), 1) - 1] $$;
 
@@ -44,6 +49,13 @@ alter table realtime.messages enable row level security;
 -- Tests set the channel topic with: select set_config('realtime.topic', '<topic>', false);
 create function realtime.topic() returns text language sql stable
   as $$ select current_setting('realtime.topic', true) $$;
+
+-- Real Supabase grants these on the storage schema; the stub must too, or the
+-- storage policies cannot be exercised as a signed-in user.
+grant usage on schema storage to authenticated, anon;
+grant select, insert, update, delete on storage.objects to authenticated;
+grant select on storage.objects to anon;
+grant select on storage.buckets to authenticated, anon;
 
 grant usage on schema auth, realtime to authenticated;
 grant execute on function auth.uid(), realtime.topic() to authenticated;
