@@ -1,4 +1,4 @@
-import { create } from '@/features/moments/hooks/store';
+import { create } from '@/shared/lib/store';
 /**
  * The capture -> caption -> recipients flow spans three screens, so the draft
  * lives outside the router rather than being threaded through params (a local
