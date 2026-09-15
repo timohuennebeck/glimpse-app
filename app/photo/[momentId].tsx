@@ -11,7 +11,7 @@ import { GlassButton } from '@/shared/ui/glass-button';
 import { Text } from '@/shared/ui/text';
 import { colors } from '@/shared/theme/colors';
 import { t } from '@/shared/i18n/i18n';
-import { COMMON, PHOTO } from '@/shared/i18n/keys';
+import { COMMON, MOMENT, PHOTO } from '@/shared/i18n/keys';
 import { pairDate } from '@/shared/lib/format';
 import { queries } from '@/shared/lib/queries';
 
@@ -24,7 +24,10 @@ import { queries } from '@/shared/lib/queries';
 export default function PhotoScreen() {
   const { momentId } = useLocalSearchParams<{ momentId: string }>();
   const insets = useSafeAreaInsets();
-  const { data: moment } = useQuery({ ...queries.moments.photo(momentId ?? ''), enabled: Boolean(momentId) });
+  const { data: moment, isPending } = useQuery({
+    ...queries.moments.photo(momentId ?? ''),
+    enabled: Boolean(momentId),
+  });
 
   return (
     <View className="flex-1 bg-black-deep">
@@ -51,7 +54,11 @@ export default function PhotoScreen() {
             <Avatar source={moment.fromAvatarUrl} name={moment.fromName} size={52} />
           ) : null}
           <Text variant="subtitle" weight="medium" className="shrink text-on-dark-text" numberOfLines={1}>
-            {moment ? t(PHOTO.META, { name: moment.fromName, date: pairDate(moment.capturedAt) }) : ''}
+            {moment
+              ? t(PHOTO.META, { name: moment.fromName, date: pairDate(moment.capturedAt) })
+              : isPending
+                ? ''
+                : t(MOMENT.NOT_FOUND)}
           </Text>
         </View>
 

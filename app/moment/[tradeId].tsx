@@ -16,11 +16,9 @@ import { BLUR } from '@/shared/ui/locked-image';
 import { t } from '@/shared/i18n/i18n';
 import { COMMON, MOMENT } from '@/shared/i18n/keys';
 import { relativeTime, timeUntilUnlock } from '@/shared/lib/format';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { queries } from '@/shared/lib/queries';
 import { useInbox } from '@/features/moments/hooks/use-inbox';
 import { useComposer } from '@/features/moments/hooks/use-composer';
-import { markTradeSeen } from '@/features/moments/data/moments-api';
+import { useMarkTradeSeen } from '@/features/moments/data/moments-mutations';
 /**
  * Screens `04 Moment geöffnet` and `04b Moment verschwommen`.
  *
@@ -34,22 +32,16 @@ export default function MomentScreen() {
   const composer = useComposer();
   const insets = useSafeAreaInsets();
 
-  const queryClient = useQueryClient();
-
   const moment = useMemo(() => data.find((m) => m.tradeId === tradeId), [data, tradeId]);
 
   // Opening the frosted card stamps it as seen, so the sender can tell it
   // landed. This is a genuine side effect of viewing, not a fetch — hence the
   // one `useEffect` on this screen.
-  const markSeen = useMutation({
-    mutationFn: markTradeSeen,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: queries.moments.inbox.queryKey }),
-  });
-  // Primitive deps only: the refetch after invalidation yields a new object
-  // for the same moment, which must not stamp it a second time.
+  const { mutate } = useMarkTradeSeen();
+  // Primitive deps only: the refetch after the patch yields a new object for
+  // the same moment, which must not stamp it a second time.
   const found = moment !== undefined;
   const seenAt = moment?.seenAt;
-  const { mutate } = markSeen;
   useEffect(() => {
     if (tradeId && found && !seenAt) mutate(tradeId);
   }, [tradeId, found, seenAt, mutate]);
@@ -156,7 +148,8 @@ export default function MomentScreen() {
           </>
         )}
 
-        {/* Reply bar. The camera button is the primary action in both states. */}
+        {/* Reply bar. The camera button is the primary action in both states.
+            Task 17 makes the field send a message carrying this trade id. */}
         <View className="flex-row items-center gap-2.5 px-1">
           <BlurView
             intensity={30}

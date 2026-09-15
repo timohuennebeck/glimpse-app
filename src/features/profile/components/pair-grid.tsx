@@ -1,5 +1,6 @@
 import { Pressable, View } from 'react-native';
 import { Image } from 'expo-image';
+import { LockedIcon } from '@/shared/ui/icons';
 import { Text } from '@/shared/ui/text';
 import { pairDate } from '@/shared/lib/format';
 import type { MomentPair } from '@/features/moments/interfaces';
@@ -13,6 +14,11 @@ interface PairGridProps {
  * together — two pairs per row, as on screen 07b. This is the "something to
  * keep" layer from the positioning note, the artefact the month-end export is
  * eventually built from.
+ *
+ * A pair with no right half is one of your own moments nobody has traded back
+ * for. Its left tile is your own photo, shown plainly — the server only signs a
+ * path for someone allowed to see it, and you always are. The empty right tile
+ * is what the lock looks like from this side.
  */
 export function PairGrid({ pairs, onPressPhoto }: PairGridProps) {
   return (
@@ -37,6 +43,8 @@ interface PairProps {
 
 /** Both tiles of a pair share the 111px height. */
 function Pair({ pair, onPressPhoto }: PairProps) {
+  const rightMomentId = pair.rightMomentId;
+
   return (
     <View className="flex-1 gap-2">
       <View className="flex-row gap-[5px]">
@@ -44,12 +52,15 @@ function Pair({ pair, onPressPhoto }: PairProps) {
           <Image source={pair.left} className="h-[111px] w-full rounded-tile" contentFit="cover" />
         </Pressable>
 
-        {pair.rightMomentId ? (
-          <Pressable className="flex-1" onPress={() => onPressPhoto?.(pair.rightMomentId ?? '')}>
+        {rightMomentId ? (
+          <Pressable className="flex-1" onPress={() => onPressPhoto?.(rightMomentId)}>
             <Image source={pair.right} className="h-[111px] w-full rounded-tile" contentFit="cover" />
           </Pressable>
         ) : (
-          <View className="flex-1" />
+          // Nothing to blur: there is no photo here yet, which is the point.
+          <View className="h-[111px] flex-1 items-center justify-center rounded-tile bg-surface-violet-deep">
+            <LockedIcon size={18} />
+          </View>
         )}
       </View>
 
