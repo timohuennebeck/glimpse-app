@@ -23,6 +23,7 @@ import { useMarkTradeSeen } from '@/features/moments/data/moments-mutations';
 import { draftMessage, useSendMessage } from '@/features/chat/data/chat-mutations';
 import { useMe } from '@/features/profile/hooks/use-me';
 import { useOncePerKey } from '@/shared/lib/use-once-per-key';
+import { useOutbox } from '@/features/moments/hooks/use-outbox';
 /**
  * Screens `04 Moment geöffnet` and `04b Moment verschwommen`.
  *
@@ -40,6 +41,7 @@ export default function MomentScreen() {
 
   // Opening the frosted card stamps it as seen, so the sender can tell it
   // landed. A genuine side effect of viewing, not a fetch.
+  const outbox = useOutbox();
   const { mutate } = useMarkTradeSeen();
   // Keyed by the trade, not by `seenAt`: marking seen patches `seenAt` and a
   // failure rolls it straight back, which used to re-arm this write forever.
@@ -81,7 +83,13 @@ export default function MomentScreen() {
     );
   }
 
-  const locked = !moment.isOpen;
+  // The cache flips `isOpen` the moment the answer is enqueued, but the server
+  // only signs the original once the answer actually lands — until then `photo`
+  // is still the 48px blurred rendition. Rendering that at blurRadius 0 showed
+  // a smeared blob as the reveal, so keep it frosted while the outbox is still
+  // carrying the reply.
+  const revealPending = outbox.entries.some((entry) => entry.replyToTradeIds.includes(tradeId ?? ''));
+  const locked = !moment.isOpen || revealPending;
   const countdown = timeUntilUnlock(moment.autoUnlockAt);
 
   const tradeBack = () => {

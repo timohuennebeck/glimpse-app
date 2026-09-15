@@ -64,10 +64,18 @@ export default function InviteScreen() {
 
   const dead = (!isPending && !preview) || (claim.isSuccess && claim.data === null);
 
+  /**
+   * Leaving an invite means going back to whatever you already had. Every exit
+   * used to `replace` to the signed-out Welcome screen, which discards the back
+   * stack — a signed-in person who opened a spent link landed on Welcome with
+   * no route back to their own feed, recoverable only by relaunching.
+   */
+  const leave = () => router.replace(signedIn ? '/(app)/feed' : '/(onboarding)/welcome');
+
   if (dead) {
     return (
       <Screen>
-        <CloseRow onPress={() => router.replace('/(onboarding)/welcome')} />
+        <CloseRow onPress={leave} />
         <Text variant="bodyMd" className="mt-10 text-center text-muted">
           {t(MOMENT.NOT_FOUND)}
         </Text>
@@ -90,8 +98,13 @@ export default function InviteScreen() {
             icon={<CameraIcon size={21} lensColor={colors.ink} />}
             loading={claim.isPending}
             onPress={() => {
-              // Signed out: the account has to exist before the token can be
-              // spent, so it waits here and step 4 claims it.
+              // Signed in, the effect above already claims it; this is the
+              // retry when that failed. Signed out, the account has to exist
+              // before the token can be spent, so it waits here for step 4.
+              if (signedIn) {
+                claimNow();
+                return;
+              }
               pending.set({ token: inviteToken });
               router.push('/(onboarding)/name');
             }}
@@ -100,7 +113,7 @@ export default function InviteScreen() {
             variant="buttonSm"
             className="text-center text-ink-soft"
             accessibilityRole="link"
-            onPress={() => router.replace('/(onboarding)/welcome')}
+            onPress={leave}
           >
             {t(INVITE.SECONDARY)}
           </Text>
@@ -108,7 +121,7 @@ export default function InviteScreen() {
       }
       scroll
     >
-      <CloseRow onPress={() => router.replace('/(onboarding)/welcome')} />
+      <CloseRow onPress={leave} />
 
       <View className="mt-[26px] items-center gap-3.5">
         <Avatar

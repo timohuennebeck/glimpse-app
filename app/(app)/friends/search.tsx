@@ -73,7 +73,9 @@ export default function FriendSearchScreen() {
             accessibilityRole="button"
             accessibilityLabel={t(COMMON.CLEAR)}
           >
-            <X size={9} color={colors.white} strokeWidth={2.2} />
+            {/* inkSoft, not white: white on this chip is 1.4:1 — the glyph was
+                invisible and the control looked like an empty dot. */}
+            <X size={9} color={colors.inkSoft} strokeWidth={2.2} />
           </Pressable>
         ) : null}
       </View>
