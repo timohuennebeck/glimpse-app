@@ -11,7 +11,7 @@ import { cn } from '@/shared/lib/cn';
 import { colors } from '@/shared/theme/colors';
 import { spacing } from '@/shared/theme/page-structure';
 import { t } from '@/shared/i18n/i18n';
-import { COMMON, FRIENDS } from '@/shared/i18n/keys';
+import { COMMON, ERRORS, FRIENDS } from '@/shared/i18n/keys';
 import { queries } from '@/shared/lib/queries';
 import { useDebouncedValue } from '@/shared/lib/use-debounced-value';
 import { PersonRow } from '@/features/friends/components/person-row';
@@ -24,7 +24,9 @@ import { shareInvite } from '@/features/invites/share-invite';
 /** Screen `D Freund suchen` — search by @username, or share your link. */
 export default function FriendSearchScreen() {
   const [query, setQuery] = useState('');
-  const [copied, setCopied] = useState(false);
+  // 'failed' covers a createInvite that never came back — offline, no session,
+  // friend cap — which would otherwise be an unhandled rejection nobody sees.
+  const [shareState, setShareState] = useState<'idle' | 'copied' | 'failed'>('idle');
   const debounced = useDebouncedValue(query);
   const { data: me } = useMe();
   const { data: friendships = [] } = useQuery(queries.friends.all);
@@ -116,10 +118,18 @@ export default function FriendSearchScreen() {
             icon: <QrCode size={22} color={colors.inkFaint} strokeWidth={2} />,
           },
           {
-            label: copied ? t(COMMON.COPIED) : t(FRIENDS.SEARCH.MORE),
+            label:
+              shareState === 'copied'
+                ? t(COMMON.COPIED)
+                : shareState === 'failed'
+                  ? t(ERRORS.GENERIC)
+                  : t(FRIENDS.SEARCH.MORE),
             icon: <MoreHorizontal size={22} color={colors.inkFaint} strokeWidth={2.4} />,
             onPress: () => {
-              void shareInvite(me?.first_name ?? '').then((outcome) => setCopied(outcome === 'copied'));
+              void shareInvite(me?.first_name ?? '').then(
+                (outcome) => setShareState(outcome === 'copied' ? 'copied' : 'idle'),
+                () => setShareState('failed'),
+              );
             },
           },
         ]}

@@ -48,10 +48,34 @@ export default function DetailsScreen() {
 
   const queryClient = useQueryClient();
 
+  /**
+   * The invite that brought them here, spent as soon as there is a session —
+   * from either branch, because whoever opened the link may well already have
+   * an account and reach for "Sign in".
+   *
+   * Deliberately non-fatal: a claim that fails must not strand somebody outside
+   * an account they just signed into. The token survives a failure, so
+   * re-opening the link is the retry.
+   */
+  async function spendPendingInvite() {
+    const pendingToken = usePendingInvite.getState().token;
+    if (!pendingToken) return;
+    try {
+      await claimInvite(pendingToken);
+      usePendingInvite.reset();
+      // prefetchForUser fires the moment the session flips, so the friends
+      // list can already be cached — and empty — by the time the claim lands.
+      await queryClient.invalidateQueries();
+    } catch {
+      // Keeping the token is the point: the link still works.
+    }
+  }
+
   const submit = useMutation({
     mutationFn: async (): Promise<'signed-in' | 'confirmation-required' | 'already-registered'> => {
       if (!signingUp) {
         await signIn({ email, password });
+        await spendPendingInvite();
         return 'signed-in';
       }
       const outcome = await signUp({ email, password, firstName: draft.firstName, locale: getLocale() });
@@ -59,15 +83,7 @@ export default function DetailsScreen() {
         // The account exists now, so the picture finally has somewhere to go.
         if (draft.avatar) await uploadAvatar(draft.avatar);
         // And the invite that brought them here can be spent.
-        const pendingToken = usePendingInvite.getState().token;
-        if (pendingToken) {
-          await claimInvite(pendingToken);
-          usePendingInvite.reset();
-          // prefetchForUser fires the moment the session flips, so the friends
-          // list can already be cached — and empty — by the time the claim
-          // lands. Same sweep the invite screen does after claiming.
-          await queryClient.invalidateQueries();
-        }
+        await spendPendingInvite();
         useOnboardingDraft.reset();
       }
       return outcome.kind;

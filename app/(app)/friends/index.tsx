@@ -11,7 +11,7 @@ import { cn } from '@/shared/lib/cn';
 import { colors } from '@/shared/theme/colors';
 import { avatarSize } from '@/shared/theme/page-structure';
 import { t } from '@/shared/i18n/i18n';
-import { COMMON, FEED, FRIENDS } from '@/shared/i18n/keys';
+import { COMMON, ERRORS, FEED, FRIENDS } from '@/shared/i18n/keys';
 import { relativeTime } from '@/shared/lib/format';
 import { errorMessage } from '@/shared/lib/error-message';
 import { queries } from '@/shared/lib/queries';
@@ -39,6 +39,9 @@ export default function FriendsScreen() {
   const [tab, setTab] = useState<Tab>('friends');
   /** Withdrawing takes two taps; there is no undo for a deleted row. */
   const [confirmWithdraw, setConfirmWithdraw] = useState<string | null>(null);
+  // This screen has no share row to say "Copied", so the CTA says it instead —
+  // and says so too when createInvite never came back.
+  const [shareState, setShareState] = useState<'idle' | 'copied' | 'failed'>('idle');
 
   const { data: me } = useMe();
   const myId = me?.id ?? '';
@@ -203,7 +206,21 @@ export default function FriendsScreen() {
             </Text>
           ) : null}
 
-          <CtaFooter label={t(FRIENDS.ADD_CTA)} onPress={() => void shareInvite(me?.first_name ?? '')} />
+          <CtaFooter
+            label={
+              shareState === 'copied'
+                ? t(COMMON.COPIED)
+                : shareState === 'failed'
+                  ? t(ERRORS.GENERIC)
+                  : t(FRIENDS.ADD_CTA)
+            }
+            onPress={() => {
+              void shareInvite(me?.first_name ?? '').then(
+                (outcome) => setShareState(outcome === 'copied' ? 'copied' : 'idle'),
+                () => setShareState('failed'),
+              );
+            }}
+          />
         </>
       )}
     </TabScreen>
