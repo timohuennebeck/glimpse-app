@@ -9,7 +9,7 @@ import { Text } from '@/shared/ui/text';
 import { colors } from '@/shared/theme/colors';
 import { t } from '@/shared/i18n/i18n';
 import { ONBOARDING } from '@/shared/i18n/keys';
-import { IOS_ICONS, PHOTOS, AVATARS } from '@/shared/lib/fixtures';
+import { IOS_ICONS, PHOTOS, SAMPLE_FACES } from '@/shared/lib/assets';
 interface HomescreenPreviewProps {
   /** `small` = 2x2 tile (screen 07), `large` = 4x2 tile (screen 07b). */
   size?: 'small' | 'large';
@@ -179,7 +179,7 @@ function LargeWidget() {
         <View className="min-w-0 flex-1 justify-between">
           <View className="gap-1">
             <View className="flex-row items-center gap-1.5">
-              <Avatar source={AVATARS.mia} size={20} />
+              <Avatar source={SAMPLE_FACES.mia} size={20} />
               <Text variant="caption" weight="semibold" className="text-white">
                 {t(ONBOARDING.WIDGET.PREVIEW.SAMPLE_NAME)}
               </Text>

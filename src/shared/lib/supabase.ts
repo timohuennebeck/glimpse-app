@@ -38,11 +38,3 @@ AppState.addEventListener('change', (state) => {
   if (state === 'active') supabase.auth.startAutoRefresh();
   else supabase.auth.stopAutoRefresh();
 });
-
-/** @deprecated Always true. Removed in Task 20 once no module reads it. */
-export const isSupabaseConfigured = true;
-
-/** @deprecated Import `supabase` instead. Removed in Task 20. */
-export function requireSupabase() {
-  return supabase;
-}

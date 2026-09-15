@@ -10,7 +10,7 @@ import { StarRow } from '@/shared/ui/star-row';
 import { Text } from '@/shared/ui/text';
 import { t, tList } from '@/shared/i18n/i18n';
 import { ONBOARDING } from '@/shared/i18n/keys';
-import { AVATARS } from '@/shared/lib/fixtures';
+import { SAMPLE_FACES } from '@/shared/lib/assets';
 interface Review {
   name: string;
   since: string;
@@ -21,7 +21,7 @@ interface Review {
 /** Screen `08 Reviews` — social proof between onboarding and the paywall. */
 export default function ReviewsScreen() {
   const reviews = tList<Review>(ONBOARDING.REVIEWS.ITEMS);
-  const faces = [AVATARS.mia, AVATARS.ben, AVATARS.lina];
+  const faces = [SAMPLE_FACES.mia, SAMPLE_FACES.ben, SAMPLE_FACES.lina];
 
   return (
     <Screen

@@ -16,7 +16,7 @@ import { COMMON, COMPOSE, MOMENT } from '@/shared/i18n/keys';
 import { useComposer } from '@/features/moments/hooks/use-composer';
 import { useInbox } from '@/features/moments/hooks/use-inbox';
 import { enqueueSend } from '@/features/moments/hooks/use-outbox';
-import { PHOTOS } from '@/shared/lib/fixtures';
+import { PHOTOS } from '@/shared/lib/assets';
 /**
  * Screen `03b Senden · Bestätigen` — review the shot and add a caption before
  * choosing who sees it.

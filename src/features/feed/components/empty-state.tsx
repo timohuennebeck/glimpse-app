@@ -2,7 +2,7 @@ import { View } from 'react-native';
 import { Image } from 'expo-image';
 import { Button } from '@/shared/ui/button';
 import { Text } from '@/shared/ui/text';
-import { ART } from '@/shared/lib/fixtures';
+import { ART } from '@/shared/lib/assets';
 interface EmptyStateProps {
   title: string;
   body: string;

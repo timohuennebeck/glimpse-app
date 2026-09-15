@@ -7,7 +7,7 @@ import { shadow } from '@/shared/theme/page-structure';
 import { t } from '@/shared/i18n/i18n';
 import { ONBOARDING } from '@/shared/i18n/keys';
 import { OnboardingScreen } from '@/features/onboarding/components/onboarding-screen';
-import { ART } from '@/shared/lib/fixtures';
+import { ART } from '@/shared/lib/assets';
 /**
  * Screen `06 Notifications · 6 of 7`.
  *

@@ -11,7 +11,7 @@ import { Text } from '@/shared/ui/text';
 import { t, tList } from '@/shared/i18n/i18n';
 import { PAYWALL } from '@/shared/i18n/keys';
 import { BloomBackdrop } from '@/features/onboarding/components/bloom-backdrop';
-import { ART } from '@/shared/lib/fixtures';
+import { ART } from '@/shared/lib/assets';
 type Plan = 'monthly' | 'yearly';
 
 /**

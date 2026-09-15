@@ -8,7 +8,7 @@ import { Screen } from '@/shared/ui/screen';
 import { Text } from '@/shared/ui/text';
 import { t } from '@/shared/i18n/i18n';
 import { ONBOARDING } from '@/shared/i18n/keys';
-import { ART } from '@/shared/lib/fixtures';
+import { ART } from '@/shared/lib/assets';
 /**
  * Screen `11a Welcome · variant A (mascot)`.
  *

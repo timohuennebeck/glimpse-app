@@ -24,12 +24,13 @@ than the photo.
 
 ```bash
 npm install
-cp .env.example .env      # optional — the app runs on fixtures without it
+cp .env.example .env      # required — fill in from the Supabase project
 npx expo start
 ```
 
-Without Supabase credentials the app runs entirely on the sample data in
-`src/shared/lib/fixtures.ts`, so every screen is reviewable immediately.
+`.env` is required. The app talks to Supabase for everything: there is no
+fixture mode and no "not configured" fallback. Without the two
+`EXPO_PUBLIC_SUPABASE_*` values the client throws at import.
 
 ### Supabase keys
 
@@ -46,11 +47,13 @@ Related, and already accounted for:
   `auth.getClaims()`, which verifies against the project's current signing
   key, and the SQL relies on `auth.uid()`. Rotating to asymmetric keys in the
   dashboard needs no code change.
-- **Generated types.** `src/shared/lib/database.interfaces.ts` is hand-written
-  against the migrations. Once a project exists, regenerate it with
-  `supabase gen types typescript` so it cannot drift.
+- **Generated types.** `src/shared/lib/database.interfaces.ts` is generated from
+  the project — regenerate it after every migration (`supabase gen types
+typescript`, or the MCP's `generate_typescript_types`) and never edit it by
+  hand. App code imports row names from `src/shared/lib/database.types.ts`.
 
 ```bash
+npm test                           # jest — pure logic: keys, selectors, caches
 npm run typecheck                  # tsc --noEmit
 npm run format                     # prettier --write .
 npm run format:check               # what CI would run
@@ -95,7 +98,7 @@ src/
     theme/                tokens transcribed from the mock
     ui/                   Text, Button, GlassButton, LockedImage, icons…
     i18n/                 en (active) + de
-    lib/                  supabase client, typed schema, formatters, fixtures
+    lib/                  supabase client, typed schema, formatters, artwork
 
 supabase/migrations/      schema, functions, RLS, storage, views
 widgets/ios · widgets/android    native widget sources
@@ -124,7 +127,8 @@ docs/database.md          schema design and rationale
   punched-out lens, the lock puck, the verified rosette, the Google mark, the
   laurel — stay bespoke.
 - **Screens do not query Supabase directly.** They call a feature's `data/`
-  module, which falls back to fixtures when unconfigured.
+  module, which owns every query and mutation. There is no fixture mode: the
+  only bundled `require()`s left are the artwork in `src/shared/lib/assets.ts`.
 - **Server state goes through TanStack Query.** Each feature declares its keys
   and fetchers with `@lukemorales/query-key-factory` in a `data/*-queries.ts`
   file; `src/shared/lib/queries.ts` merges them, so `useQuery(queries.moments.inbox)`
@@ -133,20 +137,25 @@ docs/database.md          schema design and rationale
 
 ## What is deliberately not built
 
-| Area                   | State                                                                                                                                                                                                                                         |
-| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Google / Apple sign-in | Designed and rendered; no provider wired. Supabase console config + `signInWithOAuth`.                                                                                                                                                        |
-| Payments               | The paywall is real UI; nothing charges. Entitlement will come from **RevenueCat**, so there is no `subscriptions` table by design.                                                                                                           |
-| The widget itself      | Both native UIs are written; the target, config plugin and native module need a Mac + Xcode. See `widgets/README.md`.                                                                                                                         |
-| Blurred renditions     | Until the Edge Function that generates `blurred/` is deployed, a locked moment is **withheld** (renders as a neutral frosted tile) rather than shown. Nothing leaks, but locked photos are missing from the feed — see `docs/database.md` §3. |
-| Contacts import        | The permission-granted and permission-denied states both render; no contacts are read.                                                                                                                                                        |
+| Area                   | State                                                                                                                               |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Google / Apple sign-in | Designed and rendered; no provider wired. Supabase console config + `signInWithOAuth`.                                              |
+| Payments               | The paywall is real UI; nothing charges. Entitlement will come from **RevenueCat**, so there is no `subscriptions` table by design. |
+| The widget itself      | Both native UIs are written; the target, config plugin and native module need a Mac + Xcode. See `widgets/README.md`.               |
+| Push notifications     | No token registration and nothing sent. `device_tokens` and `register_device_token()` exist; the sender does not.                   |
+| Contacts import        | Not built and not shown. Onboarding step 5 is real `@username` search plus a share link.                                            |
 
 ## Known issues
 
-- **The blur Edge Function is not written.** Until it is, `visible_moment_paths()`
-  returns `NULL` for every locked moment, so locked photos are withheld rather
-  than leaked. Safe, but the frosted card has nothing to show — still the one
-  genuine ship-blocker.
+- **Postgres 17.** The project runs Postgres 17; the migrations assume it.
+- **`citext` and `pgcrypto` live in `public`.** The security advisor flags it.
+  Moving them to an `extensions` schema is a migration nobody has needed yet.
+- **Auto-unlocked trades that are never answered** stay `pending` for ever and
+  never become pairs. They show as locked tiles on the sender's own profile.
+  Still an open product decision — see below.
+- **Deletes do not arrive live.** Supabase cannot filter delete events and does
+  not apply row security to them, so a decline, a withdrawal or an unfriend
+  reaches the other phone on its next refetch rather than instantly.
 
 ## Open product questions
 

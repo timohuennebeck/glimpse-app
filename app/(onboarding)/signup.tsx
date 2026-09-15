@@ -12,7 +12,7 @@ import { spacing } from '@/shared/theme/page-structure';
 import { t } from '@/shared/i18n/i18n';
 import { ONBOARDING } from '@/shared/i18n/keys';
 import { HeroPanel } from '@/features/onboarding/components/hero-panel';
-import { ART } from '@/shared/lib/fixtures';
+import { ART } from '@/shared/lib/assets';
 /**
  * Screen `04 Sign up · 4 of 7`.
  *

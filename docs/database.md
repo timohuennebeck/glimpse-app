@@ -96,6 +96,11 @@ Blurring on the client is theatre — anyone can read the response body. So:
    many moments in one round trip. It returns `NULL` for a locked moment whose
    blurred rendition does not exist yet: the moment is **withheld**, not leaked.
 
+The client never re-signs a path it already holds: `src/shared/lib/signed-urls.ts`
+caches `{ path → url, expiresAt }` in memory and in AsyncStorage, signs for 24
+hours, and re-signs only when under two hours remain. A fresh URL per fetch
+would defeat the image cache and re-download the same photo on every refetch.
+
 A modified client gains nothing: the decision is made by the same predicates in
 both the RPC and the storage policy, and only the storage policy is consulted
 when a URL is signed.
@@ -178,3 +183,48 @@ Blocks are checked in `profiles`, `friendships`, `trades`, `messages` and inside
 - **Widget delivery.** The widget reads a snapshot the app writes to the shared
   container. The server's only job is the silent push that tells the app to
   refresh; see `widgets/README.md`.
+
+---
+
+## 7. Realtime, presence and the blur function
+
+Three tables are in the `supabase_realtime` publication: `trades`, `messages`
+and `friendships`. Row-level security still decides which subscriber receives
+which change, so a client subscribing to somebody else's rows simply never
+hears about them.
+
+Only INSERT and UPDATE are consumed. Supabase cannot filter delete events and
+does not apply row security to them, so there is deliberately no delete
+listener and no `replica identity full`: declines, withdrawals and unfriends
+reach the other phone on its next refetch. `src/features/live/live-actions.ts`
+maps a change to what it means for the cache, and is unit-tested.
+
+Nothing changes in the database when a trade's 24 hours pass, so the timer
+produces no event. The inbox query schedules one refetch for the earliest
+`auto_unlock_at` it holds instead (`nextUnlockDelay`).
+
+**A message with no text.** `messages` allows `content is null` when `moment_id`
+is set (`message_has_content`), and the chats list renders that case as a camera
+badge. The conversation screen does not: it draws a bubble only when `content`
+is present, and `MESSAGE_COLUMNS` never selects a photo path, so such a row
+would appear as an avatar and a timestamp with nothing between them. No client
+path creates one today — `sendMessage` always sends text and never sets
+`moment_id` — so this is a shape the schema permits and the UI has not been
+asked to draw yet, not a bug in the current flows.
+
+**Presence.** "Active now" is per conversation and exists only while the chat
+screen is open. Both phones join the private channel
+`chat:<lower uuid>:<higher uuid>` and track themselves; two policies on
+`realtime.messages` allow read and insert on that topic only for the two ids in
+it, so presence cannot be observed from outside the conversation and there is no
+global online state anywhere.
+
+**The blur function.** `supabase/functions/blur-moment` makes the frosted
+rendition server-side, with JWT verification on: it refuses a moment whose
+`author_id` is not the caller, downloads the original with the service role,
+resizes it to 48px wide, blurs it, and writes `blurred/{author_id}/{file}` plus
+`moments.blurred_storage_path`. The client invokes it after inserting the moment
+row and before `send_moment` or `respond_to_trade`, and a failure fails the send
+— so a recipient never receives a moment with nothing to show them, and a
+client that could upload its own "blurred" copy (which could just be the
+original) never gets the chance.

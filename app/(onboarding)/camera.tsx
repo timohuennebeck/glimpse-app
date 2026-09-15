@@ -8,7 +8,7 @@ import { t } from '@/shared/i18n/i18n';
 import { ONBOARDING } from '@/shared/i18n/keys';
 import { HeroPanel } from '@/features/onboarding/components/hero-panel';
 import { OnboardingScreen } from '@/features/onboarding/components/onboarding-screen';
-import { ART } from '@/shared/lib/fixtures';
+import { ART } from '@/shared/lib/assets';
 /** Screen `02 Camera · 2 of 7` — the camera permission ask. */
 export default function CameraIntroScreen() {
   const [, requestPermission] = useCameraPermissions();
