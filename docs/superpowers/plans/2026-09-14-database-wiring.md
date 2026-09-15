@@ -5189,8 +5189,22 @@ Expected: exits 0. Any remaining error should be a `demo*` import in a screen
 this task rewrote; there should be none left in `app/(onboarding)/friends.tsx`,
 `app/(app)/friends/search.tsx` or `app/(app)/friends/index.tsx`.
 
-Run: `grep -rn "demoOthers\|demoFriendRequests\|demoSentRequests" app src`
-Expected: no output.
+Run:
+
+```bash
+grep -rn "demo\|DEMO_USER_ID" \
+  "app/(onboarding)/friends.tsx" "app/(app)/friends/search.tsx" "app/(app)/friends/index.tsx"
+```
+
+Expected: no output — the three screens this task rewrote are fixture-free.
+
+Do **not** grep the whole tree for `demoOthers` here and expect silence: two
+hits are deliberate at this point. `app/recipients.tsx` still renders its
+not-on-Glimpse block from fixtures until Task 14 rewrites the screen (Task 11
+Step 8 depends on that), and `src/shared/lib/fixtures.ts` is where they are
+defined until Task 20. `demoFriendRequests` and `demoSentRequests` do lose
+their last consumer here, so after this task they are definitions with nothing
+reading them.
 
 Run: `npx prettier --write app src && npm test`
 Expected: all tests pass.
@@ -9190,6 +9204,15 @@ grep -rl "AVATARS" app src | xargs sed -i '' "s/\bAVATARS\b/SAMPLE_FACES/g"
 
 Run: `grep -rn "fixtures\|AVATARS" app src`
 Expected: no output.
+
+Removing the contacts card in Task 12 and pointing the share rows at the real
+handle also orphaned a handful of strings. Delete these from **both**
+`en.ts` and `de.ts` once you have confirmed each has no call site
+(`grep -rn "CONTACTS_SECTION\|MORE_COUNT\|PROFILE_LINK" app src`):
+`onboarding.friends.contactsSection`, `.add`, `.added`, `.moreCount`,
+`.inviteTitle`, `.inviteBody`, `.inviteCta`, and `common.profileLink`. Nothing
+fails if they stay — `keys.test.ts` does not check for unused keys — which is
+exactly why they need deleting by hand.
 
 Delete the now-unused images if nothing references them, checking each first:
 
