@@ -9370,6 +9370,15 @@ Nothing changes in the database when a trade's 24 hours pass, so the timer
 produces no event. The inbox query schedules one refetch for the earliest
 `auto_unlock_at` it holds instead (`nextUnlockDelay`).
 
+**A message with no text.** `messages` allows `content is null` when `moment_id`
+is set (`message_has_content`), and the chats list renders that case as a camera
+badge. The conversation screen does not: it draws a bubble only when `content`
+is present, and `MESSAGE_COLUMNS` never selects a photo path, so such a row
+would appear as an avatar and a timestamp with nothing between them. No client
+path creates one today — `sendMessage` always sends text and never sets
+`moment_id` — so this is a shape the schema permits and the UI has not been
+asked to draw yet, not a bug in the current flows.
+
 **Presence.** "Active now" is per conversation and exists only while the chat
 screen is open. Both phones join the private channel
 `chat:<lower uuid>:<higher uuid>` and track themselves; two policies on
@@ -9406,7 +9415,7 @@ run `npx prettier --write README.md docs` and re-check.
 - [ ] **Step 7: Commit**
 
 ```bash
-git add -A app src assets README.md docs
+git add app src assets README.md docs
 git commit -m "chore: drop the fixtures and the not-configured fallback, update the docs" -m "Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
 Claude-Session: https://claude.ai/code/session_012A2gz59aWK6CCueq4SYbS6"
 ```
@@ -9545,6 +9554,14 @@ around first"), then open the Friends tab and Accept.
 Expected: `status = 'accepted'` and `responded_at` set in the query above.
 **And in context A, without a reload**, B appears as a friend — that is the
 `friendships` INSERT/UPDATE listener working.
+
+This is also the first proof that the live channel subscribed at all. Task 18
+puts **ten** `postgres_changes` bindings on one channel, which typechecks and is
+supported by supabase-js but was never exercised against the server — no egress
+while it was written. If nothing arrives in context A here, check the browser
+console for a `CHANNEL_ERROR` on the `live:<user>` channel before suspecting the
+mapping: a per-connection binding limit would fail the whole subscription at
+once, not one table's events.
 
 ```sql
 select onboarding_done_at from public.profiles where id = '<B>';
