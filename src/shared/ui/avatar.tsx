@@ -1,9 +1,13 @@
 import { View } from 'react-native';
 import { Image, ImageSource } from 'expo-image';
 import { cn } from '@/shared/lib/cn';
+import { DottedDisc } from '@/shared/ui/dotted-disc';
 import { colors } from '@/shared/theme/colors';
 interface AvatarProps {
-  source: ImageSource | string | number;
+  /** `null` — or the empty string a profile with no avatar resolves to — draws the placeholder. */
+  source: ImageSource | string | number | null;
+  /** Its first letter goes in the placeholder. */
+  name?: string;
   size?: number;
   /**
    * Ring styles from the mock:
@@ -17,13 +21,14 @@ interface AvatarProps {
   className?: string;
 }
 
-export function Avatar({ source, size = 52, ring = 'none', dimmed = false, className }: AvatarProps) {
+export function Avatar({ source, name, size = 52, ring = 'none', dimmed = false, className }: AvatarProps) {
   const img = typeof source === 'string' ? { uri: source } : source;
   // Size is a prop, so the frame stays a style. The Image itself is styled
   // entirely through `style`: on web, NativeWind cannot mix `className` with a
   // numeric `style` on a registered third-party component.
   const round = { borderRadius: size / 2 };
   const opacity = dimmed ? 0.55 : 1;
+  const letter = name?.trim().charAt(0).toUpperCase() || undefined;
 
   if (ring === 'active' || ring === 'idle') {
     // Mock: a coloured disc with 2.4px padding, and the photo carries a white
@@ -34,29 +39,42 @@ export function Avatar({ source, size = 52, ring = 'none', dimmed = false, class
         className={cn(ring === 'active' ? 'bg-purple' : 'bg-avatar-ring-idle', className)}
         style={[round, { width: size, height: size, padding: ringWidth }]}
       >
-        <Image
-          source={img}
-          style={[
-            round,
-            { width: '100%', height: '100%', borderWidth: ringWidth, borderColor: colors.white, opacity },
-          ]}
-          contentFit="cover"
-        />
+        {source ? (
+          <Image
+            source={img}
+            style={[
+              round,
+              { width: '100%', height: '100%', borderWidth: ringWidth, borderColor: colors.white, opacity },
+            ]}
+            contentFit="cover"
+          />
+        ) : (
+          // The disc draws its own white gap ring, so it replaces the border.
+          <View style={{ opacity }}>
+            <DottedDisc size={size - ringWidth * 2} letter={letter} gapColor={colors.white} />
+          </View>
+        )}
       </View>
     );
   }
 
   return (
     <View className={className}>
-      <Image
-        source={img}
-        style={[
-          round,
-          { width: size, height: size, opacity },
-          ring === 'halo' && { borderWidth: 2, borderColor: colors.white },
-        ]}
-        contentFit="cover"
-      />
+      {source ? (
+        <Image
+          source={img}
+          style={[
+            round,
+            { width: size, height: size, opacity },
+            ring === 'halo' && { borderWidth: 2, borderColor: colors.white },
+          ]}
+          contentFit="cover"
+        />
+      ) : (
+        <View style={{ opacity }}>
+          <DottedDisc size={size} letter={letter} gapColor={colors.white} />
+        </View>
+      )}
       {ring === 'halo' ? (
         <View
           className="absolute inset-0 -m-[1.5px] border-[1.5px] border-purple-halo"

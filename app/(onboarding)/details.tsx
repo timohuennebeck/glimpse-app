@@ -15,6 +15,7 @@ import { getLocale, t } from '@/shared/i18n/i18n';
 import { ONBOARDING } from '@/shared/i18n/keys';
 import { errorMessage } from '@/shared/lib/error-message';
 import { signIn, signUp } from '@/features/auth/data/auth-api';
+import { uploadAvatar } from '@/features/profile/data/profile-api';
 import { useOnboardingDraft } from '@/features/onboarding/hooks/use-onboarding-draft';
 /**
  * Screen `04a Your details · 4 of 7`, and the sign-in form.
@@ -50,6 +51,11 @@ export default function DetailsScreen() {
         return 'signed-in';
       }
       const outcome = await signUp({ email, password, firstName: draft.firstName, locale: getLocale() });
+      if (outcome.kind === 'signed-in') {
+        // The account exists now, so the picture finally has somewhere to go.
+        if (draft.avatar) await uploadAvatar(draft.avatar);
+        useOnboardingDraft.reset();
+      }
       return outcome.kind;
     },
     onSuccess: (kind) => {

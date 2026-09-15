@@ -11,11 +11,13 @@ import { memberSince } from '@/shared/lib/format';
 import { useInbox } from '@/features/moments/hooks/use-inbox';
 import { useComposer } from '@/features/moments/hooks/use-composer';
 import { FeedHeader } from '@/features/feed/components/feed-header';
+import { avatarUrl } from '@/features/profile/data/profile-api';
+import { useMe } from '@/features/profile/hooks/use-me';
 import { StoryRail, StoryItem } from '@/features/feed/components/story-rail';
 import { LockedMomentCard } from '@/features/feed/components/locked-moment-card';
 import { EmptyState } from '@/features/feed/components/empty-state';
 import { TabScreen } from '@/features/navigation/tab-screen';
-import { AVATARS, demoProfiles, DEMO_USER_ID } from '@/shared/lib/fixtures';
+import { AVATARS, DEMO_USER_ID } from '@/shared/lib/fixtures';
 import { openProfile } from '@/features/profile/open-profile';
 /**
  * Screens `01 Feed` and `01c Feed · leer`.
@@ -26,6 +28,7 @@ import { openProfile } from '@/features/profile/open-profile';
 export default function FeedScreen() {
   const { pending, open, loading } = useInbox();
   const composer = useComposer();
+  const { data: me } = useMe();
 
   const stories = useMemo<StoryItem[]>(
     () => [
@@ -53,9 +56,9 @@ export default function FeedScreen() {
     <TabScreen>
       <View className="flex-1 gap-4">
         <FeedHeader
-          avatar={AVATARS.self}
-          name={demoProfiles[DEMO_USER_ID].first_name}
-          subtitle={memberSince(demoProfiles[DEMO_USER_ID].created_at)}
+          avatar={avatarUrl(me?.avatar_storage_path ?? null)}
+          name={me?.first_name ?? ''}
+          subtitle={me ? memberSince(me.created_at) : ''}
           onPressAdd={() => router.push('/(app)/friends/search')}
           onPressAvatar={() => router.push('/(app)/friends')}
         />

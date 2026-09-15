@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Stack } from 'expo-router';
 import {
   useFonts,
@@ -13,6 +13,7 @@ import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client
 import { colors } from '@/shared/theme/colors';
 import { APP_VERSION, PERSIST_MAX_AGE, queryClient, queryPersister } from '@/shared/lib/query-client';
 import { startSessionSync, useSession } from '@/features/auth/hooks/use-session';
+import { clearUserData } from '@/features/auth/sign-out';
 // Side-effect imports: locale, Tailwind stylesheet, className support for third-party views.
 import '@/shared/i18n/i18n';
 import '../global.css';
@@ -27,7 +28,7 @@ export default function RootLayout() {
     TikTokSans_500Medium,
     TikTokSans_600SemiBold,
   });
-  const { status } = useSession();
+  const { status, userId } = useSession();
   const ready = fontsLoaded && status !== 'loading';
 
   // Once, before any render that could route somewhere.
@@ -39,6 +40,13 @@ export default function RootLayout() {
     // welcome screen of an account that was signed in all along.
     if (ready) void SplashScreen.hideAsync();
   }, [ready]);
+
+  // A session that ends, expires, or returns as somebody else.
+  const previousUserId = useRef<string | null>(null);
+  useEffect(() => {
+    if (previousUserId.current && previousUserId.current !== userId) void clearUserData(queryClient);
+    previousUserId.current = userId;
+  }, [userId]);
 
   if (!ready) return null;
 

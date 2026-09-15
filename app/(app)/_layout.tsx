@@ -2,6 +2,7 @@ import { NativeTabs } from 'expo-router/unstable-native-tabs';
 import { t } from '@/shared/i18n/i18n';
 import { NAV } from '@/shared/i18n/keys';
 import { useInbox } from '@/features/moments/hooks/use-inbox';
+import { useStampOnboardingDone } from '@/features/profile/hooks/use-stamp-onboarding-done';
 import { demoUnreadCount } from '@/shared/lib/fixtures';
 // These are attached to Trigger rather than exported at the top level.
 const { Icon, Label, Badge } = NativeTabs.Trigger;
@@ -19,6 +20,7 @@ const { Icon, Label, Badge } = NativeTabs.Trigger;
  * the bar (see `CaptureButton`).
  */
 export default function AppLayout() {
+  useStampOnboardingDone();
   const { pending } = useInbox();
   // Friends carries both incoming moments and unread messages.
   const friendsBadge = demoUnreadCount > 0 ? String(demoUnreadCount) : undefined;

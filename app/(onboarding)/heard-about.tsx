@@ -20,6 +20,7 @@ import {
   TiktokChannelIcon,
   YoutubeChannelIcon,
 } from '@/features/onboarding/components/channel-icons';
+import { useUpdateProfile } from '@/features/profile/data/profile-mutations';
 type ChannelKey = keyof Translations['onboarding']['heardAbout']['options'];
 
 interface ChannelOption {
@@ -48,7 +49,8 @@ const OPTIONS: ChannelOption[] = [
  * a vanity question.
  */
 export default function HeardAboutScreen() {
-  const [choice, setChoice] = useState<ChannelKey | null>('tiktok');
+  const [choice, setChoice] = useState<ChannelKey | null>(null);
+  const update = useUpdateProfile();
 
   return (
     <Screen
@@ -56,7 +58,12 @@ export default function HeardAboutScreen() {
         <CtaFooter
           label={t(ONBOARDING.HEARD_ABOUT.CTA)}
           disabled={!choice}
-          onPress={() => router.replace('/(onboarding)/thank-you')}
+          onPress={() => {
+            // Optimistic like everything else: attribution input is not
+            // something the next screen depends on.
+            if (choice) update.mutate({ heard_about: choice });
+            router.replace('/(onboarding)/thank-you');
+          }}
           secondary={t(ONBOARDING.HEARD_ABOUT.SKIP)}
           onSecondary={() => router.replace('/(onboarding)/thank-you')}
         />
