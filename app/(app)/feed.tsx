@@ -36,7 +36,7 @@ export default function FeedScreen() {
       ...pending.map((m) => ({
         id: m.from.id,
         name: m.from.name,
-        avatar: m.from.avatar ?? AVATARS.mia,
+        avatar: m.from.avatarUrl,
         waiting: true,
       })),
     ],

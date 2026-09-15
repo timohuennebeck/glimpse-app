@@ -1,5 +1,10 @@
 import { createQueryKeys } from '@lukemorales/query-key-factory';
-import { fetchInbox, fetchMomentPhoto, fetchPairs } from '@/features/moments/data/moments-api';
+import {
+  fetchInbox,
+  fetchMomentPhoto,
+  fetchOutgoingLocked,
+  fetchPairs,
+} from '@/features/moments/data/moments-api';
 import { publishSnapshot } from '@/features/widget/data/widget-bridge';
 /**
  * Query keys + fetchers for the moments feature. Keys are derived by the
@@ -19,11 +24,20 @@ export const momentsQueries = createQueryKeys('moments', {
       return data;
     },
   },
-  /** Completed trades with one person, for the profile grid. */
-  pairs: (withUserId: string) => ({
-    queryKey: [withUserId],
+  /**
+   * Completed trades as photo pairs. `null` means "with anyone" — spelled
+   * `'all'` in the key itself, because the factory's key values cannot be null
+   * and a uuid is never that word.
+   */
+  pairs: (withUserId: string | null) => ({
+    queryKey: [withUserId ?? 'all'],
     queryFn: () => fetchPairs(withUserId),
   }),
+  /** My own moments nobody has answered, for the locked tiles on my grid. */
+  outgoingLocked: {
+    queryKey: null,
+    queryFn: fetchOutgoingLocked,
+  },
   /** One unlocked photo, full bleed. */
   photo: (momentId: string) => ({
     queryKey: [momentId],

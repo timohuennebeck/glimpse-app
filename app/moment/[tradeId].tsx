@@ -114,7 +114,7 @@ export default function MomentScreen() {
         style={{ paddingTop: insets.top + 6, paddingBottom: insets.bottom + 10 }}
       >
         <View className="mt-4 flex-row items-center gap-3">
-          <Avatar source={moment.from.avatar ?? ''} size={52} />
+          <Avatar source={moment.from.avatarUrl} name={moment.from.name} size={52} />
           <View className="min-w-0 flex-1 gap-0.5">
             <Text variant="rowTitle" className="text-white">
               {moment.from.name}

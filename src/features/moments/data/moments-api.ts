@@ -1,150 +1,158 @@
-import { isSupabaseConfigured, requireSupabase } from '@/shared/lib/supabase';
-import { demoInbox, demoPairs, demoProfiles } from '@/shared/lib/fixtures';
+import { supabase } from '@/shared/lib/supabase';
+import { MAX_CAPTURE_EDGE, resizeJpeg } from '@/shared/lib/resize';
+import { currentUserId } from '@/features/auth/current-user';
+import { avatarUrl } from '@/features/profile/data/profile-api';
+import { signedMomentUrls } from '@/features/moments/data/moment-urls';
+import { lockedTiles } from '@/features/moments/selectors';
 import type { InboxRow, PairRow } from '@/shared/lib/database.types';
-import type { InboxMoment, MomentPair, MomentPhoto } from '@/features/moments/interfaces';
-/**
- * Data access for the trade loop.
- *
- * Every function degrades to fixtures when no Supabase project is configured,
- * so the screens are reviewable before the backend exists. The shape returned
- * is identical in both branches.
- */
+import type {
+  InboxMoment,
+  MomentPair,
+  MomentPhoto,
+  OutgoingLockedTrade,
+} from '@/features/moments/interfaces';
+/** Data access for the trade loop. Screens go through the queries and mutations. */
 
 export async function fetchInbox(): Promise<InboxMoment[]> {
-  if (!isSupabaseConfigured) {
-    return demoInbox.map((row) => toInboxMoment(row, demoProfiles[row.from_id]?.photo ?? null, row.photo));
-  }
-
-  const sb = requireSupabase();
-  const { data, error } = await sb.from('v_inbox').select('*').overrideTypes<InboxRow[], { merge: false }>();
+  const { data, error } = await supabase
+    .from('v_inbox')
+    .select('*')
+    .overrideTypes<InboxRow[], { merge: false }>();
   if (error) throw error;
 
   const rows = data ?? [];
   const urls = await signedMomentUrls(rows.map((row) => row.moment_id));
 
-  // The photo is empty when the server withholds the moment (no blurred
-  // rendition yet); the card then draws its neutral frosted placeholder.
-  return rows.map((row) =>
-    toInboxMoment(
-      row,
-      row.from_avatar_storage_path ? publicAvatarUrl(row.from_avatar_storage_path) : null,
-      urls.get(row.moment_id) ?? '',
-    ),
-  );
-}
-
-function toInboxMoment(row: InboxRow, avatar: string | number | null, photo: string | number): InboxMoment {
-  return {
+  // `photo` is empty when the server withholds the moment; the card then draws
+  // its own neutral frosted placeholder rather than a broken image.
+  return rows.map((row) => ({
     tradeId: row.trade_id,
     momentId: row.moment_id,
-    from: { id: row.from_id, name: row.from_name, username: row.from_username, avatar },
+    from: {
+      id: row.from_id,
+      name: row.from_name,
+      username: row.from_username,
+      avatarUrl: avatarUrl(row.from_avatar_storage_path),
+    },
     caption: row.caption,
     capturedAt: row.moment_created_at,
     status: row.status,
     isOpen: row.is_open,
     autoUnlockAt: row.auto_unlock_at,
     seenAt: row.seen_at,
-    photo,
-  };
+    photo: urls.get(row.moment_id) ?? '',
+  }));
 }
 
-const SIGNED_URL_TTL_SECONDS = 3600;
-
-/**
- * Signed URLs for many moments in two round trips, however many there are.
- *
- * The server decides *which* rendition each caller may see
- * (`visible_moment_paths`); the Storage API then refuses to sign any path the
- * caller's RLS does not allow. The client never chooses — it only asks.
- * See docs/database.md §3.
- */
-async function signedMomentUrls(momentIds: string[]): Promise<Map<string, string>> {
-  const result = new Map<string, string>();
-  if (!isSupabaseConfigured || momentIds.length === 0) return result;
-  const sb = requireSupabase();
-
-  const { data: paths, error } = await sb.rpc('visible_moment_paths', { p_moment_ids: momentIds });
+/** `null` asks for every pair I am in; an id narrows it to that person. */
+export async function fetchPairs(withUserId: string | null): Promise<MomentPair[]> {
+  const base = supabase.from('v_pairs').select('*');
+  const filtered = withUserId ? base.or(`user_a.eq.${withUserId},user_b.eq.${withUserId}`) : base;
+  const { data, error } = await filtered.overrideTypes<PairRow[], { merge: false }>();
   if (error) throw error;
 
-  const allowed = (paths ?? []).filter((p): p is { moment_id: string; path: string } => p.path !== null);
-  if (allowed.length === 0) return result;
-
-  const { data: signed, error: signError } = await sb.storage.from('moments').createSignedUrls(
-    allowed.map((p) => p.path),
-    SIGNED_URL_TTL_SECONDS,
+  const pairs = data ?? [];
+  const urls = await signedMomentUrls(
+    pairs.flatMap((pair) => [pair.initiator_moment_id, pair.responder_moment_id]),
   );
-  if (signError) throw signError;
 
-  const byPath = new Map(signed.map((entry) => [entry.path, entry.signedUrl]));
-  for (const { moment_id, path } of allowed) {
-    const url = byPath.get(path);
-    if (url) result.set(moment_id, url);
-  }
-  return result;
+  return pairs.map((pair) => ({
+    tradeId: pair.trade_id,
+    date: pair.pair_at,
+    leftMomentId: pair.initiator_moment_id,
+    rightMomentId: pair.responder_moment_id,
+    left: urls.get(pair.initiator_moment_id) ?? '',
+    right: urls.get(pair.responder_moment_id) ?? '',
+  }));
 }
 
-export function publicAvatarUrl(path: string): string {
-  const sb = requireSupabase();
-  return sb.storage.from('avatars').getPublicUrl(path).data.publicUrl;
+/**
+ * My own moments nobody has traded back for — the locked tiles on my grid.
+ * Newest first, so they read as one sequence with the completed pairs.
+ */
+export async function fetchOutgoingLocked(): Promise<MomentPair[]> {
+  const { data, error } = await supabase
+    .from('trades')
+    .select('id, initiator_moment_id, created_at')
+    .eq('initiator_id', currentUserId())
+    .eq('status', 'pending')
+    .is('responder_moment_id', null)
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+
+  const trades: OutgoingLockedTrade[] = (data ?? []).map((row) => ({
+    tradeId: row.id,
+    momentId: row.initiator_moment_id,
+    createdAt: row.created_at,
+  }));
+  const urls = await signedMomentUrls(trades.map((trade) => trade.momentId));
+  return lockedTiles(trades, urls);
 }
 
 interface CreateMomentArgs {
   localUri: string;
   caption: string | null;
-  /** Pixel size from the camera, so cards can reserve the aspect ratio before the image loads. */
-  width: number | null;
-  height: number | null;
+  /** Pixel size of the capture. Required: without it the resize cannot bound anything. */
+  width: number;
+  height: number;
 }
 
 /**
- * Upload a captured photo and insert its row. Returns the moment id.
+ * Resize, upload, insert the row, make the frosted rendition. Returns the
+ * moment id.
  *
- * The blurred rendition is produced server-side by an Edge Function watching
- * the bucket, so a tampered client cannot upload a "blurred" copy that is
- * really the original. Until that function is deployed, `blurred_storage_path` stays
- * null and `visible_moment_paths` withholds the moment rather than leaking it.
+ * The blurred copy is produced server-side on purpose: a client that could
+ * upload its own "blurred" rendition could upload the original and call it
+ * blurred. A failure here fails the whole send, so a recipient never ends up
+ * with a moment there is nothing to show them for.
  */
 export async function createMoment(args: CreateMomentArgs): Promise<string> {
-  const sb = requireSupabase();
-  // `getClaims` verifies the session's JWT locally against the project's
-  // asymmetric signing keys (no round trip to the auth server per capture).
-  const { data: auth } = await sb.auth.getClaims();
-  const userId = auth?.claims.sub;
-  if (!userId) throw new Error('not_authenticated');
+  const userId = currentUserId();
+  const resized = await resizeJpeg(
+    args.localUri,
+    { width: args.width, height: args.height },
+    MAX_CAPTURE_EDGE,
+  );
+  // The row constraint and the storage policy both require this exact shape.
+  const objectKey = `original/${userId}/${Date.now()}.jpg`;
 
-  const objectKey = `${userId}/${Date.now()}.jpg`;
-  const blob = await (await fetch(args.localUri)).blob();
-
-  const { error: uploadError } = await sb.storage
+  // `fetch(file://…).arrayBuffer()` rather than a Blob: React Native's Blob has
+  // no data the Storage client can read.
+  const body = await (await fetch(resized.uri)).arrayBuffer();
+  const { error: uploadError } = await supabase.storage
     .from('moments')
-    .upload(`original/${objectKey}`, blob, { contentType: 'image/jpeg', upsert: false });
+    .upload(objectKey, body, { contentType: 'image/jpeg', upsert: false });
   if (uploadError) throw uploadError;
 
-  const { data: moment, error: insertError } = await sb
+  const { data: moment, error: insertError } = await supabase
     .from('moments')
     .insert({
       author_id: userId,
-      original_storage_path: `original/${objectKey}`,
+      original_storage_path: objectKey,
       caption: args.caption,
-      width: args.width,
-      height: args.height,
+      width: resized.width,
+      height: resized.height,
     })
     .select('id')
     .single();
   if (insertError) throw insertError;
+
+  const { error: blurError } = await supabase.functions.invoke('blur-moment', {
+    body: { moment_id: moment.id },
+  });
+  if (blurError) throw blurError;
 
   return moment.id;
 }
 
 /** Open a new trade with each recipient — one lock per person. */
 export async function sendMoment(momentId: string, recipientIds: string[]): Promise<string[]> {
-  const sb = requireSupabase();
-  const { data: trades, error } = await sb.rpc('send_moment', {
+  const { data: trades, error } = await supabase.rpc('send_moment', {
     p_moment_id: momentId,
     p_recipient_ids: recipientIds,
   });
   if (error) throw error;
-  return (trades ?? []).map((t) => t.id);
+  return (trades ?? []).map((trade) => trade.id);
 }
 
 /**
@@ -153,8 +161,7 @@ export async function sendMoment(momentId: string, recipientIds: string[]): Prom
  * function so a client cannot forge it.
  */
 export async function respondToTrade(tradeId: string, momentId: string) {
-  const sb = requireSupabase();
-  const { data, error } = await sb.rpc('respond_to_trade', {
+  const { data, error } = await supabase.rpc('respond_to_trade', {
     p_trade_id: tradeId,
     p_moment_id: momentId,
   });
@@ -163,80 +170,22 @@ export async function respondToTrade(tradeId: string, momentId: string) {
 }
 
 /** Stamp the frosted card as seen, so the sender can tell it landed. */
-export async function markTradeSeen(tradeId: string) {
-  if (!isSupabaseConfigured) return;
-  const sb = requireSupabase();
-  await sb.from('trades').update({ seen_at: new Date().toISOString() }).eq('id', tradeId).is('seen_at', null);
-}
-
-export async function fetchPairs(withUserId: string): Promise<MomentPair[]> {
-  if (!isSupabaseConfigured) {
-    return demoPairs.map((p) => toPair(p, p.leftPhoto, p.rightPhoto, p.locked));
-  }
-
-  const sb = requireSupabase();
-  const { data, error } = await sb
-    .from('v_pairs')
-    .select('*')
-    .or(`user_a.eq.${withUserId},user_b.eq.${withUserId}`)
-    .overrideTypes<PairRow[], { merge: false }>();
+export async function markTradeSeen(tradeId: string): Promise<void> {
+  const { error } = await supabase
+    .from('trades')
+    .update({ seen_at: new Date().toISOString() })
+    .eq('id', tradeId)
+    .is('seen_at', null);
   if (error) throw error;
-
-  const pairs = data ?? [];
-  const urls = await signedMomentUrls(pairs.flatMap((p) => [p.initiator_moment_id, p.responder_moment_id]));
-
-  return pairs.map((p) =>
-    toPair(p, urls.get(p.initiator_moment_id) ?? '', urls.get(p.responder_moment_id) ?? '', false),
-  );
-}
-
-function toPair(row: PairRow, left: string | number, right: string | number, locked: boolean): MomentPair {
-  return {
-    tradeId: row.trade_id,
-    date: row.pair_at,
-    leftMomentId: row.initiator_moment_id,
-    rightMomentId: row.responder_moment_id,
-    left,
-    right,
-    locked,
-  };
 }
 
 /**
  * Resolve one moment for the full-screen viewer, whether it arrived in the
- * inbox or sits in a completed pair. Returns null when the caller may not see
- * it (or it does not exist).
+ * inbox or sits in a completed pair. `null` when the caller may not see it, or
+ * it does not exist.
  */
 export async function fetchMomentPhoto(momentId: string): Promise<MomentPhoto | null> {
-  if (!isSupabaseConfigured) {
-    const inbox = demoInbox.find((row) => row.moment_id === momentId);
-    if (inbox) {
-      return {
-        photo: inbox.photo,
-        fromName: inbox.from_name,
-        fromAvatar: demoProfiles[inbox.from_id]?.photo ?? null,
-        capturedAt: inbox.moment_created_at,
-      };
-    }
-    for (const pair of demoPairs) {
-      const side =
-        pair.initiator_moment_id === momentId ? 'a' : pair.responder_moment_id === momentId ? 'b' : null;
-      if (!side) continue;
-      // Fixture convention: user_a is the initiator of every demo pair. The
-      // real branch below uses the moment's author_id instead.
-      const author = demoProfiles[side === 'a' ? pair.user_a : pair.user_b];
-      return {
-        photo: side === 'a' ? pair.leftPhoto : pair.rightPhoto,
-        fromName: author?.first_name ?? '',
-        fromAvatar: author?.photo ?? null,
-        capturedAt: pair.pair_at,
-      };
-    }
-    return null;
-  }
-
-  const sb = requireSupabase();
-  const { data: moment, error } = await sb
+  const { data: moment, error } = await supabase
     .from('moments')
     .select('id, author_id, created_at')
     .eq('id', momentId)
@@ -245,7 +194,11 @@ export async function fetchMomentPhoto(momentId: string): Promise<MomentPhoto | 
   if (!moment) return null;
 
   const [{ data: author }, urls] = await Promise.all([
-    sb.from('profiles').select('first_name, avatar_storage_path').eq('id', moment.author_id).maybeSingle(),
+    supabase
+      .from('profiles')
+      .select('first_name, avatar_storage_path')
+      .eq('id', moment.author_id)
+      .maybeSingle(),
     signedMomentUrls([moment.id]),
   ]);
   const photo = urls.get(moment.id);
@@ -254,7 +207,7 @@ export async function fetchMomentPhoto(momentId: string): Promise<MomentPhoto | 
   return {
     photo,
     fromName: author?.first_name ?? '',
-    fromAvatar: author?.avatar_storage_path ? publicAvatarUrl(author.avatar_storage_path) : null,
+    fromAvatarUrl: avatarUrl(author?.avatar_storage_path ?? null),
     capturedAt: moment.created_at,
   };
 }

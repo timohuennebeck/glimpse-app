@@ -47,7 +47,9 @@ export default function PhotoScreen() {
         </GlassButton>
 
         <View className="min-w-0 flex-1 flex-row items-center gap-[9px] px-3">
-          {moment?.fromAvatar ? <Avatar source={moment.fromAvatar} size={52} /> : null}
+          {moment?.fromAvatarUrl ? (
+            <Avatar source={moment.fromAvatarUrl} name={moment.fromName} size={52} />
+          ) : null}
           <Text variant="subtitle" weight="medium" className="shrink text-on-dark-text" numberOfLines={1}>
             {moment ? t(PHOTO.META, { name: moment.fromName, date: pairDate(moment.capturedAt) }) : ''}
           </Text>

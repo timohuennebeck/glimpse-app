@@ -17,7 +17,6 @@ import { createMoment, sendMoment } from '@/features/moments/data/moments-api';
 import { PersonRow } from '@/features/friends/components/person-row';
 import { Checkbox } from '@/features/friends/components/checkbox';
 import { EmptyState } from '@/features/feed/components/empty-state';
-import { isSupabaseConfigured } from '@/shared/lib/supabase';
 import { errorMessage } from '@/shared/lib/error-message';
 import { queries } from '@/shared/lib/queries';
 import { friendsOf } from '@/features/friends/relationships';
@@ -30,8 +29,9 @@ import { demoOthers } from '@/shared/lib/fixtures';
  * dimmed contacts who are not on Glimpse yet. Sending is the last step of the
  * capture flow — from here the trade locks are created.
  */
-// Contacts import is not built; the "not on Glimpse yet" list is fixture-only.
-const notOnGlimpse = isSupabaseConfigured ? [] : demoOthers.slice(3);
+// Contacts import is not built, and with the fixtures gone there is nobody to
+// list here. Task 14 rewrites this screen.
+const notOnGlimpse: typeof demoOthers = [];
 
 export default function RecipientsScreen() {
   const composer = useComposer();
@@ -46,7 +46,7 @@ export default function RecipientsScreen() {
 
   const send = useMutation({
     mutationFn: async () => {
-      if (!isSupabaseConfigured || !composer.uri) return;
+      if (!composer.uri || composer.width === null || composer.height === null) return;
       const momentId = await createMoment({
         localUri: composer.uri,
         caption: composer.caption || null,

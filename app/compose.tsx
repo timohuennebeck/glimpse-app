@@ -16,7 +16,6 @@ import { COMMON, COMPOSE, MOMENT } from '@/shared/i18n/keys';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useComposer } from '@/features/moments/hooks/use-composer';
 import { createMoment, respondToTrade } from '@/features/moments/data/moments-api';
-import { isSupabaseConfigured } from '@/shared/lib/supabase';
 import { queries } from '@/shared/lib/queries';
 import { errorMessage } from '@/shared/lib/error-message';
 import { PHOTOS } from '@/shared/lib/fixtures';
@@ -33,7 +32,7 @@ export default function ComposeScreen() {
   /** Answering a frosted moment: upload, then `respond_to_trade` unlocks the pair. */
   const reply = useMutation({
     mutationFn: async (tradeId: string) => {
-      if (!isSupabaseConfigured || !composer.uri) return;
+      if (!composer.uri || composer.width === null || composer.height === null) return;
       const momentId = await createMoment({
         localUri: composer.uri,
         caption: caption || null,

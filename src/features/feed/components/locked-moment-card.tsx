@@ -28,7 +28,7 @@ export function LockedMomentCard({ moment, onPressTrade, onPressCard }: LockedMo
   return (
     <View className="gap-[13px] rounded-card border-[1.5px] border-border-faint bg-surface p-3.5">
       <Pressable className="flex-row items-center gap-[11px]" onPress={onPressCard}>
-        <Avatar source={moment.from.avatar ?? ''} size={46} ring="halo" />
+        <Avatar source={moment.from.avatarUrl} name={moment.from.name} size={46} ring="halo" />
         <View className="min-w-0 flex-1">
           <Text variant="cardTitle" className="text-ink-strong">
             {moment.from.name}

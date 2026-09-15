@@ -3,6 +3,7 @@ import type { QueryClient } from '@tanstack/react-query';
 import { supabase } from '@/shared/lib/supabase';
 import { queryPersister } from '@/shared/lib/query-client';
 import { useComposer } from '@/features/moments/hooks/use-composer';
+import { momentUrlCache } from '@/features/moments/data/moment-urls';
 import { useOnboardingDraft } from '@/features/onboarding/hooks/use-onboarding-draft';
 /**
  * Everything on this device that belongs to whoever was signed in.
@@ -21,6 +22,7 @@ export async function clearUserData(queryClient: QueryClient): Promise<void> {
   useComposer.reset();
   useOnboardingDraft.reset();
   queryClient.clear();
+  await momentUrlCache.clear();
   await queryPersister.removeClient();
 }
 

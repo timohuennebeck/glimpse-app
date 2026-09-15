@@ -1,8 +1,6 @@
 import { Pressable, View } from 'react-native';
 import { Image } from 'expo-image';
-import { BLUR, LockedImage } from '@/shared/ui/locked-image';
 import { Text } from '@/shared/ui/text';
-import { radius } from '@/shared/theme/page-structure';
 import { pairDate } from '@/shared/lib/format';
 import type { MomentPair } from '@/features/moments/interfaces';
 interface PairGridProps {
@@ -43,22 +41,16 @@ function Pair({ pair, onPressPhoto }: PairProps) {
     <View className="flex-1 gap-2">
       <View className="flex-row gap-[5px]">
         <Pressable className="flex-1" onPress={() => onPressPhoto?.(pair.leftMomentId)}>
-          {pair.locked ? (
-            <LockedImage
-              source={pair.left}
-              radius={radius.tile}
-              blur={BLUR.tile}
-              puckSize={38}
-              className="h-[111px]"
-            />
-          ) : (
-            <Image source={pair.left} className="h-[111px] w-full rounded-tile" contentFit="cover" />
-          )}
+          <Image source={pair.left} className="h-[111px] w-full rounded-tile" contentFit="cover" />
         </Pressable>
 
-        <Pressable className="flex-1" onPress={() => onPressPhoto?.(pair.rightMomentId)}>
-          <Image source={pair.right} className="h-[111px] w-full rounded-tile" contentFit="cover" />
-        </Pressable>
+        {pair.rightMomentId ? (
+          <Pressable className="flex-1" onPress={() => onPressPhoto?.(pair.rightMomentId ?? '')}>
+            <Image source={pair.right} className="h-[111px] w-full rounded-tile" contentFit="cover" />
+          </Pressable>
+        ) : (
+          <View className="flex-1" />
+        )}
       </View>
 
       <Text variant="metaSm" className="text-center text-muted-grey">
