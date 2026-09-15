@@ -551,6 +551,19 @@ begin
   select mutual into v_mutual from public.mutual_friends_counts(
     array['33333333-3333-3333-3333-333333333333']::uuid[]);
   assert v_mutual = 0, 'users 1 and 3 share no friend';
+
+  -- Internal helpers and trigger functions are not part of the API surface.
+  assert not has_function_privilege('anon', 'public.config_int(text,int)', 'execute'),
+    'anon must not be able to read the config';
+  assert not has_function_privilege('authenticated', 'public.handle_new_user()', 'execute'),
+    'the signup trigger function must not be callable over the API';
+  assert not has_function_privilege('authenticated', 'public.generate_username(text)', 'execute'),
+    'username generation is internal to the signup trigger';
+  -- ...but the two the security_invoker views evaluate as the caller must stay.
+  assert has_function_privilege('authenticated', 'public.trade_is_open(public.trades)', 'execute'),
+    'v_inbox calls trade_is_open as the caller';
+  assert has_function_privilege('authenticated', 'public.config_int(text,int)', 'execute'),
+    'v_pairs calls config_int as the caller';
 end $$;
 
 -- A member of the pair may track presence on the pair's topic.
@@ -649,6 +662,41 @@ create policy chat_presence_track on realtime.messages
 -- ---------------------------------------------------------------------------
 alter function public.trade_is_open(public.trades) set search_path = public;
 alter function public.touch_updated_at() set search_path = public;
+
+-- ---------------------------------------------------------------------------
+-- Advisor: anon/authenticated_security_definer_function_executable.
+--
+-- Supabase's default privileges grant EXECUTE on every new function in `public`
+-- to anon and authenticated, so the trigger functions and the internal helpers
+-- are reachable over /rest/v1/rpc even though nothing should ever call them
+-- there. The core migration revoked some of these from public and anon; it
+-- could not know about the default grant to authenticated.
+--
+-- Revoking from a trigger function does NOT stop the trigger: PostgreSQL checks
+-- EXECUTE when the trigger is created, not each time it fires. Verified.
+-- ---------------------------------------------------------------------------
+revoke execute on function
+  public.handle_new_user(),
+  public.enforce_friend_cap(),
+  public.enforce_invite_moment_owner(),
+  public.touch_updated_at(),
+  public.generate_username(text)
+from public, anon, authenticated;
+
+-- These two stay callable by signed-in users, and the grant is spelled out
+-- rather than inherited from Supabase's defaults so that a local database
+-- behaves the same way: `v_inbox` and `v_pairs` are security_invoker views, so
+-- they evaluate trade_is_open() and config_int() AS THE CALLER. Revoking either
+-- from `authenticated` breaks the feed and the profile grid, with an error that
+-- points nowhere near the cause.
+revoke execute on function
+  public.config_int(text, int),
+  public.trade_is_open(public.trades)
+from public, anon;
+grant execute on function
+  public.config_int(text, int),
+  public.trade_is_open(public.trades)
+to authenticated;
 
 -- ---------------------------------------------------------------------------
 -- Advisor: unindexed_foreign_keys.
@@ -750,7 +798,17 @@ Expected: success.
 Call `list_migrations`; rename the file to `<version>_app_wiring.sql` with `git mv`.
 
 Call `get_advisors` for `security` and `performance`.
-Expected: `function_search_path_mutable`, `unindexed_foreign_keys` and `auth_rls_initplan` for public tables are gone. Remaining acceptable findings: `extension_in_public` (citext and pgcrypto), storage policies using `auth.uid()`, auth settings notices such as leaked-password protection. Anything else: add a fix as a new migration following Steps 1–5 before continuing.
+Expected: `function_search_path_mutable`, `unindexed_foreign_keys` and `auth_rls_initplan` for public tables are gone, and the two `*_security_definer_function_executable` counts have dropped to the intentional API surface only.
+
+Remaining acceptable findings, all reasoned rather than ignored:
+
+- `extension_in_public` for `citext`. (`pgcrypto` is not flagged, though the design expected it to be.)
+- `unused_index`, for every index in the schema — the database has no rows and has served no queries yet, so "unused" is the only thing it could say.
+- `authenticated_security_definer_function_executable` for the 13 RPCs the client genuinely calls, plus `config_int` and `trade_is_open`, which the two `security_invoker` views evaluate as the caller.
+- `anon_security_definer_function_executable` for `invite_preview` and `invite_object_readable`, which the deeplink needs before there is an account.
+- storage policies using `auth.uid()`, and auth settings notices such as leaked-password protection.
+
+Anything else: add a fix as a new migration following Steps 1–5 before continuing.
 
 - [ ] **Step 7: Commit**
 
