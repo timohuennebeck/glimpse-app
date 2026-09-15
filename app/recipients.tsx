@@ -57,13 +57,19 @@ export default function RecipientsScreen() {
     [waiting, friends],
   );
 
+  // Only ids this screen actually lists may stay selected. Search lists people
+  // you are not friends with, so the composer could arrive carrying a stranger:
+  // no row to switch them off, no name for the CTA (it read "Send to "), and
+  // `send_moment` refuses them only after a full upload and blur has run.
+  const selectable = useMemo(() => selected.filter((id) => nameById.has(id)), [selected, nameById]);
+
   function toggle(id: string) {
     setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
   }
 
   function send() {
     if (!composer.uri || composer.width === null || composer.height === null) return;
-    const { replyToTradeIds, recipientIds } = splitSelection(selected, waiting);
+    const { replyToTradeIds, recipientIds } = splitSelection(selectable, waiting);
     enqueueSend(
       {
         localUri: composer.uri,
@@ -72,7 +78,7 @@ export default function RecipientsScreen() {
         caption: composer.caption || null,
         replyToTradeIds,
         recipientIds,
-        names: selected.map((id) => nameById.get(id) ?? '').filter((name) => name.length > 0),
+        names: selectable.map((id) => nameById.get(id) ?? '').filter((name) => name.length > 0),
       },
       queryClient,
     );
@@ -82,11 +88,11 @@ export default function RecipientsScreen() {
   }
 
   const ctaLabel =
-    selected.length === 0
+    selectable.length === 0
       ? t(COMPOSE.SEND_NONE)
-      : selected.length === 1
-        ? t(COMPOSE.SEND_TO, { name: nameById.get(selected[0]) ?? '' })
-        : t(COMPOSE.SEND_TO_MANY, { count: selected.length });
+      : selectable.length === 1
+        ? t(COMPOSE.SEND_TO, { name: nameById.get(selectable[0]) ?? '' })
+        : t(COMPOSE.SEND_TO_MANY, { count: selectable.length });
 
   return (
     <Screen gutter={0} bottomInset={spacing.contentBottom}>
@@ -162,7 +168,12 @@ export default function RecipientsScreen() {
       </ScrollView>
 
       <View className="px-gutter pt-3">
-        <Button label={ctaLabel} onPress={send} size="lg" disabled={selected.length === 0 || !composer.uri} />
+        <Button
+          label={ctaLabel}
+          onPress={send}
+          size="lg"
+          disabled={selectable.length === 0 || !composer.uri}
+        />
       </View>
     </Screen>
   );

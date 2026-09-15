@@ -337,6 +337,7 @@ export const de = {
     pairsEmpty: 'Ihr habt noch nichts getauscht.',
     memberSince: 'Tauscht seit %{when}',
     signOut: 'Abmelden',
+    notFound: 'Dieses Profil ist nicht verfügbar.',
   },
 
   photo: {

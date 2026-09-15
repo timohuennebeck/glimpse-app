@@ -23,7 +23,8 @@ interface ProfileViewProps {
   leading: ReactNode;
   /** Passed in rather than fetched: the two screens ask different questions. */
   pairs: MomentPair[];
-  onPressTrade: () => void;
+  /** Omitted when there is no trade to offer — a profile you are not friends with. */
+  onPressTrade?: () => void;
   /** Only your own profile has anything behind "more". */
   onPressMore?: () => void;
 }
@@ -66,13 +67,15 @@ export function ProfileView({
         </Text>
       </View>
 
-      <Button
-        label={t(PROFILE.TRADE_CTA)}
-        size="md"
-        className="mt-4"
-        icon={<CameraIcon size={22} lensColor={colors.ink} />}
-        onPress={onPressTrade}
-      />
+      {onPressTrade ? (
+        <Button
+          label={t(PROFILE.TRADE_CTA)}
+          size="md"
+          className="mt-4"
+          icon={<CameraIcon size={22} lensColor={colors.ink} />}
+          onPress={onPressTrade}
+        />
+      ) : null}
 
       <SectionHeading title={t(PROFILE.MOMENTS_TITLE)} className="mb-3.5 mt-4" />
 

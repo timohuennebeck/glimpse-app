@@ -338,6 +338,7 @@ export const en: Translations = {
     pairsEmpty: 'You haven’t traded anything yet.',
     memberSince: 'Trading since %{when}',
     signOut: 'Sign out',
+    notFound: 'This profile is not available.',
   },
 
   photo: {
